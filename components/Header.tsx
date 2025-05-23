@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -14,6 +15,7 @@ import {
   Users,
   BookOpen
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface HeaderProps {
   onSubmitClick: () => void;
@@ -21,6 +23,7 @@ interface HeaderProps {
 
 export function Header({ onSubmitClick }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   const navigationItems = [
     { href: '/', label: 'ホーム', icon: TrendingUp },
@@ -48,11 +51,18 @@ export function Header({ onSubmitClick }: HeaderProps) {
           <nav className="hidden md:flex items-center space-x-1">
             {navigationItems.map((item) => {
               const Icon = item.icon;
+              const isActive = pathname === item.href;
+              
               return (
                 <Link key={item.href} href={item.href}>
                   <Button 
-                    variant="ghost" 
-                    className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+                    variant={isActive ? 'default' : 'ghost'}
+                    className={cn(
+                      "flex items-center space-x-2 transition-all",
+                      isActive 
+                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg" 
+                        : "text-gray-600 hover:text-gray-900"
+                    )}
                   >
                     <Icon className="w-4 h-4" />
                     <span>{item.label}</span>
@@ -101,11 +111,18 @@ export function Header({ onSubmitClick }: HeaderProps) {
             <nav className="space-y-2">
               {navigationItems.map((item) => {
                 const Icon = item.icon;
+                const isActive = pathname === item.href;
+                
                 return (
                   <Link key={item.href} href={item.href}>
                     <Button 
-                      variant="ghost" 
-                      className="w-full justify-start flex items-center space-x-3 text-gray-600 hover:text-gray-900"
+                      variant={isActive ? 'default' : 'ghost'}
+                      className={cn(
+                        "w-full justify-start flex items-center space-x-3 transition-all",
+                        isActive 
+                          ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg" 
+                          : "text-gray-600 hover:text-gray-900"
+                      )}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <Icon className="w-5 h-5" />

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,12 +26,18 @@ interface BusinessModelCardProps {
 }
 
 export function BusinessModelCard({ model, rank, compact = false }: BusinessModelCardProps) {
+  const router = useRouter();
   const [isUpvoted, setIsUpvoted] = useState(false);
   const [upvoteCount, setUpvoteCount] = useState(model.upvotes);
 
-  const handleUpvote = () => {
+  const handleUpvote = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsUpvoted(!isUpvoted);
     setUpvoteCount(prev => isUpvoted ? prev - 1 : prev + 1);
+  };
+
+  const handleCardClick = () => {
+    router.push(`/models/${model.id}`);
   };
 
   const formatDate = (dateString: string) => {
@@ -66,7 +73,10 @@ export function BusinessModelCard({ model, rank, compact = false }: BusinessMode
 
   if (compact) {
     return (
-      <Card className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-blue-500 relative">
+      <Card 
+        className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-blue-500 relative cursor-pointer"
+        onClick={handleCardClick}
+      >
         {getRankBadge()}
         <CardContent className="p-4">
           <div className="flex items-start justify-between">
@@ -128,7 +138,10 @@ export function BusinessModelCard({ model, rank, compact = false }: BusinessMode
   }
 
   return (
-    <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
+    <Card 
+      className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden cursor-pointer"
+      onClick={handleCardClick}
+    >
       {getRankBadge()}
       
       {/* グラデーションボーダー */}
@@ -233,14 +246,27 @@ export function BusinessModelCard({ model, rank, compact = false }: BusinessMode
 
             <div className="flex items-center space-x-2">
               {/* コメント数 */}
-              <Button variant="ghost" size="sm" className="flex items-center space-x-1 text-gray-600 hover:text-blue-600">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="flex items-center space-x-1 text-gray-600 hover:text-blue-600"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <MessageCircle className="w-4 h-4" />
                 <span>{model.comments}</span>
               </Button>
 
               {/* 外部リンク */}
               {model.website && (
-                <Button variant="ghost" size="sm" className="flex items-center space-x-1 text-gray-600 hover:text-blue-600">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="flex items-center space-x-1 text-gray-600 hover:text-blue-600"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.open(model.website, '_blank');
+                  }}
+                >
                   <ExternalLink className="w-4 h-4" />
                   <span className="hidden sm:inline">サイト</span>
                 </Button>

@@ -152,10 +152,10 @@ export function CategoryNavbar({ selectedCategory, onCategoryChange, selectedSor
           </div>
         </div>
 
-        {/* ランキングソートセクション */}
+        {/* ランキングソートセクション - 左寄せで統一 */}
         <div className="border-t border-gray-100 py-3">
-          <div className="flex items-center">
-            {/* デスクトップ版 */}
+          <div className="flex items-center justify-start">
+            {/* デスクトップ版 - 左寄せ */}
             <div className="hidden sm:flex items-center space-x-2">
               {sortOptions.map((option) => {
                 const Icon = option.icon;
@@ -177,7 +177,7 @@ export function CategoryNavbar({ selectedCategory, onCategoryChange, selectedSor
               })}
             </div>
 
-            {/* モバイル版ドロップダウン */}
+            {/* モバイル版ドロップダウン - 左寄せ */}
             <div className="sm:hidden">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -190,7 +190,7 @@ export function CategoryNavbar({ selectedCategory, onCategoryChange, selectedSor
                     <span>{currentSortOption?.label}</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="start">
                   {sortOptions.map((option) => {
                     const Icon = option.icon;
                     return (
