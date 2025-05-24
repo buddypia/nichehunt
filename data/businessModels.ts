@@ -143,7 +143,7 @@ export const businessModels: BusinessModel[] = [
     upvotes: 523,
     comments: 89,
     author: {
-      name: '高橋由美',
+      name: 'takahashi-yumi',
       avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=150',
       verified: true
     },

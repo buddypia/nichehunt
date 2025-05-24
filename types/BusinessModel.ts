@@ -20,4 +20,5 @@ export interface BusinessModel {
   targetMarket: string;
   image: string;
   website?: string;
+  userCount?: number;
 }

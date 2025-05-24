@@ -84,18 +84,18 @@ export function CategoryNavbar({ selectedCategory, onCategoryChange, selectedSor
   return (
     <div className="sticky top-16 z-40 bg-white border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between py-3">
-          {/* カテゴリーセクション */}
-          <div className="relative flex-1 mr-4">
+        {/* カテゴリーセクション */}
+        <div className="py-3">
+          <div className="relative overflow-hidden">
             {/* 左矢印 */}
             <div className={cn(
-              "absolute left-0 top-0 bottom-0 flex items-center z-10 bg-gradient-to-r from-white via-white to-transparent pr-4",
+              "absolute left-0 top-0 bottom-0 flex items-center z-10 bg-gradient-to-r from-white via-white to-transparent pr-2",
               !showLeftArrow && "hidden"
             )}>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 rounded-full shadow-md bg-white"
+                className="h-8 w-8 rounded-full shadow-md bg-white hover:bg-gray-100"
                 onClick={() => scroll('left')}
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -106,14 +106,23 @@ export function CategoryNavbar({ selectedCategory, onCategoryChange, selectedSor
             <div
               ref={scrollContainerRef}
               className="flex items-center space-x-2 overflow-x-auto scrollbar-hide px-1"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              style={{ 
+                scrollbarWidth: 'none', 
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch'
+              }}
             >
+              <style jsx>{`
+                .scrollbar-hide::-webkit-scrollbar {
+                  display: none;
+                }
+              `}</style>
               {categories.map((category) => (
                 <Button
                   key={category.id}
                   variant={selectedCategory === category.id ? 'default' : 'ghost'}
                   className={cn(
-                    "flex items-center space-x-2 whitespace-nowrap px-4 py-2 rounded-full transition-all",
+                    "flex items-center space-x-2 whitespace-nowrap px-4 py-2 rounded-full transition-all flex-shrink-0",
                     selectedCategory === category.id
                       ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-105"
                       : "hover:bg-gray-100"
@@ -128,26 +137,26 @@ export function CategoryNavbar({ selectedCategory, onCategoryChange, selectedSor
 
             {/* 右矢印 */}
             <div className={cn(
-              "absolute right-0 top-0 bottom-0 flex items-center z-10 bg-gradient-to-l from-white via-white to-transparent pl-4",
+              "absolute right-0 top-0 bottom-0 flex items-center z-10 bg-gradient-to-l from-white via-white to-transparent pl-2",
               !showRightArrow && "hidden"
             )}>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 rounded-full shadow-md bg-white"
+                className="h-8 w-8 rounded-full shadow-md bg-white hover:bg-gray-100"
                 onClick={() => scroll('right')}
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
           </div>
+        </div>
 
-          {/* ランキングソートセクション */}
-          <div className="flex items-center space-x-2 border-l pl-4">
-            <span className="text-sm text-gray-600 hidden sm:inline">ランキング:</span>
-            
-            {/* デスクトップ版 */}
-            <div className="hidden md:flex items-center space-x-2">
+        {/* ランキングソートセクション - 左寄せで統一 */}
+        <div className="border-t border-gray-100 py-3">
+          <div className="flex items-center justify-start">
+            {/* デスクトップ版 - 左寄せ */}
+            <div className="hidden sm:flex items-center space-x-2">
               {sortOptions.map((option) => {
                 const Icon = option.icon;
                 return (
@@ -168,8 +177,8 @@ export function CategoryNavbar({ selectedCategory, onCategoryChange, selectedSor
               })}
             </div>
 
-            {/* モバイル版ドロップダウン */}
-            <div className="md:hidden">
+            {/* モバイル版ドロップダウン - 左寄せ */}
+            <div className="sm:hidden">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 
@@ -181,7 +190,7 @@ export function CategoryNavbar({ selectedCategory, onCategoryChange, selectedSor
                     <span>{currentSortOption?.label}</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="start">
                   {sortOptions.map((option) => {
                     const Icon = option.icon;
                     return (
