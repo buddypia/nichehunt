@@ -6,14 +6,14 @@ import { BusinessModelCard } from '@/components/BusinessModelCard';
 import { SubmitModal } from '@/components/SubmitModal';
 import { businessModels } from '@/data/businessModels';
 import { BusinessModel } from '@/types/BusinessModel';
-import { TrendingUp, Clock, MessageSquare, Award } from 'lucide-react';
+import { TrendingUp, Clock, MessageSquare, Award, Trophy, Medal, Sparkles } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type TrendingPeriod = 'today' | 'week' | 'month' | 'all';
 
 export default function TrendingPage() {
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState<TrendingPeriod>('week');
+  const [selectedPeriod, setSelectedPeriod] = useState<TrendingPeriod>('all');
 
   // 期間に基づいてモデルをフィルタリング
   const filteredModels = useMemo(() => {
@@ -72,6 +72,10 @@ export default function TrendingPage() {
 
         <Tabs value={selectedPeriod} onValueChange={(value) => setSelectedPeriod(value as TrendingPeriod)}>
           <TabsList className="grid w-full max-w-md grid-cols-4 mb-8">
+            <TabsTrigger value="all" className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              全期間
+            </TabsTrigger>
             <TabsTrigger value="today" className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
               今日
@@ -83,10 +87,6 @@ export default function TrendingPage() {
             <TabsTrigger value="month" className="flex items-center gap-2">
               <Award className="w-4 h-4" />
               今月
-            </TabsTrigger>
-            <TabsTrigger value="all" className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" />
-              全期間
             </TabsTrigger>
           </TabsList>
 
@@ -100,27 +100,92 @@ export default function TrendingPage() {
               </p>
             </div>
 
-            <div className="grid gap-6">
-              {filteredModels.slice(0, 20).map((model, index) => (
-                <div key={model.id} className="relative">
-                  {index < 3 && (
-                    <div className="absolute -left-12 top-4 hidden lg:block">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${
-                        index === 0 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' :
-                        index === 1 ? 'bg-gradient-to-r from-gray-400 to-gray-500' :
-                        'bg-gradient-to-r from-orange-600 to-orange-700'
-                      }`}>
-                        {index + 1}
+            {/* トップ3の特別表示 */}
+            {filteredModels.length >= 3 && (
+              <div className="mb-12">
+                <div className="flex items-center gap-2 mb-6">
+                  <Trophy className="w-6 h-6 text-yellow-600" />
+                  <h3 className="text-2xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
+                    トップ3
+                  </h3>
+                  <Sparkles className="w-5 h-5 text-yellow-600" />
+                </div>
+                
+                <div className="grid gap-8 lg:grid-cols-3">
+                  {/* 1位 */}
+                  <div className="lg:col-span-3">
+                    <div className="relative group">
+                      <div className="absolute inset-0 bg-gradient-to-r from-yellow-200 to-orange-200 rounded-xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity" />
+                      <div className="relative">
+                        <BusinessModelCard
+                          model={filteredModels[0]}
+                          rank={1}
+                        />
                       </div>
                     </div>
-                  )}
-                  <BusinessModelCard
-                    model={model}
-                    rank={index + 1}
-                  />
+                  </div>
+                  
+                  {/* 2位と3位 */}
+                  <div className="lg:col-span-3 grid gap-6 lg:grid-cols-2">
+                    <div className="relative group">
+                      <div className="absolute inset-0 bg-gradient-to-r from-gray-200 to-slate-200 rounded-xl blur-xl opacity-40 group-hover:opacity-60 transition-opacity" />
+                      <div className="relative">
+                        <BusinessModelCard
+                          model={filteredModels[1]}
+                          rank={2}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="relative group">
+                      <div className="absolute inset-0 bg-gradient-to-r from-orange-200 to-amber-200 rounded-xl blur-xl opacity-40 group-hover:opacity-60 transition-opacity" />
+                      <div className="relative">
+                        <BusinessModelCard
+                          model={filteredModels[2]}
+                          rank={3}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+            
+            {/* その他のランキング */}
+            {filteredModels.length > 3 && (
+              <div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-4">その他のトレンド</h3>
+                <div className="grid gap-6">
+                  {filteredModels.slice(3, 20).map((model, index) => (
+                    <div key={model.id} className="relative">
+                      <div className="absolute -left-12 top-4 hidden lg:block">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center font-bold text-white shadow-md">
+                          {index + 4}
+                        </div>
+                      </div>
+                      <BusinessModelCard
+                        model={model}
+                        rank={index + 4}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* 3位以下のみの表示 */}
+            {filteredModels.length > 0 && filteredModels.length <= 3 && (
+              <div className="grid gap-6">
+                {filteredModels.map((model, index) => (
+                  <div key={model.id} className="relative">
+                    <BusinessModelCard
+                      model={model}
+                      rank={index + 1}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
 
             {filteredModels.length === 0 && (
               <div className="text-center py-12">

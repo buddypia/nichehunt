@@ -1,7 +1,7 @@
 import { BusinessModel } from '@/types/BusinessModel';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowUp, MessageCircle, Calendar, DollarSign, Clock, Target, BarChart3 } from 'lucide-react';
+import { ArrowUp, MessageCircle, Calendar, DollarSign, Clock, Target, BarChart3, Trophy, Medal, Award, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CheckCircle2 } from 'lucide-react';
@@ -12,14 +12,69 @@ interface BusinessModelCardProps {
 }
 
 export function BusinessModelCard({ model, rank }: BusinessModelCardProps) {
+  const isTopThree = rank && rank <= 3;
+  
+  const getRankStyles = () => {
+    if (!rank) return {};
+    
+    switch (rank) {
+      case 1:
+        return {
+          card: 'bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 border-yellow-300 border-2 shadow-xl',
+          badge: 'bg-gradient-to-br from-yellow-400 via-amber-400 to-yellow-500',
+          icon: Trophy,
+          iconColor: 'text-yellow-600',
+          glow: 'shadow-[0_0_30px_rgba(251,191,36,0.3)]'
+        };
+      case 2:
+        return {
+          card: 'bg-gradient-to-br from-gray-50 via-slate-50 to-gray-100 border-gray-300 border-2 shadow-lg',
+          badge: 'bg-gradient-to-br from-gray-400 via-slate-400 to-gray-500',
+          icon: Medal,
+          iconColor: 'text-gray-600',
+          glow: 'shadow-[0_0_20px_rgba(156,163,175,0.3)]'
+        };
+      case 3:
+        return {
+          card: 'bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100 border-orange-300 border-2 shadow-lg',
+          badge: 'bg-gradient-to-br from-orange-500 via-amber-600 to-orange-600',
+          icon: Award,
+          iconColor: 'text-orange-600',
+          glow: 'shadow-[0_0_20px_rgba(251,146,60,0.3)]'
+        };
+      default:
+        return {
+          card: '',
+          badge: 'bg-gradient-to-br from-blue-400 to-indigo-500',
+          icon: null,
+          iconColor: '',
+          glow: ''
+        };
+    }
+  };
+
+  const rankStyles = getRankStyles();
+  const RankIcon = rankStyles.icon;
+
   return (
-    <Card className="hover:shadow-lg transition-shadow relative overflow-hidden">
+    <Card className={`hover:shadow-lg transition-all duration-300 relative overflow-hidden ${isTopThree ? rankStyles.card + ' ' + rankStyles.glow : ''}`}>
       {rank && (
         <div className="absolute -top-1 -right-8 z-10">
           <div className="relative">
-            <div className="bg-gradient-to-br from-yellow-400 to-orange-500 text-white font-bold text-lg w-24 h-24 flex items-center justify-center transform rotate-45 shadow-lg">
-              <span className="transform -rotate-45">#{rank}</span>
+            <div className={`${rankStyles.badge} text-white font-bold text-lg w-24 h-24 flex items-center justify-center transform rotate-45 shadow-lg`}>
+              <span className="transform -rotate-45 flex items-center gap-1">
+                {RankIcon && <RankIcon className="w-5 h-5" />}
+                {rank}
+              </span>
             </div>
+          </div>
+        </div>
+      )}
+      
+      {isTopThree && (
+        <div className="absolute top-2 left-2">
+          <div className={`p-2 rounded-full bg-white/80 backdrop-blur-sm ${rankStyles.glow}`}>
+            {RankIcon && <RankIcon className={`w-5 h-5 ${rankStyles.iconColor}`} />}
           </div>
         </div>
       )}
