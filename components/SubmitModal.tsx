@@ -181,12 +181,20 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
   };
 
   const addTag = () => {
-    if (currentTag.trim() && !formData.tags.includes(currentTag.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        tags: [...prev.tags, currentTag.trim()]
-      }));
-      setCurrentTag('');
+    if (currentTag.trim()) {
+      // コンマで分割してタグを処理
+      const newTags = currentTag
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag && !formData.tags.includes(tag));
+      
+      if (newTags.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          tags: [...prev.tags, ...newTags]
+        }));
+        setCurrentTag('');
+      }
     }
   };
 
@@ -201,6 +209,23 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
     if (e.key === 'Enter') {
       e.preventDefault();
       addTag();
+    }
+  };
+
+  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setCurrentTag(value);
+    
+    // 最後の文字がコンマの場合、自動的にタグを追加
+    if (value.endsWith(',')) {
+      const tagValue = value.slice(0, -1).trim();
+      if (tagValue && !formData.tags.includes(tagValue)) {
+        setFormData(prev => ({
+          ...prev,
+          tags: [...prev.tags, tagValue]
+        }));
+        setCurrentTag('');
+      }
     }
   };
 
@@ -458,37 +483,42 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
               <Label htmlFor="tags" className="text-sm font-medium text-gray-700">
                 関連タグを追加
               </Label>
-              <div className="mt-1 flex space-x-2">
+              <div 
+                className="mt-1 flex flex-wrap items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent cursor-text min-h-[42px]"
+                onClick={() => document.getElementById('tags-input')?.focus()}
+              >
+                {formData.tags.map((tag) => (
+                  <Badge 
+                    key={tag} 
+                    variant="secondary" 
+                    className="flex items-center space-x-1 bg-blue-100 text-blue-700 px-2 py-1"
+                  >
+                    <span>{tag}</span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeTag(tag);
+                      }}
+                      className="ml-1 hover:text-red-500"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </Badge>
+                ))}
                 <input
-                  id="tags"
+                  id="tags-input"
                   type="text"
                   value={currentTag}
-                  onChange={(e) => setCurrentTag(e.target.value)}
+                  onChange={handleTagInputChange}
                   onKeyPress={handleKeyPress}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="タグを入力してEnterキーを押す"
+                  className="flex-1 min-w-[200px] outline-none bg-transparent"
+                  placeholder={formData.tags.length === 0 ? "タグをコンマ区切りで入力（例: React, TypeScript, Next.js）" : "タグを追加..."}
                 />
-                <Button type="button" onClick={addTag} variant="outline">
-                  追加
-                </Button>
               </div>
-              
-              {formData.tags.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {formData.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="flex items-center space-x-1">
-                      <span>{tag}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeTag(tag)}
-                        className="ml-1 hover:text-red-500"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-              )}
+              <p className="mt-1 text-xs text-gray-500">
+                Enterキーまたはコンマで区切ってタグを追加
+              </p>
             </div>
           </div>
 

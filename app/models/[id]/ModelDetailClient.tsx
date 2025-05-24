@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -32,7 +31,6 @@ import {
   Trash2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SubmitModal } from '@/components/SubmitModal';
 import { BusinessModel } from '@/types/BusinessModel';
 import { fetchComments, createComment, deleteComment, CommentWithReplies } from '@/lib/comments';
 import { getCurrentUser } from '@/lib/auth';
@@ -43,13 +41,12 @@ interface ModelDetailClientProps {
 
 export default function ModelDetailClient({ model }: ModelDetailClientProps) {
   const router = useRouter();
-  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [isUpvoted, setIsUpvoted] = useState(false);
   const [upvoteCount, setUpvoteCount] = useState(model?.upvotes || 0);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [commentText, setCommentText] = useState('');
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState('');
   const [comments, setComments] = useState<CommentWithReplies[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -92,7 +89,6 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
   if (!model) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-        <Header onSubmitClick={() => setIsSubmitModalOpen(true)} />
         <div className="max-w-7xl mx-auto px-4 py-16 text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">ビジネスモデルが見つかりません</h1>
           <Button onClick={() => router.push('/')}>
@@ -156,7 +152,7 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
     }
   };
 
-  const handleReplySubmit = async (parentId: string) => {
+  const handleReplySubmit = async (parentId: number) => {
     if (!replyText.trim() || !currentUser || !model?.id) {
       if (!currentUser) {
         alert('返信を投稿するにはログインが必要です');
@@ -166,7 +162,7 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
 
     setIsSubmittingComment(true);
     try {
-      const newReply = await createComment(model.id, replyText, currentUser.id, parentId);
+      const newReply = await createComment(model.id, replyText, currentUser.id, parentId.toString());
       if (newReply) {
         setComments(comments.map(comment => {
           if (comment.id === parentId) {
@@ -188,14 +184,14 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
     }
   };
 
-  const handleDeleteComment = async (commentId: string, isReply: boolean = false, parentId?: string) => {
+  const handleDeleteComment = async (commentId: number, isReply: boolean = false, parentId?: number) => {
     if (!currentUser || !confirm('このコメントを削除しますか？')) {
       return;
     }
 
-    const success = await deleteComment(commentId, currentUser.id);
+    const success = await deleteComment(commentId.toString(), currentUser.id);
     if (success) {
-      if (isReply && parentId) {
+      if (isReply && parentId !== undefined) {
         setComments(comments.map(comment => {
           if (comment.id === parentId) {
             return {
@@ -213,13 +209,13 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
     }
   };
 
-  const CommentItem = ({ comment, isReply = false, parentId }: { comment: CommentWithReplies; isReply?: boolean; parentId?: string }) => {
+  const CommentItem = ({ comment, isReply = false, parentId }: { comment: CommentWithReplies; isReply?: boolean; parentId?: number }) => {
     const isOwner = currentUser?.id === comment.user_id;
     
     const handleCommentAuthorClick = (e: React.MouseEvent) => {
       e.stopPropagation();
-      if (comment.profiles?.username) {
-        router.push(`/profiles/${comment.profiles.username.toLowerCase().replace(/\s+/g, '-')}`);
+      if (comment.profile?.username) {
+        router.push(`/profiles/${comment.profile.username.toLowerCase().replace(/\s+/g, '-')}`);
       }
     };
     
@@ -229,8 +225,8 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
           className={cn("flex-shrink-0 cursor-pointer", isReply ? "w-8 h-8" : "w-10 h-10")}
           onClick={handleCommentAuthorClick}
         >
-          <AvatarImage src={comment.profiles?.avatar_url || undefined} alt={comment.profiles?.username} />
-          <AvatarFallback>{comment.profiles?.username?.charAt(0) || 'U'}</AvatarFallback>
+          <AvatarImage src={comment.profile?.avatar_url || undefined} alt={comment.profile?.username} />
+          <AvatarFallback>{comment.profile?.username?.charAt(0) || 'U'}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
           <div className="flex items-center space-x-2 mb-1">
@@ -238,7 +234,7 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
               className={cn("font-semibold cursor-pointer hover:text-blue-600 transition-colors", isReply && "text-sm")}
               onClick={handleCommentAuthorClick}
             >
-              {comment.profiles?.username || 'Unknown User'}
+              {comment.profile?.username || 'Unknown User'}
             </span>
             <span className="text-sm text-gray-500">
               {formatDate(comment.created_at)}
@@ -321,8 +317,6 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <Header onSubmitClick={() => setIsSubmitModalOpen(true)} />
-      
       {/* 戻るボタン */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <Button
@@ -495,7 +489,7 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
                     <div className="mb-8">
                       <div className="flex space-x-3">
                         <Avatar className="w-10 h-10 flex-shrink-0">
-                          <AvatarImage src={currentUser?.avatar_url} />
+                          <AvatarImage src={currentUser?.avatar_url || undefined} />
                           <AvatarFallback>{currentUser?.username?.charAt(0) || 'G'}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
@@ -605,20 +599,20 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
                   onClick={handleAuthorClick}
                 >
                   <Avatar className="w-12 h-12">
-                    <AvatarImage src={model.author.avatar} alt={model.author.name} />
+                    <AvatarImage src={model.author.avatar || undefined} alt={model.author.name} />
                     <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
                       {model.author.name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium flex items-center hover:text-blue-600 transition-colors">
+                    <div className="font-medium flex items-center hover:text-blue-600 transition-colors">
                       {model.author.name}
                       {model.author.verified && (
                         <Badge variant="secondary" className="ml-2 text-xs">
                           認証済み
                         </Badge>
                       )}
-                    </p>
+                    </div>
                     <p className="text-sm text-gray-500">
                       <Calendar className="w-3 h-3 inline mr-1" />
                       {formatDate(model.createdAt)}
@@ -660,11 +654,6 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
           </div>
         </div>
       </main>
-
-      <SubmitModal
-        isOpen={isSubmitModalOpen}
-        onClose={() => setIsSubmitModalOpen(false)}
-      />
     </div>
   );
 }

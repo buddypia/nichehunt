@@ -1,14 +1,43 @@
 import { supabase } from '@/lib/supabase-client';
 import { BusinessModel } from '@/types/BusinessModel';
+import { ProductWithRelations } from '@/lib/types/database';
 
 export interface FetchBusinessModelsOptions {
   limit?: number;
   offset?: number;
   orderBy?: 'created_at' | 'upvote_count' | 'comment_count' | 'launch_date';
   order?: 'asc' | 'desc';
-  topic?: string;
+  category?: string;
   search?: string;
   featured?: boolean;
+}
+
+// Helper function to convert Product to BusinessModel format
+function mapProductToBusinessModel(product: ProductWithRelations): BusinessModel {
+  return {
+    id: product.id.toString(),
+    title: product.name,
+    description: product.description,
+    category: product.category?.name || 'Unknown',
+    tags: product.tags?.map(tag => tag.name) || [],
+    upvotes: product.vote_count || 0,
+    comments: product.comment_count || 0,
+    author: {
+      name: product.profile?.display_name || product.profile?.username || 'Anonymous',
+      avatar: product.profile?.avatar_url || '/placeholder-avatar.png',
+      verified: false // We don't have this field in profiles
+    },
+    createdAt: product.created_at,
+    featured: product.is_featured,
+    revenue: 'Unknown', // Not available in products table
+    difficulty: 'Medium' as const, // Not available in products table
+    timeToMarket: 'Unknown', // Not available in products table
+    initialInvestment: 'Unknown', // Not available in products table
+    targetMarket: 'Unknown', // Not available in products table
+    image: product.thumbnail_url || '/placeholder-product.png',
+    website: product.product_url || undefined,
+    userCount: product.view_count
+  };
 }
 
 export async function fetchBusinessModels(options: FetchBusinessModelsOptions = {}) {
@@ -17,31 +46,45 @@ export async function fetchBusinessModels(options: FetchBusinessModelsOptions = 
     offset = 0,
     orderBy = 'created_at',
     order = 'desc',
-    topic,
+    category,
     search,
     featured
   } = options;
 
+  // Map orderBy fields to products_with_stats columns
+  const orderByMap: Record<string, string> = {
+    'created_at': 'created_at',
+    'upvote_count': 'vote_count',
+    'comment_count': 'comment_count',
+    'launch_date': 'launch_date'
+  };
+
   let query = supabase
-    .from('business_models')
+    .from('products_with_stats')
     .select(`
       *,
-      profiles:submitter_id (
+      profile:profiles!products_user_id_fkey (
         id,
         username,
+        display_name,
         avatar_url,
         bio
       ),
-      business_model_topics (
-        topic_id,
-        topics (
+      category:categories (
+        id,
+        name,
+        slug
+      ),
+      tags:product_tags (
+        tag:tags (
           id,
           name,
           slug
         )
       )
-    `)
-    .order(orderBy, { ascending: order === 'asc' })
+    `, { count: 'exact' })
+    .eq('status', 'published')
+    .order(orderByMap[orderBy] || 'created_at', { ascending: order === 'asc' })
     .range(offset, offset + limit - 1);
 
   // Add filters
@@ -50,84 +93,111 @@ export async function fetchBusinessModels(options: FetchBusinessModelsOptions = 
   }
 
   if (featured !== undefined) {
-    query = query.eq('featured', featured as any);
+    query = query.eq('is_featured', featured);
   }
 
-  if (topic) {
-    // Filter by topic slug
-    const { data: topicData } = await supabase
-      .from('topics')
+  if (category) {
+    // Filter by category slug
+    const { data: categoryData } = await supabase
+      .from('categories')
       .select('id')
-      .eq('slug', topic as any)
+      .eq('slug', category)
       .single();
 
-    if (topicData && 'id' in topicData) {
-      const { data: businessModelIds } = await supabase
-        .from('business_model_topics')
-        .select('business_model_id')
-        .eq('topic_id', topicData.id as any);
-
-      if (businessModelIds && businessModelIds.length > 0) {
-        const ids = businessModelIds.map(item => (item as any).business_model_id);
-        query = query.in('id', ids);
-      }
+    if (categoryData) {
+      query = query.eq('category_id', categoryData.id);
     }
   }
 
   const { data, error, count } = await query;
 
   if (error) {
-    console.error('Error fetching business models:', error);
+    console.error('Error fetching products:', error);
     return { data: [], error, count: 0 };
   }
 
-  return { data: (data || []) as unknown as BusinessModel[], error: null, count };
+  // Transform data and extract tags properly
+  const transformedData = (data || []).map((product: any) => ({
+    ...product,
+    tags: product.tags?.map((pt: any) => pt.tag).filter(Boolean) || []
+  }));
+
+  const businessModels = transformedData.map(mapProductToBusinessModel);
+
+  return { data: businessModels, error: null, count };
 }
 
 export async function fetchBusinessModelById(id: string) {
   const { data, error } = await supabase
-    .from('business_models')
+    .from('products_with_stats')
     .select(`
       *,
-      profiles:submitter_id (
+      profile:profiles!products_user_id_fkey (
         id,
         username,
+        display_name,
         avatar_url,
         bio,
         website_url,
-        twitter_url,
-        github_url,
-        linkedin_url
+        twitter_handle
       ),
-      business_model_topics (
-        topic_id,
-        topics (
+      category:categories (
+        id,
+        name,
+        slug,
+        description
+      ),
+      tags:product_tags (
+        tag:tags (
           id,
           name,
-          slug,
-          description
+          slug
         )
+      ),
+      images:product_images (
+        id,
+        image_url,
+        caption,
+        display_order
       )
     `)
-    .eq('id', id as any)
+    .eq('id', parseInt(id))
+    .eq('status', 'published')
     .single();
 
   if (error) {
-    console.error('Error fetching business model:', error);
+    console.error('Error fetching product:', error);
     return { data: null, error };
   }
 
-  return { data: data as unknown as BusinessModel, error: null };
+  // Transform data and extract tags properly
+  const transformedData = {
+    ...data,
+    tags: data.tags?.map((pt: any) => pt.tag).filter(Boolean) || []
+  };
+
+  const businessModel = mapProductToBusinessModel(transformedData as ProductWithRelations);
+
+  return { data: businessModel, error: null };
 }
 
 export async function incrementBusinessModelViews(id: string) {
-  // Since we don't have a views column, we'll just return success
-  // This is a placeholder for future implementation
+  // Increment view count for the product
+  const { error } = await supabase.rpc('increment_view_count', {
+    product_id: parseInt(id)
+  });
+
+  if (error) {
+    console.error('Error incrementing view count:', error);
+    // If the function doesn't exist, just return success
+    return { error: null };
+  }
+
   return { error: null };
 }
 
 export async function fetchTrendingBusinessModels() {
-  // Get business models from the last 7 days with high engagement
+  // Get products from the last 7 days with high engagement
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -149,25 +219,44 @@ export async function fetchFeaturedBusinessModels() {
 
 export async function fetchBusinessModelsByUser(userId: string) {
   const { data, error } = await supabase
-    .from('business_models')
+    .from('products_with_stats')
     .select(`
       *,
-      business_model_topics (
-        topic_id,
-        topics (
+      profile:profiles!products_user_id_fkey (
+        id,
+        username,
+        display_name,
+        avatar_url
+      ),
+      category:categories (
+        id,
+        name,
+        slug
+      ),
+      tags:product_tags (
+        tag:tags (
           id,
           name,
           slug
         )
       )
     `)
-    .eq('submitter_id', userId as any)
+    .eq('user_id', userId)
+    .eq('status', 'published')
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('Error fetching user business models:', error);
+    console.error('Error fetching user products:', error);
     return { data: [], error };
   }
 
-  return { data: (data || []) as unknown as BusinessModel[], error: null };
+  // Transform data and extract tags properly
+  const transformedData = (data || []).map((product: any) => ({
+    ...product,
+    tags: product.tags?.map((pt: any) => pt.tag).filter(Boolean) || []
+  }));
+
+  const businessModels = transformedData.map(mapProductToBusinessModel);
+
+  return { data: businessModels, error: null };
 }

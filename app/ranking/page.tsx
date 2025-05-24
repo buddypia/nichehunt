@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Header } from '@/components/Header';
 import { BusinessModelCard } from '@/components/BusinessModelCard';
-import { SubmitModal } from '@/components/SubmitModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,7 +27,6 @@ type RankingType = 'popular' | 'newest' | 'comments' | 'featured';
 export default function RankingPage() {
   const [selectedPeriod, setSelectedPeriod] = useState<RankingPeriod>('daily');
   const [selectedType, setSelectedType] = useState<RankingType>('popular');
-  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
 
   const periods = [
     { id: 'daily', name: '今日', icon: Calendar },
@@ -109,8 +106,6 @@ export default function RankingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <Header onSubmitClick={() => setIsSubmitModalOpen(true)} />
-      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* ページヘッダー */}
         <div className="text-center mb-12">
@@ -287,11 +282,6 @@ export default function RankingPage() {
           </Card>
         </div>
       </div>
-
-      <SubmitModal
-        isOpen={isSubmitModalOpen}
-        onClose={() => setIsSubmitModalOpen(false)}
-      />
     </div>
   );
 }

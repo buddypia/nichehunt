@@ -1,16 +1,78 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { Bookmark } from 'lucide-react';
 import { BusinessModelCard } from '@/components/BusinessModelCard';
 import { Button } from '@/components/ui/button';
 import { BusinessModel } from '@/types/BusinessModel';
+import { getSavedModels } from '@/lib/api/saved-models';
+import { getCurrentUser } from '@/lib/auth';
 
 export default function SavedModelsClient() {
   const router = useRouter();
-  
-  // 静的エクスポートのため、ダミーデータを使用
-  const savedModels: BusinessModel[] = [];
+  const [savedModels, setSavedModels] = useState<BusinessModel[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    loadCurrentUser();
+  }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      loadSavedModels();
+    } else {
+      setIsLoading(false);
+    }
+  }, [currentUser]);
+
+  const loadCurrentUser = async () => {
+    const user = await getCurrentUser();
+    setCurrentUser(user);
+  };
+
+  const loadSavedModels = async () => {
+    if (!currentUser) return;
+    
+    setIsLoading(true);
+    try {
+      const models = await getSavedModels(currentUser.id);
+      // Extract businessModel from each saved model
+      const businessModels = models
+        .filter(model => model.businessModel)
+        .map(model => model.businessModel!);
+      setSavedModels(businessModels);
+    } catch (error) {
+      console.error('Error loading saved models:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+            <Bookmark className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              ログインが必要です
+            </h3>
+            <p className="text-gray-500 mb-6">
+              保存したモデルを表示するにはログインしてください
+            </p>
+            <Button
+              onClick={() => router.push('/auth/signin')}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+            >
+              ログイン
+            </Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -22,7 +84,11 @@ export default function SavedModelsClient() {
           </p>
         </div>
 
-        {savedModels.length === 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+          </div>
+        ) : savedModels.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <Bookmark className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">

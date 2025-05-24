@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Header } from '@/components/Header';
-import { SubmitModal } from '@/components/SubmitModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -200,7 +198,6 @@ export default function CommunityPage() {
   const [selectedFilter, setSelectedFilter] = useState<PostFilter>('all');
   const [selectedSort, setSelectedSort] = useState<PostSort>('newest');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
 
   const postTypes = [
     { id: 'all', name: 'すべて', icon: Users, color: 'bg-gray-100 text-gray-700' },
@@ -275,8 +272,6 @@ export default function CommunityPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <Header onSubmitClick={() => setIsSubmitModalOpen(true)} />
-      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* ページヘッダー */}
         <div className="text-center mb-12">
@@ -298,13 +293,6 @@ export default function CommunityPage() {
                   <Filter className="w-5 h-5 text-gray-500" />
                   <span className="font-medium text-gray-900">フィルター & ソート</span>
                 </div>
-                <Button 
-                  onClick={() => setIsSubmitModalOpen(true)}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  新規投稿
-                </Button>
               </div>
 
               {/* 検索バー */}
@@ -573,11 +561,6 @@ export default function CommunityPage() {
           </aside>
         </div>
       </div>
-
-      <SubmitModal
-        isOpen={isSubmitModalOpen}
-        onClose={() => setIsSubmitModalOpen(false)}
-      />
     </div>
   );
 }

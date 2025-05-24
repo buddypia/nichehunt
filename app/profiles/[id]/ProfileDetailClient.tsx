@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,7 +27,6 @@ import {
   Briefcase,
   Award
 } from 'lucide-react';
-import { SubmitModal } from '@/components/SubmitModal';
 import { supabase } from '@/lib/supabase';
 import { getCurrentUser } from '@/lib/auth';
 import { BusinessModel } from '@/types/BusinessModel';
@@ -60,7 +58,6 @@ interface ProfileStats {
 
 export default function ProfileDetailClient({ userId }: ProfileDetailClientProps) {
   const router = useRouter();
-  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
@@ -188,7 +185,6 @@ export default function ProfileDetailClient({ userId }: ProfileDetailClientProps
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-        <Header onSubmitClick={() => setIsSubmitModalOpen(true)} />
         <div className="max-w-7xl mx-auto px-4 py-16 text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
           <p className="mt-4 text-gray-600">プロフィールを読み込み中...</p>
@@ -200,7 +196,6 @@ export default function ProfileDetailClient({ userId }: ProfileDetailClientProps
   if (!profile) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-        <Header onSubmitClick={() => setIsSubmitModalOpen(true)} />
         <div className="max-w-7xl mx-auto px-4 py-16 text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">プロフィールが見つかりません</h1>
           <Button onClick={() => router.push('/')}>
@@ -214,8 +209,6 @@ export default function ProfileDetailClient({ userId }: ProfileDetailClientProps
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <Header onSubmitClick={() => setIsSubmitModalOpen(true)} />
-      
       {/* 戻るボタン */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <Button
@@ -460,11 +453,6 @@ export default function ProfileDetailClient({ userId }: ProfileDetailClientProps
           </TabsContent>
         </Tabs>
       </main>
-
-      <SubmitModal
-        isOpen={isSubmitModalOpen}
-        onClose={() => setIsSubmitModalOpen(false)}
-      />
     </div>
   );
 }

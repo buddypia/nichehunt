@@ -1,8 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import { Header } from '@/components/Header';
-import { SubmitModal } from '@/components/SubmitModal';
 import Link from 'next/link';
 import { 
   Zap, ShoppingBag, GraduationCap, Cpu, Building, 
@@ -59,12 +56,8 @@ interface CategoriesClientProps {
 }
 
 export default function CategoriesClient({ categories }: CategoriesClientProps) {
-  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <Header onSubmitClick={() => setIsSubmitModalOpen(true)} />
-      
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
@@ -130,19 +123,11 @@ export default function CategoriesClient({ categories }: CategoriesClientProps) 
           <p className="text-gray-600 mb-4">
             探しているカテゴリーが見つかりませんか？
           </p>
-          <button
-            onClick={() => setIsSubmitModalOpen(true)}
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 transition-colors"
-          >
-            新しいプロダクトを投稿する
-          </button>
+          <p className="text-gray-600">
+            新しいプロダクトを投稿するには、右上の「投稿する」ボタンをクリックしてください。
+          </p>
         </div>
       </main>
-
-      <SubmitModal
-        isOpen={isSubmitModalOpen}
-        onClose={() => setIsSubmitModalOpen(false)}
-      />
     </div>
   );
 }
