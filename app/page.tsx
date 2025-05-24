@@ -4,38 +4,106 @@ import { useState, useEffect, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { BusinessModelCard } from '@/components/BusinessModelCard';
-import { CategoryFilter } from '@/components/CategoryFilter';
 import { CategoryNavbar } from '@/components/CategoryNavbar';
-import { SearchBar } from '@/components/SearchBar';
+import { SearchStats } from '@/components/SearchStats';
 import { SubmitModal } from '@/components/SubmitModal';
 import { SortOption } from '@/components/RankingSort';
-import { businessModels } from '@/data/businessModels';
 import { BusinessModel } from '@/types/BusinessModel';
+import { fetchBusinessModels, fetchBusinessModelsByCategory, searchBusinessModels, testSupabaseConnection, fetchTodaysBusinessModels } from '@/lib/db-helpers';
 
 const categories = [
   { id: 'all', name: 'すべて' },
   { id: 'subscription', name: 'サブスクリプション' },
   { id: 'marketplace', name: 'マーケットプレイス' },
   { id: 'education', name: '教育・学習' },
-  { id: 'ai', name: 'AI・テクノロジー' },
+  { id: 'ai-technology', name: 'AI・テクノロジー' },
   { id: 'workspace', name: 'ワークスペース' },
-  { id: 'rental', name: 'レンタル・シェア' },
-  { id: 'health', name: 'ヘルス・ウェルネス' },
+  { id: 'rental-share', name: 'レンタル・シェア' },
+  { id: 'health-wellness', name: 'ヘルス・ウェルネス' },
   { id: 'food', name: 'フード・飲食' },
-  { id: 'finance', name: 'フィンテック' },
+  { id: 'fintech', name: 'フィンテック' },
   { id: 'sustainability', name: 'サステナビリティ' },
   { id: 'entertainment', name: 'エンターテインメント' },
   { id: 'healthcare', name: 'ヘルスケア' }
 ];
 
 export default function Home() {
-  const [filteredModels, setFilteredModels] = useState<BusinessModel[]>(businessModels);
+  const [businessModels, setBusinessModels] = useState<BusinessModel[]>([]);
+  const [filteredModels, setFilteredModels] = useState<BusinessModel[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedSort, setSelectedSort] = useState<SortOption>('popular');
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isShowingTodaysModels, setIsShowingTodaysModels] = useState(false);
+  const [searchStats, setSearchStats] = useState({
+    topCategory: '',
+    avgUpvotes: 0,
+    avgComments: 0
+  });
 
-  // ソート済みのモデルを計算
+  // Fetch business models from database
+  useEffect(() => {
+    const loadBusinessModels = async () => {
+      setIsLoading(true);
+      
+      try {
+        let models: BusinessModel[] = [];
+        let showingTodays = false;
+        
+        if (searchQuery) {
+          models = await searchBusinessModels(searchQuery);
+        } else if (selectedCategory === 'all') {
+          models = await fetchTodaysBusinessModels();
+          showingTodays = true;
+          
+          // If no models found for today, fetch all models
+          if (models.length === 0) {
+            models = await fetchBusinessModels();
+            showingTodays = false;
+          }
+        } else {
+          models = await fetchBusinessModelsByCategory(selectedCategory);
+        }
+        
+        setBusinessModels(models);
+        setIsShowingTodaysModels(showingTodays);
+        
+        // 検索結果の統計情報を計算
+        if (searchQuery && models.length > 0) {
+          // カテゴリの集計
+          const categoryCounts: Record<string, number> = {};
+          models.forEach(model => {
+            if (model.category) {
+              categoryCounts[model.category] = (categoryCounts[model.category] || 0) + 1;
+            }
+          });
+          
+          // 最も多いカテゴリを見つける
+          const topCat = Object.entries(categoryCounts)
+            .sort(([, a], [, b]) => b - a)[0]?.[0] || '';
+          
+          // 平均値を計算
+          const avgUpvotes = models.reduce((sum, m) => sum + m.upvotes, 0) / models.length;
+          const avgComments = models.reduce((sum, m) => sum + m.comments, 0) / models.length;
+          
+          setSearchStats({
+            topCategory: categories.find(c => c.id === topCat)?.name || topCat,
+            avgUpvotes,
+            avgComments
+          });
+        }
+      } catch (error) {
+        console.error('Error loading business models:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadBusinessModels();
+  }, [selectedCategory, searchQuery]);
+
+  // Sort models
   const sortedModels = useMemo(() => {
     let sorted = [...businessModels];
 
@@ -50,7 +118,6 @@ export default function Home() {
         sorted.sort((a, b) => b.comments - a.comments);
         break;
       case 'featured':
-        // 注目フラグがあるものを上位に、その後はアップボート数でソート
         sorted.sort((a, b) => {
           if (a.featured && !b.featured) return -1;
           if (!a.featured && b.featured) return 1;
@@ -60,36 +127,38 @@ export default function Home() {
     }
 
     return sorted;
-  }, [selectedSort]);
+  }, [businessModels, selectedSort]);
 
   useEffect(() => {
-    let filtered = sortedModels;
+    setFilteredModels(sortedModels);
+  }, [sortedModels]);
 
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(model => {
-        // カテゴリーの正規化（エンターテインメント、ヘルスケアなど）
-        const normalizedCategory = model.category.replace('・', '');
-        const selectedNormalized = selectedCategory.replace('・', '');
-        return model.category === selectedCategory || 
-               normalizedCategory.includes(selectedNormalized) ||
-               selectedNormalized.includes(normalizedCategory);
-      });
-    }
-
+  // Get display title based on current view
+  const getDisplayTitle = () => {
     if (searchQuery) {
-      filtered = filtered.filter(model =>
-        model.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        model.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        model.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
+      return `「${searchQuery}」の検索結果`;
+    } else if (selectedCategory === 'all') {
+      if (isShowingTodaysModels) {
+        const today = new Date();
+        const dateStr = today.toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' });
+        return '注目ビジネスモデル';
+      } else {
+        return 'すべてのビジネスモデル';
+      }
+    } else {
+      return `${categories.find(c => c.id === selectedCategory)?.name || selectedCategory}のビジネスモデル`;
     }
-
-    setFilteredModels(filtered);
-  }, [selectedCategory, searchQuery, sortedModels]);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <Header onSubmitClick={() => setIsSubmitModalOpen(true)} />
+      <Header 
+        onSubmitClick={() => setIsSubmitModalOpen(true)}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        selectedCategory={selectedCategory}
+        onCategoryFilter={setSelectedCategory}
+      />
       <CategoryNavbar 
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
@@ -99,54 +168,70 @@ export default function Home() {
       <Hero />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex flex-col lg:flex-row gap-8">
-          <aside className="lg:w-80">
-            <div className="sticky top-32 space-y-6">
-              <SearchBar value={searchQuery} onChange={setSearchQuery} />
-              <div className="lg:hidden">
-                <CategoryFilter
-                  selectedCategory={selectedCategory}
-                  onCategoryChange={setSelectedCategory}
-                />
-              </div>
-            </div>
-          </aside>
-
-          <div className="flex-1">
+        <div className="w-full">
+            {/* 検索統計情報 */}
+            {searchQuery && (
+              <SearchStats
+                query={searchQuery}
+                resultCount={filteredModels.length}
+                topCategory={searchStats.topCategory}
+                avgUpvotes={searchStats.avgUpvotes}
+                avgComments={searchStats.avgComments}
+              />
+            )}
+            
             <div className="mb-8">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  {selectedCategory === 'all' ? '今日のビジネスモデル' : 
-                   `${categories.find(c => c.id === selectedCategory)?.name || selectedCategory}のビジネスモデル`}
+                  {getDisplayTitle()}
                 </h2>
                 <p className="text-gray-600">
                   {filteredModels.length}件のニッチなビジネスモデルが見つかりました
                 </p>
+                {isShowingTodaysModels && selectedCategory === 'all' && !searchQuery && (
+                  <p className="text-sm text-blue-600 mt-1">
+                    今日の注目ピックアップを表示中
+                  </p>
+                )}
               </div>
             </div>
 
-            <div className="grid gap-6">
-              {filteredModels.map((model, index) => (
-                <BusinessModelCard
-                  key={model.id}
-                  model={model}
-                  rank={index + 1}
-                />
-              ))}
-            </div>
-
-            {filteredModels.length === 0 && (
-              <div className="text-center py-12">
-                <div className="text-gray-400 text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  該当するビジネスモデルが見つかりません
-                </h3>
-                <p className="text-gray-600">
-                  検索条件を変更するか、新しいビジネスモデルを投稿してみてください
-                </p>
+            {isLoading ? (
+              <div className="grid gap-6">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="bg-white rounded-lg shadow-sm p-6 animate-pulse">
+                    <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+                    <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                  </div>
+                ))}
               </div>
+            ) : (
+              <>
+                <div className="grid gap-6">
+                  {filteredModels.map((model, index) => (
+                    <BusinessModelCard
+                      key={model.id}
+                      model={model}
+                      rank={index + 1}
+                    />
+                  ))}
+                </div>
+
+                {filteredModels.length === 0 && (
+                  <div className="text-center py-12">
+                    <div className="text-gray-400 text-6xl mb-4">🔍</div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      該当するビジネスモデルが見つかりません
+                    </h3>
+                    <p className="text-gray-600">
+                      検索条件を変更するか、新しいビジネスモデルを投稿してみてください
+                    </p>
+                  </div>
+                )}
+              </>
             )}
-          </div>
         </div>
       </main>
 

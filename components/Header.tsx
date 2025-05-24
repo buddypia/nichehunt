@@ -1,139 +1,187 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Plus, User, Settings, LogOut, Trophy, Bookmark, Bell } from 'lucide-react';
+import { getCurrentUser, signOut } from '@/lib/auth';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Search, 
-  Plus, 
-  Menu, 
-  X, 
-  Trophy,
-  TrendingUp,
-  Users,
-  BookOpen
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { AdvancedSearchBar } from '@/components/AdvancedSearchBar';
 
 interface HeaderProps {
   onSubmitClick: () => void;
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
+  selectedCategory?: string;
+  onCategoryFilter?: (category: string) => void;
 }
 
-export function Header({ onSubmitClick }: HeaderProps) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const pathname = usePathname();
+export function Header({ 
+  onSubmitClick,
+  searchQuery = '',
+  onSearchChange,
+  selectedCategory = 'all',
+  onCategoryFilter 
+}: HeaderProps) {
+  const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const navigationItems = [
-    { href: '/', label: 'ホーム', icon: TrendingUp },
-    { href: '/ranking', label: 'ランキング', icon: Trophy },
-    { href: '/categories', label: 'カテゴリー', icon: BookOpen },
-    { href: '/community', label: 'コミュニティ', icon: Users },
-  ];
+  useEffect(() => {
+    loadCurrentUser();
+  }, []);
+
+  const loadCurrentUser = async () => {
+    try {
+      const user = await getCurrentUser();
+      setCurrentUser(user);
+    } catch (error) {
+      console.error('Error loading user:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      setCurrentUser(null);
+      router.push('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  const handleProfileClick = () => {
+    if (currentUser?.id) {
+      router.push(`/profiles/${currentUser.id}`);
+    }
+  };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* ロゴ */}
-          <Link href="/" className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">N</span>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">NicheHunt</h1>
-              <p className="text-xs text-gray-500 hidden sm:block">ニッチ市場発見プラットフォーム</p>
-            </div>
-          </Link>
+        <div className="flex h-16 items-center justify-between">
+          <div className="flex items-center space-x-8">
+            <Link href="/" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <Trophy className="w-5 h-5 text-white" />
+              </div>
+              <span className="font-bold text-xl text-gray-900">NicheHunt</span>
+            </Link>
+            
+            <nav className="hidden md:flex items-center space-x-6">
+              <Link href="/" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+                ホーム
+              </Link>
+              <Link href="/trending" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+                トレンド
+              </Link>
+              <Link href="/categories" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+                カテゴリー
+              </Link>
+              <Link href="/about" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+                About
+              </Link>
+            </nav>
+          </div>
 
-          {/* デスクトップナビゲーション */}
-          <nav className="hidden md:flex items-center space-x-1">
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              
-              return (
-                <Link key={item.href} href={item.href}>
-                  <Button 
-                    variant={isActive ? 'default' : 'ghost'}
-                    className={cn(
-                      "flex items-center space-x-2 transition-all",
-                      isActive 
-                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg" 
-                        : "text-gray-600 hover:text-gray-900"
-                    )}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span>{item.label}</span>
-                  </Button>
-                </Link>
-              );
-            })}
-          </nav>
+          {/* 検索バー */}
+          {onSearchChange && (
+            <div className="hidden lg:block flex-1 max-w-xl mx-8">
+              <AdvancedSearchBar 
+                value={searchQuery} 
+                onChange={onSearchChange}
+                onCategoryFilter={onCategoryFilter}
+                selectedCategory={selectedCategory}
+              />
+            </div>
+          )}
 
-          {/* 右側のアクション */}
-          <div className="flex items-center space-x-3">
-            {/* 検索ボタン（モバイル） */}
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Search className="w-5 h-5" />
-            </Button>
+          <div className="flex items-center space-x-4">
+            {/* 通知ボタン */}
+            {currentUser && (
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="w-5 h-5" />
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white text-xs">
+                  3
+                </Badge>
+              </Button>
+            )}
 
             {/* 投稿ボタン */}
             <Button 
               onClick={onSubmitClick}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
             >
               <Plus className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">投稿する</span>
-              <span className="sm:hidden">投稿</span>
+              投稿する
             </Button>
 
-            {/* モバイルメニューボタン */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-            </Button>
+            {/* ユーザーメニュー */}
+            {isLoading ? (
+              <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+            ) : currentUser ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={currentUser.avatar_url} alt={currentUser.username} />
+                      <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                        {currentUser.username?.charAt(0) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{currentUser.username}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {currentUser.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleProfileClick} className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>プロフィール</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Bookmark className="mr-2 h-4 w-4" />
+                    <span>保存したモデル</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>設定</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>ログアウト</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => router.push('/auth/signin')}
+              >
+                ログイン
+              </Button>
+            )}
           </div>
         </div>
-
-        {/* モバイルメニュー */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4">
-            <nav className="space-y-2">
-              {navigationItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href;
-                
-                return (
-                  <Link key={item.href} href={item.href}>
-                    <Button 
-                      variant={isActive ? 'default' : 'ghost'}
-                      className={cn(
-                        "w-full justify-start flex items-center space-x-3 transition-all",
-                        isActive 
-                          ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg" 
-                          : "text-gray-600 hover:text-gray-900"
-                      )}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <Icon className="w-5 h-5" />
-                      <span>{item.label}</span>
-                    </Button>
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        )}
       </div>
     </header>
   );

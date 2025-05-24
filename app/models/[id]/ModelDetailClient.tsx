@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,25 +28,15 @@ import {
   Send,
   MoreVertical,
   Reply,
-  ThumbsUp
+  ThumbsUp,
+  Trash2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SubmitModal } from '@/components/SubmitModal';
 import { BusinessModel } from '@/types/BusinessModel';
-
-interface Comment {
-  id: string;
-  author: {
-    name: string;
-    avatar: string;
-    verified?: boolean;
-  };
-  content: string;
-  createdAt: string;
-  likes: number;
-  replies?: Comment[];
-  isLiked?: boolean;
-}
+import { fetchComments, createComment, deleteComment } from '@/lib/comments';
+import { getCurrentUser } from '@/lib/auth';
+import { CommentDB } from '@/lib/supabase';
 
 interface ModelDetailClientProps {
   model: BusinessModel | undefined;
@@ -62,46 +52,43 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
   const [commentText, setCommentText] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
-  
-  // サンプルコメントデータ
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: '1',
-      author: {
-        name: '田中太郎',
-        avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150',
-        verified: true
-      },
-      content: 'このビジネスモデルは非常に興味深いですね。特に初期投資が少なくて済む点が魅力的です。実際に始めてみようと思います！',
-      createdAt: '2024-01-15T10:00:00Z',
-      likes: 12,
-      isLiked: false,
-      replies: [
-        {
-          id: '1-1',
-          author: {
-            name: '佐藤花子',
-            avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150'
-          },
-          content: '私も同感です！すでに準備を始めています。',
-          createdAt: '2024-01-15T11:30:00Z',
-          likes: 3,
-          isLiked: false
-        }
-      ]
-    },
-    {
-      id: '2',
-      author: {
-        name: '山田次郎',
-        avatar: 'https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=150'
-      },
-      content: 'ターゲット市場の分析が的確で参考になりました。競合他社との差別化ポイントをもう少し詳しく知りたいです。',
-      createdAt: '2024-01-14T15:00:00Z',
-      likes: 8,
-      isLiked: true
+  const [comments, setComments] = useState<CommentDB[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isLoadingComments, setIsLoadingComments] = useState(true);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+
+  useEffect(() => {
+    loadCurrentUser();
+    if (model?.id) {
+      loadComments();
     }
-  ]);
+  }, [model?.id]);
+
+  const loadCurrentUser = async () => {
+    const user = await getCurrentUser();
+    setCurrentUser(user);
+  };
+
+  const loadComments = async () => {
+    if (!model?.id) return;
+    
+    setIsLoadingComments(true);
+    try {
+      const fetchedComments = await fetchComments(model.id);
+      setComments(fetchedComments);
+    } catch (error) {
+      console.error('Error loading comments:', error);
+    } finally {
+      setIsLoadingComments(false);
+    }
+  };
+
+  const handleAuthorClick = () => {
+    if (model?.author.name) {
+      // プロフィール詳細ページへ遷移（仮のIDを使用）
+      router.push(`/profiles/${model.author.name.toLowerCase().replace(/\s+/g, '-')}`);
+    }
+  };
 
   if (!model) {
     return (
@@ -147,182 +134,191 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
     }
   };
 
-  const handleCommentSubmit = () => {
-    if (commentText.trim()) {
-      const newComment: Comment = {
-        id: Date.now().toString(),
-        author: {
-          name: 'ゲストユーザー',
-          avatar: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150'
-        },
-        content: commentText,
-        createdAt: new Date().toISOString(),
-        likes: 0,
-        isLiked: false
-      };
-      setComments([newComment, ...comments]);
-      setCommentText('');
+  const handleCommentSubmit = async () => {
+    if (!commentText.trim() || !currentUser || !model?.id) {
+      if (!currentUser) {
+        alert('コメントを投稿するにはログインが必要です');
+      }
+      return;
+    }
+
+    setIsSubmittingComment(true);
+    try {
+      const newComment = await createComment(model.id, commentText, currentUser.id);
+      if (newComment) {
+        setComments([newComment, ...comments]);
+        setCommentText('');
+      }
+    } catch (error) {
+      console.error('Error submitting comment:', error);
+      alert('コメントの投稿に失敗しました');
+    } finally {
+      setIsSubmittingComment(false);
     }
   };
 
-  const handleReplySubmit = (parentId: string) => {
-    if (replyText.trim()) {
-      const newReply: Comment = {
-        id: `${parentId}-${Date.now()}`,
-        author: {
-          name: 'ゲストユーザー',
-          avatar: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150'
-        },
-        content: replyText,
-        createdAt: new Date().toISOString(),
-        likes: 0,
-        isLiked: false
-      };
-      
-      setComments(comments.map(comment => {
-        if (comment.id === parentId) {
-          return {
-            ...comment,
-            replies: [...(comment.replies || []), newReply]
-          };
-        }
-        return comment;
-      }));
-      
-      setReplyText('');
-      setReplyingTo(null);
+  const handleReplySubmit = async (parentId: string) => {
+    if (!replyText.trim() || !currentUser || !model?.id) {
+      if (!currentUser) {
+        alert('返信を投稿するにはログインが必要です');
+      }
+      return;
+    }
+
+    setIsSubmittingComment(true);
+    try {
+      const newReply = await createComment(model.id, replyText, currentUser.id, parentId);
+      if (newReply) {
+        setComments(comments.map(comment => {
+          if (comment.id === parentId) {
+            return {
+              ...comment,
+              replies: [...(comment.replies || []), newReply]
+            };
+          }
+          return comment;
+        }));
+        setReplyText('');
+        setReplyingTo(null);
+      }
+    } catch (error) {
+      console.error('Error submitting reply:', error);
+      alert('返信の投稿に失敗しました');
+    } finally {
+      setIsSubmittingComment(false);
     }
   };
 
-  const handleLikeComment = (commentId: string, isReply: boolean = false, parentId?: string) => {
-    if (isReply && parentId) {
-      setComments(comments.map(comment => {
-        if (comment.id === parentId) {
-          return {
-            ...comment,
-            replies: comment.replies?.map(reply => {
-              if (reply.id === commentId) {
-                return {
-                  ...reply,
-                  likes: reply.isLiked ? reply.likes - 1 : reply.likes + 1,
-                  isLiked: !reply.isLiked
-                };
-              }
-              return reply;
-            })
-          };
-        }
-        return comment;
-      }));
+  const handleDeleteComment = async (commentId: string, isReply: boolean = false, parentId?: string) => {
+    if (!currentUser || !confirm('このコメントを削除しますか？')) {
+      return;
+    }
+
+    const success = await deleteComment(commentId, currentUser.id);
+    if (success) {
+      if (isReply && parentId) {
+        setComments(comments.map(comment => {
+          if (comment.id === parentId) {
+            return {
+              ...comment,
+              replies: comment.replies?.filter(reply => reply.id !== commentId)
+            };
+          }
+          return comment;
+        }));
+      } else {
+        setComments(comments.filter(comment => comment.id !== commentId));
+      }
     } else {
-      setComments(comments.map(comment => {
-        if (comment.id === commentId) {
-          return {
-            ...comment,
-            likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
-            isLiked: !comment.isLiked
-          };
-        }
-        return comment;
-      }));
+      alert('コメントの削除に失敗しました');
     }
   };
 
-  const CommentItem = ({ comment, isReply = false, parentId }: { comment: Comment; isReply?: boolean; parentId?: string }) => (
-    <div className={cn("flex space-x-3", isReply && "ml-12 mt-4")}>
-      <Avatar className={cn("flex-shrink-0", isReply ? "w-8 h-8" : "w-10 h-10")}>
-        <AvatarImage src={comment.author.avatar} alt={comment.author.name} />
-        <AvatarFallback>{comment.author.name.charAt(0)}</AvatarFallback>
-      </Avatar>
-      <div className="flex-1">
-        <div className="flex items-center space-x-2 mb-1">
-          <span className={cn("font-semibold", isReply && "text-sm")}>
-            {comment.author.name}
-          </span>
-          {comment.author.verified && (
-            <Badge variant="secondary" className="text-xs">
-              認証済み
-            </Badge>
-          )}
-          <span className="text-sm text-gray-500">
-            {formatDate(comment.createdAt)}
-          </span>
-        </div>
-        <p className={cn("text-gray-700 mb-2", isReply && "text-sm")}>
-          {comment.content}
-        </p>
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={() => handleLikeComment(comment.id, isReply, parentId)}
-            className={cn(
-              "flex items-center space-x-1 text-sm transition-colors",
-              comment.isLiked ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
-            )}
-          >
-            <ThumbsUp className={cn("w-4 h-4", comment.isLiked && "fill-current")} />
-            <span>{comment.likes}</span>
-          </button>
-          {!isReply && (
-            <button
-              onClick={() => setReplyingTo(comment.id)}
-              className="flex items-center space-x-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+  const CommentItem = ({ comment, isReply = false, parentId }: { comment: CommentDB; isReply?: boolean; parentId?: string }) => {
+    const isOwner = currentUser?.id === comment.user_id;
+    
+    const handleCommentAuthorClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (comment.profiles?.username) {
+        router.push(`/profiles/${comment.profiles.username.toLowerCase().replace(/\s+/g, '-')}`);
+      }
+    };
+    
+    return (
+      <div className={cn("flex space-x-3", isReply && "ml-12 mt-4")}>
+        <Avatar 
+          className={cn("flex-shrink-0 cursor-pointer", isReply ? "w-8 h-8" : "w-10 h-10")}
+          onClick={handleCommentAuthorClick}
+        >
+          <AvatarImage src={comment.profiles?.avatar_url} alt={comment.profiles?.username} />
+          <AvatarFallback>{comment.profiles?.username?.charAt(0) || 'U'}</AvatarFallback>
+        </Avatar>
+        <div className="flex-1">
+          <div className="flex items-center space-x-2 mb-1">
+            <span 
+              className={cn("font-semibold cursor-pointer hover:text-blue-600 transition-colors", isReply && "text-sm")}
+              onClick={handleCommentAuthorClick}
             >
-              <Reply className="w-4 h-4" />
-              <span>返信</span>
-            </button>
-          )}
-          <button className="text-gray-400 hover:text-gray-600">
-            <MoreVertical className="w-4 h-4" />
-          </button>
-        </div>
-        
-        {/* 返信フォーム */}
-        {replyingTo === comment.id && (
-          <div className="mt-4 flex space-x-2">
-            <Textarea
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              placeholder="返信を入力..."
-              className="flex-1 min-h-[80px] resize-none"
-            />
-            <div className="flex flex-col space-y-2">
-              <Button
-                size="sm"
-                onClick={() => handleReplySubmit(comment.id)}
-                disabled={!replyText.trim()}
-              >
-                送信
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setReplyingTo(null);
-                  setReplyText('');
-                }}
-              >
-                キャンセル
-              </Button>
-            </div>
+              {comment.profiles?.username || 'Unknown User'}
+            </span>
+            <span className="text-sm text-gray-500">
+              {formatDate(comment.created_at)}
+            </span>
           </div>
-        )}
-        
-        {/* 返信の表示 */}
-        {comment.replies && comment.replies.length > 0 && (
-          <div className="mt-4 space-y-4">
-            {comment.replies.map(reply => (
-              <CommentItem 
-                key={reply.id} 
-                comment={reply} 
-                isReply 
-                parentId={comment.id}
+          <p className={cn("text-gray-700 mb-2", isReply && "text-sm")}>
+            {comment.content}
+          </p>
+          <div className="flex items-center space-x-4">
+            {!isReply && (
+              <button
+                onClick={() => setReplyingTo(comment.id)}
+                className="flex items-center space-x-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <Reply className="w-4 h-4" />
+                <span>返信</span>
+              </button>
+            )}
+            {isOwner && (
+              <button
+                onClick={() => handleDeleteComment(comment.id, isReply, parentId)}
+                className="flex items-center space-x-1 text-sm text-red-500 hover:text-red-700 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>削除</span>
+              </button>
+            )}
+          </div>
+          
+          {/* 返信フォーム */}
+          {replyingTo === comment.id && (
+            <div className="mt-4 flex space-x-2">
+              <Textarea
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="返信を入力..."
+                className="flex-1 min-h-[80px] resize-none"
+                disabled={isSubmittingComment}
               />
-            ))}
-          </div>
-        )}
+              <div className="flex flex-col space-y-2">
+                <Button
+                  size="sm"
+                  onClick={() => handleReplySubmit(comment.id)}
+                  disabled={!replyText.trim() || isSubmittingComment}
+                >
+                  送信
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setReplyingTo(null);
+                    setReplyText('');
+                  }}
+                  disabled={isSubmittingComment}
+                >
+                  キャンセル
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {/* 返信の表示 */}
+          {comment.replies && comment.replies.length > 0 && (
+            <div className="mt-4 space-y-4">
+              {comment.replies.map(reply => (
+                <CommentItem 
+                  key={reply.id} 
+                  comment={reply} 
+                  isReply 
+                  parentId={comment.id}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -500,24 +496,25 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
                     <div className="mb-8">
                       <div className="flex space-x-3">
                         <Avatar className="w-10 h-10 flex-shrink-0">
-                          <AvatarImage src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150" />
-                          <AvatarFallback>G</AvatarFallback>
+                          <AvatarImage src={currentUser?.avatar_url} />
+                          <AvatarFallback>{currentUser?.username?.charAt(0) || 'G'}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                           <Textarea
                             value={commentText}
                             onChange={(e) => setCommentText(e.target.value)}
-                            placeholder="コメントを入力..."
+                            placeholder={currentUser ? "コメントを入力..." : "コメントを投稿するにはログインしてください"}
                             className="min-h-[100px] resize-none mb-2"
+                            disabled={!currentUser || isSubmittingComment}
                           />
                           <div className="flex justify-end">
                             <Button
                               onClick={handleCommentSubmit}
-                              disabled={!commentText.trim()}
+                              disabled={!commentText.trim() || !currentUser || isSubmittingComment}
                               className="bg-gradient-to-r from-blue-600 to-purple-600 text-white"
                             >
                               <Send className="w-4 h-4 mr-2" />
-                              投稿
+                              {isSubmittingComment ? '投稿中...' : '投稿'}
                             </Button>
                           </div>
                         </div>
@@ -525,7 +522,12 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
                     </div>
 
                     {/* コメント一覧 */}
-                    {comments.length > 0 ? (
+                    {isLoadingComments ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                        <p>コメントを読み込み中...</p>
+                      </div>
+                    ) : comments.length > 0 ? (
                       <div className="space-y-6">
                         {comments.map(comment => (
                           <CommentItem key={comment.id} comment={comment} />
@@ -599,7 +601,10 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
             <Card>
               <CardContent className="p-6">
                 <h3 className="font-semibold mb-4">投稿者</h3>
-                <div className="flex items-center space-x-3">
+                <div 
+                  className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={handleAuthorClick}
+                >
                   <Avatar className="w-12 h-12">
                     <AvatarImage src={model.author.avatar} alt={model.author.name} />
                     <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
@@ -607,7 +612,7 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium flex items-center">
+                    <p className="font-medium flex items-center hover:text-blue-600 transition-colors">
                       {model.author.name}
                       {model.author.verified && (
                         <Badge variant="secondary" className="ml-2 text-xs">

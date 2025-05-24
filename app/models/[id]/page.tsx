@@ -1,16 +1,41 @@
-import { businessModels } from '@/data/businessModels';
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { fetchBusinessModel, fetchBusinessModels } from '@/lib/db-helpers';
 import ModelDetailClient from './ModelDetailClient';
 
-// 静的パスの生成（サーバーコンポーネント）
+interface PageProps {
+  params: { id: string };
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const model = await fetchBusinessModel(params.id);
+  
+  if (!model) {
+    return {
+      title: 'ビジネスモデルが見つかりません - NicheHunt',
+    };
+  }
+
+  return {
+    title: `${model.title} - NicheHunt`,
+    description: model.description,
+  };
+}
+
 export async function generateStaticParams() {
-  return businessModels.map((model) => ({
+  const models = await fetchBusinessModels();
+  
+  return models.map((model) => ({
     id: model.id,
   }));
 }
 
-// サーバーコンポーネント
-export default function ModelDetailPage({ params }: { params: { id: string } }) {
-  const model = businessModels.find(m => m.id === params.id);
+export default async function BusinessModelDetailPage({ params }: PageProps) {
+  const model = await fetchBusinessModel(params.id);
+
+  if (!model) {
+    notFound();
+  }
 
   return <ModelDetailClient model={model} />;
 }
