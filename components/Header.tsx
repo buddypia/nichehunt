@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -17,6 +17,7 @@ import { Plus, User, Settings, LogOut, Trophy, Bookmark, Bell } from 'lucide-rea
 import { getCurrentUser, signOut } from '@/lib/auth';
 import { Badge } from '@/components/ui/badge';
 import { AdvancedSearchBar } from '@/components/AdvancedSearchBar';
+import { cn } from '@/lib/utils';
 
 interface HeaderProps {
   onSubmitClick: () => void;
@@ -34,6 +35,7 @@ export function Header({
   onCategoryFilter 
 }: HeaderProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -68,6 +70,13 @@ export function Header({
     }
   };
 
+  const navItems = [
+    { href: '/', label: 'ホーム' },
+    { href: '/trending', label: 'トレンド' },
+    { href: '/categories', label: 'カテゴリー' },
+    { href: '/about', label: 'About' },
+  ];
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -80,19 +89,26 @@ export function Header({
               <span className="font-bold text-xl text-gray-900">NicheHunt</span>
             </Link>
             
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link href="/" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
-                ホーム
-              </Link>
-              <Link href="/trending" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
-                トレンド
-              </Link>
-              <Link href="/categories" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
-                カテゴリー
-              </Link>
-              <Link href="/about" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
-                About
-              </Link>
+            <nav className="hidden md:flex items-center space-x-2">
+              {navItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link key={item.href} href={item.href}>
+                    <Button
+                      variant={isActive ? 'default' : 'ghost'}
+                      size="sm"
+                      className={cn(
+                        "font-medium transition-all",
+                        isActive
+                          ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-105"
+                          : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                      )}
+                    >
+                      {item.label}
+                    </Button>
+                  </Link>
+                );
+              })}
             </nav>
           </div>
 
