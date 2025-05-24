@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Header } from '@/components/Header';
 import { BusinessModelCard } from '@/components/BusinessModelCard';
-import { SubmitModal } from '@/components/SubmitModal';
 import { businessModels } from '@/data/businessModels';
 import { BusinessModel } from '@/types/BusinessModel';
 import { TrendingUp, Clock, MessageSquare, Award, Trophy, Medal, Sparkles } from 'lucide-react';
@@ -12,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 type TrendingPeriod = 'today' | 'week' | 'month' | 'all';
 
 export default function TrendingPage() {
-  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<TrendingPeriod>('all');
 
   // 期間に基づいてモデルをフィルタリング
@@ -55,9 +52,7 @@ export default function TrendingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <Header onSubmitClick={() => setIsSubmitModalOpen(true)} />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-24">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg">
@@ -201,11 +196,6 @@ export default function TrendingPage() {
           </TabsContent>
         </Tabs>
       </main>
-
-      <SubmitModal
-        isOpen={isSubmitModalOpen}
-        onClose={() => setIsSubmitModalOpen(false)}
-      />
     </div>
   );
 }

@@ -1,19 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { Header } from '@/components/Header';
-import { SubmitModal } from '@/components/SubmitModal';
 import { Trophy, Target, Users, Lightbulb, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AboutPage() {
-  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <Header onSubmitClick={() => setIsSubmitModalOpen(true)} />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-24">
         {/* Hero Section */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center space-x-2 mb-6">
@@ -112,27 +105,16 @@ export default function AboutPage() {
             あなたのニッチビジネスアイデアが、次の大きなトレンドになるかもしれません
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={() => setIsSubmitModalOpen(true)}
-              className="inline-flex items-center px-6 py-3 bg-white text-blue-600 font-medium rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              アイデアを投稿する
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </button>
             <Link
               href="/"
-              className="inline-flex items-center px-6 py-3 bg-transparent border-2 border-white text-white font-medium rounded-lg hover:bg-white/10 transition-colors"
+              className="inline-flex items-center px-6 py-3 bg-white text-blue-600 font-medium rounded-lg hover:bg-gray-100 transition-colors"
             >
               ビジネスモデルを探す
+              <ArrowRight className="w-4 h-4 ml-2" />
             </Link>
           </div>
         </div>
       </main>
-
-      <SubmitModal
-        isOpen={isSubmitModalOpen}
-        onClose={() => setIsSubmitModalOpen(false)}
-      />
     </div>
   );
 }

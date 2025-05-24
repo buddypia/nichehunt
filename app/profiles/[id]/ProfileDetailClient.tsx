@@ -377,7 +377,6 @@ export default function ProfileDetailClient({ userId }: ProfileDetailClientProps
                     key={model.id} 
                     model={model} 
                     rank={index + 1}
-                    compact
                   />
                 ))
               ) : (

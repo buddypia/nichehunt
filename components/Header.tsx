@@ -13,11 +13,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, User, Settings, LogOut, Trophy, Bookmark, Bell } from 'lucide-react';
+import { Plus, User, Settings, LogOut, Trophy, Bookmark, Bell, Menu, X } from 'lucide-react';
 import { getCurrentUser, signOut } from '@/lib/auth';
 import { Badge } from '@/components/ui/badge';
 import { AdvancedSearchBar } from '@/components/AdvancedSearchBar';
+import { NotificationPopover } from '@/components/NotificationPopover';
 import { cn } from '@/lib/utils';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Separator } from '@/components/ui/separator';
 
 interface HeaderProps {
   onSubmitClick: () => void;
@@ -38,6 +41,7 @@ export function Header({
   const pathname = usePathname();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     loadCurrentUser();
@@ -72,6 +76,7 @@ export function Header({
 
   const navItems = [
     { href: '/', label: 'ホーム' },
+    { href: '/products', label: 'プロダクト' },
     { href: '/trending', label: 'トレンド' },
     { href: '/categories', label: 'カテゴリー' },
     { href: '/about', label: 'About' },
@@ -127,12 +132,7 @@ export function Header({
           <div className="flex items-center space-x-4">
             {/* 通知ボタン */}
             {currentUser && (
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="w-5 h-5" />
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white text-xs">
-                  3
-                </Badge>
-              </Button>
+              <NotificationPopover userId={currentUser.id} />
             )}
 
             {/* 投稿ボタン */}
@@ -173,11 +173,11 @@ export function Header({
                     <User className="mr-2 h-4 w-4" />
                     <span>プロフィール</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
+                  <DropdownMenuItem onClick={() => router.push('/saved')} className="cursor-pointer">
                     <Bookmark className="mr-2 h-4 w-4" />
                     <span>保存したモデル</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
+                  <DropdownMenuItem onClick={() => router.push('/settings')} className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
                     <span>設定</span>
                   </DropdownMenuItem>
@@ -196,6 +196,102 @@ export function Header({
                 ログイン
               </Button>
             )}
+
+            {/* モバイルメニューボタン */}
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-80">
+                <div className="flex flex-col space-y-4 mt-8">
+                  {/* モバイル検索バー */}
+                  {onSearchChange && (
+                    <div className="px-4">
+                      <AdvancedSearchBar 
+                        value={searchQuery} 
+                        onChange={onSearchChange}
+                        onCategoryFilter={onCategoryFilter}
+                        selectedCategory={selectedCategory}
+                      />
+                    </div>
+                  )}
+
+                  <nav className="flex flex-col space-y-2 px-4">
+                    {navItems.map((item) => {
+                      const isActive = pathname === item.href;
+                      return (
+                        <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)}>
+                          <Button
+                            variant={isActive ? 'default' : 'ghost'}
+                            className={cn(
+                              "w-full justify-start",
+                              isActive
+                                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+                                : "text-gray-700 hover:text-gray-900"
+                            )}
+                          >
+                            {item.label}
+                          </Button>
+                        </Link>
+                      );
+                    })}
+                  </nav>
+
+                  {currentUser && (
+                    <>
+                      <Separator />
+                      <div className="px-4 space-y-2">
+                        <Link href="/saved" onClick={() => setIsMobileMenuOpen(false)}>
+                          <Button variant="ghost" className="w-full justify-start">
+                            <Bookmark className="mr-2 h-4 w-4" />
+                            保存したモデル
+                          </Button>
+                        </Link>
+                        <Link href="/settings" onClick={() => setIsMobileMenuOpen(false)}>
+                          <Button variant="ghost" className="w-full justify-start">
+                            <Settings className="mr-2 h-4 w-4" />
+                            設定
+                          </Button>
+                        </Link>
+                      </div>
+                    </>
+                  )}
+
+                  <Separator />
+                  
+                  {currentUser ? (
+                    <div className="px-4">
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => {
+                          handleSignOut();
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        ログアウト
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="px-4">
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => {
+                          router.push('/auth/signin');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        ログイン
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>

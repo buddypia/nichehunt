@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -15,77 +16,168 @@ import {
   X, 
   Upload, 
   Link as LinkIcon, 
-  DollarSign, 
-  Users, 
-  Target,
-  Lightbulb,
-  TrendingUp,
-  Globe,
+  Github,
+  Play,
+  Image as ImageIcon,
   Calendar,
-  Tag
+  Tag,
+  AlertCircle
 } from 'lucide-react';
+import { createProduct, uploadProductImage } from '@/lib/api/products-create';
+import { fetchCategories } from '@/lib/api/categories-tags';
+import type { Category } from '@/lib/types/database';
+import { toast } from 'sonner';
 
 interface SubmitModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const categories = [
-  { id: 'subscription', name: 'サブスクリプション', emoji: '📦' },
-  { id: 'marketplace', name: 'マーケットプレイス', emoji: '🛍️' },
-  { id: 'education', name: '教育・学習', emoji: '📚' },
-  { id: 'ai', name: 'AI・テクノロジー', emoji: '🤖' },
-  { id: 'workspace', name: 'ワークスペース', emoji: '🏢' },
-  { id: 'rental', name: 'レンタル・シェア', emoji: '🔄' },
-  { id: 'health', name: 'ヘルス・ウェルネス', emoji: '💪' },
-  { id: 'food', name: 'フード・飲食', emoji: '🍽️' },
-  { id: 'finance', name: 'フィンテック', emoji: '💰' },
-  { id: 'sustainability', name: 'サステナビリティ', emoji: '🌱' },
-  { id: 'entertainment', name: 'エンターテインメント', emoji: '🎮' },
-  { id: 'healthcare', name: 'ヘルスケア', emoji: '🏥' }
-];
-
 export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
+  const router = useRouter();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  
   const [formData, setFormData] = useState({
-    title: '',
+    name: '',
+    tagline: '',
     description: '',
-    category: '',
-    website: '',
-    revenue_model: '',
-    target_market: '',
-    unique_value: '',
-    market_size: '',
-    launch_date: '',
+    product_url: '',
+    github_url: '',
+    demo_url: '',
+    category_id: '',
+    launch_date: new Date().toISOString().split('T')[0],
     tags: [] as string[],
   });
 
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string>('');
   const [currentTag, setCurrentTag] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      const { data } = await fetchCategories();
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+      toast.error('カテゴリの読み込みに失敗しました');
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  };
+
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('画像サイズは5MB以下にしてください');
+        return;
+      }
+      
+      setThumbnailFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setThumbnailPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'プロダクト名は必須です';
+    }
+    if (!formData.tagline.trim()) {
+      newErrors.tagline = 'キャッチコピーは必須です';
+    }
+    if (!formData.description.trim()) {
+      newErrors.description = '詳細説明は必須です';
+    }
+    if (!formData.category_id) {
+      newErrors.category_id = 'カテゴリーを選択してください';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setIsSubmitting(true);
     
-    // TODO: Implement Supabase submission
-    console.log('Submitting:', formData);
-    
-    setTimeout(() => {
-      setIsSubmitting(false);
-      onClose();
-      // Reset form
+    try {
+      let thumbnailUrl = '';
+      
+      // 画像をアップロード
+      if (thumbnailFile) {
+        const { url, error: uploadError } = await uploadProductImage(thumbnailFile);
+        if (uploadError) {
+          throw new Error('画像のアップロードに失敗しました');
+        }
+        thumbnailUrl = url || '';
+      }
+      
+      // プロダクトを作成
+      const { data: product, error } = await createProduct({
+        name: formData.name,
+        tagline: formData.tagline,
+        description: formData.description,
+        product_url: formData.product_url || undefined,
+        github_url: formData.github_url || undefined,
+        demo_url: formData.demo_url || undefined,
+        thumbnail_url: thumbnailUrl || undefined,
+        category_id: parseInt(formData.category_id),
+        tags: formData.tags,
+        launch_date: formData.launch_date,
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast.success('プロダクトを投稿しました！');
+      
+      // フォームをリセット
       setFormData({
-        title: '',
+        name: '',
+        tagline: '',
         description: '',
-        category: '',
-        website: '',
-        revenue_model: '',
-        target_market: '',
-        unique_value: '',
-        market_size: '',
-        launch_date: '',
+        product_url: '',
+        github_url: '',
+        demo_url: '',
+        category_id: '',
+        launch_date: new Date().toISOString().split('T')[0],
         tags: [],
       });
-    }, 2000);
+      setThumbnailFile(null);
+      setThumbnailPreview('');
+      setErrors({});
+      
+      onClose();
+      
+      // プロダクト詳細ページへリダイレクト
+      if (product) {
+        router.push(`/products/${product.id}`);
+      }
+    } catch (error) {
+      console.error('Error submitting product:', error);
+      toast.error(error instanceof Error ? error.message : 'プロダクトの投稿に失敗しました');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const addTag = () => {
@@ -116,36 +208,63 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center space-x-2">
-            <Lightbulb className="w-6 h-6 text-yellow-500" />
-            <span>新しいビジネスモデルを投稿</span>
+          <DialogTitle className="text-2xl font-bold text-gray-900">
+            新しいプロダクトを投稿
           </DialogTitle>
           <DialogDescription className="text-gray-600">
-            あなたが発見した革新的なニッチビジネスモデルをコミュニティと共有しましょう
+            あなたのプロダクトやプロジェクトをコミュニティと共有しましょう
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 基本情報 */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
-              <Target className="w-5 h-5" />
-              <span>基本情報</span>
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900">基本情報</h3>
             
             <div>
-              <Label htmlFor="title" className="text-sm font-medium text-gray-700">
-                ビジネスモデル名 *
+              <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                プロダクト名 *
               </Label>
               <input
-                id="title"
+                id="name"
                 type="text"
                 required
-                value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="例: ペット専用サブスクボックス"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                className={`mt-1 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.name ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="例: NicheHunt"
               />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.name}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="tagline" className="text-sm font-medium text-gray-700">
+                キャッチコピー *
+              </Label>
+              <input
+                id="tagline"
+                type="text"
+                required
+                value={formData.tagline}
+                onChange={(e) => setFormData(prev => ({ ...prev, tagline: e.target.value }))}
+                className={`mt-1 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.tagline ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="例: ニッチなプロダクトを発見・共有するプラットフォーム"
+              />
+              {errors.tagline && (
+                <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.tagline}
+                </p>
+              )}
             </div>
 
             <div>
@@ -158,9 +277,17 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
                 rows={4}
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="ビジネスモデルの詳細、特徴、なぜ注目すべきかを説明してください..."
+                className={`mt-1 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.description ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="プロダクトの特徴、解決する課題、ターゲットユーザーなどを詳しく説明してください..."
               />
+              {errors.description && (
+                <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.description}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -171,117 +298,149 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
                 <select
                   id="category"
                   required
-                  value={formData.category}
-                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={formData.category_id}
+                  onChange={(e) => setFormData(prev => ({ ...prev, category_id: e.target.value }))}
+                  className={`mt-1 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.category_id ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  disabled={isLoadingCategories}
                 >
-                  <option value="">カテゴリーを選択</option>
+                  <option value="">
+                    {isLoadingCategories ? '読み込み中...' : 'カテゴリーを選択'}
+                  </option>
                   {categories.map((category) => (
                     <option key={category.id} value={category.id}>
-                      {category.emoji} {category.name}
+                      {category.name}
                     </option>
                   ))}
                 </select>
-              </div>
-
-              <div>
-                <Label htmlFor="website" className="text-sm font-medium text-gray-700">
-                  ウェブサイト
-                </Label>
-                <div className="mt-1 relative">
-                  <LinkIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    id="website"
-                    type="url"
-                    value={formData.website}
-                    onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="https://example.com"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ビジネス詳細 */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
-              <DollarSign className="w-5 h-5" />
-              <span>ビジネス詳細</span>
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="revenue_model" className="text-sm font-medium text-gray-700">
-                  収益モデル
-                </Label>
-                <input
-                  id="revenue_model"
-                  type="text"
-                  value={formData.revenue_model}
-                  onChange={(e) => setFormData(prev => ({ ...prev, revenue_model: e.target.value }))}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="例: 月額サブスクリプション、手数料モデル"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="target_market" className="text-sm font-medium text-gray-700">
-                  ターゲット市場
-                </Label>
-                <input
-                  id="target_market"
-                  type="text"
-                  value={formData.target_market}
-                  onChange={(e) => setFormData(prev => ({ ...prev, target_market: e.target.value }))}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="例: ペット愛好家、都市部の若年層"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="unique_value" className="text-sm font-medium text-gray-700">
-                独自の価値提案
-              </Label>
-              <textarea
-                id="unique_value"
-                rows={3}
-                value={formData.unique_value}
-                onChange={(e) => setFormData(prev => ({ ...prev, unique_value: e.target.value }))}
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="このビジネスモデルの独自性や競合優位性について説明してください..."
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="market_size" className="text-sm font-medium text-gray-700">
-                  市場規模
-                </Label>
-                <input
-                  id="market_size"
-                  type="text"
-                  value={formData.market_size}
-                  onChange={(e) => setFormData(prev => ({ ...prev, market_size: e.target.value }))}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="例: 100億円市場、ニッチだが成長中"
-                />
+                {errors.category_id && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle className="w-4 h-4 mr-1" />
+                    {errors.category_id}
+                  </p>
+                )}
               </div>
 
               <div>
                 <Label htmlFor="launch_date" className="text-sm font-medium text-gray-700">
-                  ローンチ時期
+                  ローンチ日
                 </Label>
                 <div className="mt-1 relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
                     id="launch_date"
-                    type="text"
+                    type="date"
                     value={formData.launch_date}
                     onChange={(e) => setFormData(prev => ({ ...prev, launch_date: e.target.value }))}
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="例: 2024年春、既にローンチ済み"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* サムネイル画像 */}
+            <div>
+              <Label htmlFor="thumbnail" className="text-sm font-medium text-gray-700">
+                サムネイル画像
+              </Label>
+              <div className="mt-1">
+                <div className="flex items-center space-x-4">
+                  <div className="flex-1">
+                    <input
+                      id="thumbnail"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleThumbnailChange}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="thumbnail"
+                      className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      <ImageIcon className="w-4 h-4 mr-2" />
+                      画像を選択
+                    </label>
+                    <p className="mt-1 text-xs text-gray-500">
+                      推奨: 1200x600px、最大5MB
+                    </p>
+                  </div>
+                  {thumbnailPreview && (
+                    <div className="relative w-32 h-16">
+                      <img
+                        src={thumbnailPreview}
+                        alt="サムネイルプレビュー"
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setThumbnailFile(null);
+                          setThumbnailPreview('');
+                        }}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* リンク */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900">リンク</h3>
+
+            <div>
+              <Label htmlFor="product_url" className="text-sm font-medium text-gray-700">
+                プロダクトURL
+              </Label>
+              <div className="mt-1 relative">
+                <LinkIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  id="product_url"
+                  type="url"
+                  value={formData.product_url}
+                  onChange={(e) => setFormData(prev => ({ ...prev, product_url: e.target.value }))}
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="https://example.com"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="github_url" className="text-sm font-medium text-gray-700">
+                  GitHub URL
+                </Label>
+                <div className="mt-1 relative">
+                  <Github className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    id="github_url"
+                    type="url"
+                    value={formData.github_url}
+                    onChange={(e) => setFormData(prev => ({ ...prev, github_url: e.target.value }))}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="https://github.com/username/repo"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="demo_url" className="text-sm font-medium text-gray-700">
+                  デモURL
+                </Label>
+                <div className="mt-1 relative">
+                  <Play className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    id="demo_url"
+                    type="url"
+                    value={formData.demo_url}
+                    onChange={(e) => setFormData(prev => ({ ...prev, demo_url: e.target.value }))}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="https://demo.example.com"
                   />
                 </div>
               </div>

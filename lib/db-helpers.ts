@@ -70,7 +70,7 @@ export async function fetchTodaysBusinessModels() {
       .from('business_models')
       .select(`
         *,
-        profiles!submitter_id (
+        profiles:submitter_id (
           id,
           username,
           avatar_url
@@ -84,7 +84,7 @@ export async function fetchTodaysBusinessModels() {
           )
         )
       `)
-      .in('status', ['published', 'featured', 'approved'])
+      .in('status', ['published', 'featured', 'approved'] as any)
       .gte('created_at', todayStr)
       .lt('created_at', new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString())
       .order('upvote_count', { ascending: false })
@@ -101,7 +101,7 @@ export async function fetchTodaysBusinessModels() {
       .from('business_models')
       .select(`
         *,
-        profiles!submitter_id (
+        profiles:submitter_id (
           id,
           username,
           avatar_url
@@ -115,7 +115,7 @@ export async function fetchTodaysBusinessModels() {
           )
         )
       `)
-      .in('status', ['published', 'featured', 'approved'])
+      .in('status', ['published', 'featured', 'approved'] as any)
       .gte('created_at', thirtyDaysAgo.toISOString())
       .order('upvote_count', { ascending: false })
       .order('created_at', { ascending: false })
@@ -131,7 +131,7 @@ export async function fetchTodaysBusinessModels() {
       .from('business_models')
       .select(`
         *,
-        profiles!submitter_id (
+        profiles:submitter_id (
           id,
           username,
           avatar_url
@@ -145,7 +145,7 @@ export async function fetchTodaysBusinessModels() {
           )
         )
       `)
-      .in('status', ['published', 'featured', 'approved'])
+      .in('status', ['published', 'featured', 'approved'] as any)
       .order('upvote_count', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(10);
@@ -170,7 +170,7 @@ export async function fetchBusinessModels() {
       .from('business_models')
       .select(`
         *,
-        profiles!submitter_id (
+        profiles:submitter_id (
           id,
           username,
           avatar_url
@@ -184,7 +184,7 @@ export async function fetchBusinessModels() {
           )
         )
       `)
-      .in('status', ['published', 'featured', 'approved'])
+      .in('status', ['published', 'featured', 'approved'] as any)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -211,10 +211,10 @@ export async function fetchBusinessModelsByCategory(categorySlug: string) {
     const { data: topicData, error: topicError } = await supabase
       .from('topics')
       .select('id')
-      .eq('slug', categorySlug)
+      .eq('slug', categorySlug as any)
       .single();
 
-    if (topicError || !topicData) {
+    if (topicError || !topicData || !('id' in topicData)) {
       console.error('Error fetching topic:', topicError);
       return [];
     }
@@ -224,7 +224,7 @@ export async function fetchBusinessModelsByCategory(categorySlug: string) {
       .from('business_models')
       .select(`
         *,
-        profiles!submitter_id (
+        profiles:submitter_id (
           id,
           username,
           avatar_url
@@ -238,8 +238,8 @@ export async function fetchBusinessModelsByCategory(categorySlug: string) {
           )
         )
       `)
-      .eq('business_model_topics.topic_id', topicData.id)
-      .in('status', ['published', 'featured', 'approved'])
+      .eq('business_model_topics.topic_id', (topicData as any).id)
+      .in('status', ['published', 'featured', 'approved'] as any)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -251,7 +251,7 @@ export async function fetchBusinessModelsByCategory(categorySlug: string) {
       return [];
     }
 
-    return data.map(convertDBToBusinessModel);
+    return (data as any[]).map(convertDBToBusinessModel);
   } catch (err) {
     console.error('Unexpected error:', err);
     return [];
@@ -265,7 +265,7 @@ export async function fetchBusinessModel(id: string) {
       .from('business_models')
       .select(`
         *,
-        profiles!submitter_id (
+        profiles:submitter_id (
           id,
           username,
           avatar_url,
@@ -281,7 +281,7 @@ export async function fetchBusinessModel(id: string) {
           )
         )
       `)
-      .eq('id', id)
+      .eq('id', id as any)
       .single();
 
     if (error || !data) {
@@ -289,7 +289,7 @@ export async function fetchBusinessModel(id: string) {
       return null;
     }
 
-    return convertDBToBusinessModel(data);
+    return convertDBToBusinessModel(data as any);
   } catch (err) {
     console.error('Unexpected error:', err);
     return null;
@@ -302,7 +302,7 @@ export async function fetchProfileByUsername(username: string) {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('username', username)
+      .eq('username', username as any)
       .single();
 
     if (error || !data) {
@@ -310,7 +310,7 @@ export async function fetchProfileByUsername(username: string) {
       return null;
     }
 
-    return data as Profile;
+    return data as unknown as Profile;
   } catch (err) {
     console.error('Unexpected error:', err);
     return null;
@@ -324,7 +324,7 @@ export async function fetchBusinessModelsByUser(userId: string) {
       .from('business_models')
       .select(`
         *,
-        profiles!submitter_id (
+        profiles:submitter_id (
           id,
           username,
           avatar_url
@@ -338,8 +338,8 @@ export async function fetchBusinessModelsByUser(userId: string) {
           )
         )
       `)
-      .eq('submitter_id', userId)
-      .in('status', ['published', 'featured', 'approved'])
+      .eq('submitter_id', userId as any)
+      .in('status', ['published', 'featured', 'approved'] as any)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -347,7 +347,7 @@ export async function fetchBusinessModelsByUser(userId: string) {
       return [];
     }
 
-    return data.map(convertDBToBusinessModel);
+    return (data as any[]).map(convertDBToBusinessModel);
   } catch (err) {
     console.error('Unexpected error:', err);
     return [];
@@ -368,7 +368,7 @@ export async function fetchTopics() {
       return [];
     }
 
-    return data as Topic[];
+    return data as unknown as Topic[];
   } catch (err) {
     console.error('Unexpected error:', err);
     return [];
@@ -381,8 +381,8 @@ export async function checkUserUpvote(userId: string, businessModelId: string) {
     const { data, error } = await supabase
       .from('upvotes')
       .select('*')
-      .eq('user_id', userId)
-      .eq('business_model_id', businessModelId)
+      .eq('user_id', userId as any)
+      .eq('business_model_id', businessModelId as any)
       .single();
 
     return !!data && !error;
@@ -402,8 +402,8 @@ export async function toggleUpvote(userId: string, businessModelId: string) {
       const { error } = await supabase
         .from('upvotes')
         .delete()
-        .eq('user_id', userId)
-        .eq('business_model_id', businessModelId);
+        .eq('user_id', userId as any)
+        .eq('business_model_id', businessModelId as any);
 
       if (error) {
         console.error('Error removing upvote:', error);
@@ -416,7 +416,7 @@ export async function toggleUpvote(userId: string, businessModelId: string) {
         .insert({
           user_id: userId,
           business_model_id: businessModelId
-        });
+        } as any);
 
       if (error) {
         console.error('Error adding upvote:', error);
@@ -438,13 +438,13 @@ export async function fetchComments(businessModelId: string) {
       .from('comments')
       .select(`
         *,
-        profiles!user_id (
+        profiles:user_id (
           id,
           username,
           avatar_url
         )
       `)
-      .eq('business_model_id', businessModelId)
+      .eq('business_model_id', businessModelId as any)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -469,10 +469,10 @@ export async function addComment(userId: string, businessModelId: string, conten
         business_model_id: businessModelId,
         content: content,
         parent_comment_id: parentCommentId || null
-      })
+      } as any)
       .select(`
         *,
-        profiles!user_id (
+        profiles:user_id (
           id,
           username,
           avatar_url
@@ -499,7 +499,7 @@ export async function searchBusinessModels(query: string) {
       .from('business_models')
       .select(`
         *,
-        profiles!submitter_id (
+        profiles:submitter_id (
           id,
           username,
           avatar_url
@@ -513,7 +513,7 @@ export async function searchBusinessModels(query: string) {
           )
         )
       `)
-      .in('status', ['published', 'featured', 'approved'])
+      .in('status', ['published', 'featured', 'approved'] as any)
       .or(`name.ilike.%${query}%,description.ilike.%${query}%,tagline.ilike.%${query}%`)
       .order('upvote_count', { ascending: false });
 

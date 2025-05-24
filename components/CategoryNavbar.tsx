@@ -2,50 +2,53 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, TrendingUp, Clock, MessageCircle, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { SortOption } from '@/components/RankingSort';
+import { createClient } from '@/lib/supabase-client';
+import type { Category } from '@/lib/types/database';
 
 interface CategoryNavbarProps {
-  selectedCategory: string;
-  onCategoryChange: (category: string) => void;
-  selectedSort: SortOption;
-  onSortChange: (sort: SortOption) => void;
+  activeCategory?: string | null;
+  onCategoryChange?: (categorySlug: string | null) => void;
 }
 
-const categories = [
-  { id: 'all', name: 'すべて', emoji: '🌟' },
-  { id: 'subscription', name: 'サブスクリプション', emoji: '📦' },
-  { id: 'marketplace', name: 'マーケットプレイス', emoji: '🛍️' },
-  { id: 'education', name: '教育・学習', emoji: '📚' },
-  { id: 'ai', name: 'AI・テクノロジー', emoji: '🤖' },
-  { id: 'workspace', name: 'ワークスペース', emoji: '🏢' },
-  { id: 'rental', name: 'レンタル・シェア', emoji: '🔄' },
-  { id: 'health', name: 'ヘルス・ウェルネス', emoji: '💪' },
-  { id: 'food', name: 'フード・飲食', emoji: '🍽️' },
-  { id: 'finance', name: 'フィンテック', emoji: '💰' },
-  { id: 'sustainability', name: 'サステナビリティ', emoji: '🌱' },
-  { id: 'entertainment', name: 'エンターテインメント', emoji: '🎮' },
-  { id: 'healthcare', name: 'ヘルスケア', emoji: '🏥' }
-];
+// Emoji mapping for categories
+const emojiMap: Record<string, string> = {
+  'subscription': '📦',
+  'marketplace': '🛍️',
+  'education': '📚',
+  'ai-technology': '🤖',
+  'workspace': '🏢',
+  'rental-share': '🔄',
+  'health-wellness': '💪',
+  'food': '🍽️',
+  'fintech': '💰',
+  'sustainability': '🌱',
+  'entertainment': '🎮',
+  'healthcare': '🏥'
+};
 
-const sortOptions = [
-  { value: 'popular', label: '人気順', icon: TrendingUp },
-  { value: 'newest', label: '新着順', icon: Clock },
-  { value: 'comments', label: 'コメント順', icon: MessageCircle },
-  { value: 'featured', label: '注目順', icon: Star },
-];
-
-export function CategoryNavbar({ selectedCategory, onCategoryChange, selectedSort, onSortChange }: CategoryNavbarProps) {
+export function CategoryNavbar({ activeCategory, onCategoryChange }: CategoryNavbarProps) {
+  const [categories, setCategories] = useState<Category[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
+  const supabase = createClient();
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('name');
+
+    if (!error && data) {
+      setCategories(data as unknown as Category[]);
+    }
+  };
 
   const checkScroll = () => {
     if (scrollContainerRef.current) {
@@ -78,13 +81,9 @@ export function CategoryNavbar({ selectedCategory, onCategoryChange, selectedSor
     }
   };
 
-  const currentSortOption = sortOptions.find(option => option.value === selectedSort);
-  const SortIcon = currentSortOption?.icon || TrendingUp;
-
   return (
     <div className="sticky top-16 z-40 bg-white border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* カテゴリーセクション */}
         <div className="py-3">
           <div className="relative overflow-hidden">
             {/* 左矢印 */}
@@ -117,19 +116,36 @@ export function CategoryNavbar({ selectedCategory, onCategoryChange, selectedSor
                   display: none;
                 }
               `}</style>
+              
+              {/* すべてカテゴリ */}
+              <Button
+                variant={activeCategory === null ? 'default' : 'ghost'}
+                className={cn(
+                  "flex items-center space-x-2 whitespace-nowrap px-4 py-2 rounded-full transition-all flex-shrink-0",
+                  activeCategory === null
+                    ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-105"
+                    : "hover:bg-gray-100"
+                )}
+                onClick={() => onCategoryChange?.(null)}
+              >
+                <span className="text-lg">🌟</span>
+                <span className="font-medium">すべて</span>
+              </Button>
+
+              {/* 各カテゴリ */}
               {categories.map((category) => (
                 <Button
                   key={category.id}
-                  variant={selectedCategory === category.id ? 'default' : 'ghost'}
+                  variant={activeCategory === category.slug ? 'default' : 'ghost'}
                   className={cn(
                     "flex items-center space-x-2 whitespace-nowrap px-4 py-2 rounded-full transition-all flex-shrink-0",
-                    selectedCategory === category.id
+                    activeCategory === category.slug
                       ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-105"
                       : "hover:bg-gray-100"
                   )}
-                  onClick={() => onCategoryChange(category.id)}
+                  onClick={() => onCategoryChange?.(category.slug)}
                 >
-                  <span className="text-lg">{category.emoji}</span>
+                  <span className="text-lg">{emojiMap[category.slug] || '📌'}</span>
                   <span className="font-medium">{category.name}</span>
                 </Button>
               ))}
@@ -148,64 +164,6 @@ export function CategoryNavbar({ selectedCategory, onCategoryChange, selectedSor
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* ランキングソートセクション - 左寄せで統一 */}
-        <div className="border-t border-gray-100 py-3">
-          <div className="flex items-center justify-start">
-            {/* デスクトップ版 - 左寄せ */}
-            <div className="hidden sm:flex items-center space-x-2">
-              {sortOptions.map((option) => {
-                const Icon = option.icon;
-                return (
-                  <Button
-                    key={option.value}
-                    variant={selectedSort === option.value ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => onSortChange(option.value as SortOption)}
-                    className={cn(
-                      "flex items-center space-x-1",
-                      selectedSort === option.value && "bg-gradient-to-r from-blue-600 to-purple-600 border-0"
-                    )}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span>{option.label}</span>
-                  </Button>
-                );
-              })}
-            </div>
-
-            {/* モバイル版ドロップダウン - 左寄せ */}
-            <div className="sm:hidden">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="flex items-center space-x-2"
-                  >
-                    <SortIcon className="w-4 h-4" />
-                    <span>{currentSortOption?.label}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  {sortOptions.map((option) => {
-                    const Icon = option.icon;
-                    return (
-                      <DropdownMenuItem
-                        key={option.value}
-                        onClick={() => onSortChange(option.value as SortOption)}
-                        className="flex items-center space-x-2"
-                      >
-                        <Icon className="w-4 h-4" />
-                        <span>{option.label}</span>
-                      </DropdownMenuItem>
-                    );
-                  })}
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
           </div>
         </div>

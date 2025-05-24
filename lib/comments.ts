@@ -1,6 +1,11 @@
-import { supabase, CommentDB } from './supabase';
+import { supabase, Comment } from './supabase';
 
-export async function fetchComments(businessModelId: string): Promise<CommentDB[]> {
+// Comment型を拡張してrepliesを含む
+export interface CommentWithReplies extends Comment {
+  replies?: CommentWithReplies[];
+}
+
+export async function fetchComments(businessModelId: string): Promise<CommentWithReplies[]> {
   const { data, error } = await supabase
     .from('comments')
     .select(`
@@ -51,7 +56,7 @@ export async function createComment(
   content: string,
   userId: string,
   parentCommentId?: string
-): Promise<CommentDB | null> {
+): Promise<CommentWithReplies | null> {
   const { data, error } = await supabase
     .from('comments')
     .insert({

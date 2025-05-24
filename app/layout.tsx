@@ -1,13 +1,46 @@
+'use client';
+
 import './globals.css';
-import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import React, { useState } from 'react';
+import { Header } from '@/components/Header';
+import { SubmitModal } from '@/components/SubmitModal';
+import { usePathname } from 'next/navigation';
+import { SearchProvider, useSearch } from '@/contexts/SearchContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata: Metadata = {
-  title: 'NicheHunt - ニッチ市場ビジネスモデル発見プラットフォーム',
-  description: 'Discover and share innovative niche business models',
-};
+function RootLayoutContent({ children }: { children: React.ReactNode }) {
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const pathname = usePathname();
+  const { searchQuery, setSearchQuery, selectedCategory, setSelectedCategory } = useSearch();
+
+  const handleSubmitClick = () => {
+    setIsSubmitModalOpen(true);
+  };
+
+  // ホームページでのみ検索機能を有効にする
+  const showSearch = pathname === '/' || pathname === '/products' || pathname === '/trending';
+
+  return (
+    <>
+      <Header
+        onSubmitClick={handleSubmitClick}
+        searchQuery={showSearch ? searchQuery : undefined}
+        onSearchChange={showSearch ? setSearchQuery : undefined}
+        selectedCategory={showSearch ? selectedCategory : undefined}
+        onCategoryFilter={showSearch ? setSelectedCategory : undefined}
+      />
+      <main>
+        {children}
+      </main>
+      <SubmitModal
+        isOpen={isSubmitModalOpen}
+        onClose={() => setIsSubmitModalOpen(false)}
+      />
+    </>
+  );
+}
 
 export default function RootLayout({
   children,
@@ -16,7 +49,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <SearchProvider>
+          <RootLayoutContent>{children}</RootLayoutContent>
+        </SearchProvider>
+      </body>
     </html>
   );
 }

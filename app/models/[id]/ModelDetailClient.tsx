@@ -34,9 +34,8 @@ import {
 import { cn } from '@/lib/utils';
 import { SubmitModal } from '@/components/SubmitModal';
 import { BusinessModel } from '@/types/BusinessModel';
-import { fetchComments, createComment, deleteComment } from '@/lib/comments';
+import { fetchComments, createComment, deleteComment, CommentWithReplies } from '@/lib/comments';
 import { getCurrentUser } from '@/lib/auth';
-import { CommentDB } from '@/lib/supabase';
 
 interface ModelDetailClientProps {
   model: BusinessModel | undefined;
@@ -52,7 +51,7 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
   const [commentText, setCommentText] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
-  const [comments, setComments] = useState<CommentDB[]>([]);
+  const [comments, setComments] = useState<CommentWithReplies[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoadingComments, setIsLoadingComments] = useState(true);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
@@ -214,7 +213,7 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
     }
   };
 
-  const CommentItem = ({ comment, isReply = false, parentId }: { comment: CommentDB; isReply?: boolean; parentId?: string }) => {
+  const CommentItem = ({ comment, isReply = false, parentId }: { comment: CommentWithReplies; isReply?: boolean; parentId?: string }) => {
     const isOwner = currentUser?.id === comment.user_id;
     
     const handleCommentAuthorClick = (e: React.MouseEvent) => {
@@ -230,7 +229,7 @@ export default function ModelDetailClient({ model }: ModelDetailClientProps) {
           className={cn("flex-shrink-0 cursor-pointer", isReply ? "w-8 h-8" : "w-10 h-10")}
           onClick={handleCommentAuthorClick}
         >
-          <AvatarImage src={comment.profiles?.avatar_url} alt={comment.profiles?.username} />
+          <AvatarImage src={comment.profiles?.avatar_url || undefined} alt={comment.profiles?.username} />
           <AvatarFallback>{comment.profiles?.username?.charAt(0) || 'U'}</AvatarFallback>
         </Avatar>
         <div className="flex-1">

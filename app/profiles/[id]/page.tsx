@@ -1,15 +1,16 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { fetchProfileByUsername, fetchBusinessModelsByUser } from '@/lib/db-helpers';
-import { ProfileDetailClient } from './ProfileDetailClient';
+import ProfileDetailClient from './ProfileDetailClient';
 import { supabase } from '@/lib/supabase';
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const profile = await fetchProfileByUsername(params.id);
+  const { id } = await params;
+  const profile = await fetchProfileByUsername(id);
   
   if (!profile) {
     return {
@@ -40,13 +41,12 @@ export async function generateStaticParams() {
 }
 
 export default async function ProfileDetailPage({ params }: PageProps) {
-  const profile = await fetchProfileByUsername(params.id);
+  const { id } = await params;
+  const profile = await fetchProfileByUsername(id);
 
   if (!profile) {
     notFound();
   }
 
-  const businessModels = await fetchBusinessModelsByUser(profile.id);
-
-  return <ProfileDetailClient profile={profile} businessModels={businessModels} />;
+  return <ProfileDetailClient userId={profile.id} />;
 }

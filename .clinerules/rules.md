@@ -2,7 +2,7 @@
 
 ### 1. プロジェクト概要
 
-NicheHunは、ニッチなビジネスモデルを共有・発見できるWebプラットフォームです。ユーザーは新しいビジネスアイデアを投稿し、他のユーザーのアイデアを閲覧・評価できます。
+NicheHunは、ニッチなプロダクトを共有・発見できるWebプラットフォームです。ユーザーは新しいビジネスアイデアを投稿し、他のユーザーのアイデアを閲覧・評価できます。
 
 ### 2. 技術スタック
 
@@ -72,18 +72,51 @@ NicheHunは、ニッチなビジネスモデルを共有・発見できるWebプ
 
 ### 5. データベーススキーマ
 #### Supabase
-Project ID: cfagzsizrstgfmzemlfs
-Project Name: NicheHunt
+Project ID: nyniibuebpmsbmzhccjr
+Project Name: Niche Hunt
 
-#### 主要テーブル
+📊 主要テーブル
+1. ユーザー管理
 
-- __profiles__ - ユーザープロフィール
-- __business_models__ - ビジネスモデル
-- __topics__ - カテゴリ/トピック
-- __business_model_topics__ - モデルとトピックの中間テーブル
-- __comments__ - コメント
-- __upvotes__ - 投票記録
-- __collections__ - コレクション機能
+profiles: Supabase Authと連携したユーザープロファイル
+follows: ユーザー間のフォロー機能
+
+2. プロダクト関連
+
+products: メインのプロダクト情報
+product_images: プロダクトの画像ギャラリー
+product_tags: タグ付け機能
+categories: カテゴリ分類
+
+3. エンゲージメント
+
+votes: アップボート機能
+comments: ネスト可能なコメント
+collections: プロダクトのキュレーション機能
+
+4. その他
+
+notifications: リアルタイム通知
+products_with_stats: 統計情報付きビュー
+
+🔒 セキュリティ機能
+
+**RLS（Row Level Security）**を実装
+適切な権限設定（自分のコンテンツのみ編集可能）
+Supabase Authとの完全統合
+
+⚡ パフォーマンス最適化
+
+重要なカラムにインデックスを作成
+統計情報用のビューを事前定義
+toggle_vote関数で投票の追加/削除を効率化
+
+🎯 ニッチ市場向けの工夫
+
+タグとカテゴリの組み合わせで細かい分類が可能
+コレクション機能で特定分野のキュレーションが可能
+フォロー機能で同じ興味を持つユーザーをつなげる
+
 
 ### 6. カテゴリ一覧
 
