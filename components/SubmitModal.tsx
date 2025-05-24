@@ -27,6 +27,7 @@ import { createProduct, uploadProductImage } from '@/lib/api/products-create';
 import { fetchCategories } from '@/lib/api/categories-tags';
 import type { Category } from '@/lib/types/database';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase-client';
 
 interface SubmitModalProps {
   isOpen: boolean;
@@ -111,6 +112,15 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 認証チェック
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error('投稿するにはログインが必要です');
+      onClose(); // モーダルを閉じる
+      router.push('/auth/signin'); // その後ログインページへ移動
+      return;
+    }
     
     if (!validateForm()) {
       return;
