@@ -270,16 +270,6 @@ export function LoadingScreen({ loadingProgress, loadingMessage }: LoadingScreen
           >
             <div className="relative">
               <Rocket className="w-24 h-24 text-primary" />
-              <motion.div
-                className="absolute inset-0 flex items-center justify-center"
-                animate={{
-                  opacity: [0, 1, 0],
-                  scale: [0.8, 1.2, 0.8],
-                }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <Sparkles className="w-16 h-16 text-yellow-500" />
-              </motion.div>
             </div>
           </motion.div>
 
@@ -414,8 +404,8 @@ export function LoadingScreen({ loadingProgress, loadingMessage }: LoadingScreen
           transition={{ duration: 0.6, delay: 1.4 }}
         >
           {[
-            { icon: Trophy, title: "トップランキング", color: "text-yellow-500" },
-            { icon: Star, title: "注目のアイデア", color: "text-purple-500" },
+            { icon: Trophy, title: "トップランキング", color: "text-purple-500" },
+            { icon: Star, title: "注目のアイデア", color: "text-pink-500" },
             { icon: Flame, title: "トレンディング", color: "text-orange-500" },
           ].map((item, i) => (
             <motion.div
