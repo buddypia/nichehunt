@@ -31,6 +31,8 @@ export function HomeClient({ initialProducts, featuredProducts, todaysPicks }: H
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
   const [showCategoryChange, setShowCategoryChange] = useState(false)
   const [categoryDisplayName, setCategoryDisplayName] = useState<string | null>(null)
+  const [showSortChange, setShowSortChange] = useState(false)
+  const [sortDisplayName, setSortDisplayName] = useState<string | null>(null)
   const { searchQuery, selectedCategory } = useSearch()
   const productsRef = useRef<HTMLElement>(null)
 
@@ -242,6 +244,28 @@ export function HomeClient({ initialProducts, featuredProducts, todaysPicks }: H
     }, 100)
   }
 
+  const handleSortChange = (newSortBy: "popular" | "newest" | "comments" | "featured") => {
+    setSortBy(newSortBy)
+    
+    // ソート名を設定
+    const sortNames = {
+      popular: "人気順",
+      newest: "新着順",
+      comments: "コメント順",
+      featured: "注目順"
+    }
+    setSortDisplayName(sortNames[newSortBy])
+    
+    // 変更通知を表示
+    setShowSortChange(true)
+    setTimeout(() => setShowSortChange(false), 3000)
+    
+    // プロダクト一覧セクションまでスムーズスクロール
+    setTimeout(() => {
+      productsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
+  }
+
   const handleVote = (productId: number) => {
     // 楽観的更新
     setProducts(prev => prev.map(p => 
@@ -262,7 +286,7 @@ export function HomeClient({ initialProducts, featuredProducts, todaysPicks }: H
         activeCategory={activeCategory}
         onCategoryChange={handleCategoryChange}
         sortBy={sortBy}
-        onSortChange={setSortBy}
+        onSortChange={handleSortChange}
       />
       
       <Hero onSubmitClick={handleSubmitClick} />
@@ -439,6 +463,21 @@ export function HomeClient({ initialProducts, featuredProducts, todaysPicks }: H
                       ? `「${categoryDisplayName}」カテゴリのプロダクトを表示中`
                       : "すべてのプロダクトを表示中"
                     }
+                  </span>
+                </div>
+              </motion.div>
+            )}
+            {showSortChange && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="absolute -top-16 left-0 right-0 z-20"
+              >
+                <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg p-4 shadow-lg flex items-center justify-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  <span className="font-medium">
+                    {sortDisplayName && `「${sortDisplayName}」でプロダクトを表示中`}
                   </span>
                 </div>
               </motion.div>
