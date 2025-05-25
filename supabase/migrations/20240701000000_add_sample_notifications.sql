@@ -33,7 +33,7 @@ VALUES
     '3145c968-f084-4506-8a39-f2abb9cdc69d',
     'system',
     'システム通知',
-    'NicheHuntへようこそ！プロフィールを完成させて、コミュニティと繋がりましょう。',
+    'NicheNextへようこそ！プロフィールを完成させて、コミュニティと繋がりましょう。',
     true,
     NULL,
     NOW() - INTERVAL '1 day'
@@ -66,7 +66,7 @@ VALUES (
   '3145c968-f084-4506-8a39-f2abb9cdc69d',
   'testuser3',
   'テストユーザー3',
-  'NicheHuntの新規ユーザーです',
+  'NicheNextの新規ユーザーです',
   'https://api.dicebear.com/7.x/avataaars/svg?seed=testuser3'
 )
 ON CONFLICT (id) DO NOTHING;

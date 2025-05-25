@@ -37,7 +37,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
   const { id } = await params;
   return {
-    title: `プロフィール - NicheHunt`,
+    title: `プロフィール - NicheNext`,
     description: 'ユーザープロフィールの詳細ページ',
   };
 }

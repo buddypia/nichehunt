@@ -16,13 +16,13 @@ export async function generateMetadata({ params }: ProductDetailPageProps): Prom
   
   if (!product) {
     return {
-      title: 'プロダクトが見つかりません - NicheHunt',
+      title: 'プロダクトが見つかりません - NicheNext',
       description: '指定されたプロダクトが見つかりませんでした。',
     };
   }
   
   return {
-    title: `${product.name} - NicheHunt`,
+    title: `${product.name} - NicheNext`,
     description: product.tagline || 'プロダクトの詳細情報',
   };
 }

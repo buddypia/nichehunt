@@ -57,7 +57,7 @@ BEGIN
             user_record.id,
             'system',
             'システム通知',
-            'NicheHuntへようこそ！プロフィールを完成させて、コミュニティと繋がりましょう。',
+            'NicheNextへようこそ！プロフィールを完成させて、コミュニティと繋がりましょう。',
             NULL,
             NULL,
             true,

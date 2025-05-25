@@ -3,7 +3,7 @@ import ProfileClient from './ProfileClient';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'プロフィール - NicheHunt',
+  title: 'プロフィール - NicheNext',
   description: 'ユーザープロフィール',
 };
 

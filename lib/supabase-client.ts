@@ -13,14 +13,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
-    storageKey: 'nichehunt-auth',
+    storageKey: 'nichenext-auth',
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     autoRefreshToken: true,
     detectSessionInUrl: true
   },
   global: {
     headers: {
-      'x-application-name': 'nichehunt'
+      'x-application-name': 'nichenext'
     }
   },
   db: {
@@ -33,7 +33,7 @@ export function createClient() {
   return createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: true,
-      storageKey: 'nichehunt-auth',
+      storageKey: 'nichenext-auth',
       storage: typeof window !== 'undefined' ? window.localStorage : undefined,
       autoRefreshToken: true,
       detectSessionInUrl: true

@@ -13,13 +13,13 @@ export default function AboutPage() {
             <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
               <Trophy className="w-10 h-10 text-white" />
             </div>
-            <span className="font-bold text-4xl text-gray-900">NicheHunt</span>
+            <span className="font-bold text-4xl text-gray-900">NicheNext</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             ニッチ市場のビジネスアイデアを<br />発見・共有するプラットフォーム
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            NicheHuntは、革新的なニッチビジネスモデルを発見し、
+            NicheNextは、革新的なニッチビジネスモデルを発見し、
             アイデアを共有し、次世代の起業家をインスパイアする場所です。
           </p>
         </div>

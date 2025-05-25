@@ -96,7 +96,7 @@ export function LoadingScreen({ loadingProgress, loadingMessage }: LoadingScreen
                 className="overflow-hidden"
               >
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  NicheHunt
+                  NicheNext
                 </h1>
               </motion.div>
             </div>

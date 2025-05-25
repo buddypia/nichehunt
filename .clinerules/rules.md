@@ -1,6 +1,6 @@
-## NicheHunt システム概要
+## NicheNext システム概要
 
-NicheHuntは、ニッチ市場向けのビジネスアイデアを発見・共有するためのWebプラットフォームです。
+NicheNextは、ニッチ市場向けのビジネスアイデアを発見・共有するためのWebプラットフォームです。
 
 ### 🎯 システムの目的
 - 革新的なニッチビジネスモデルの発見と共有
@@ -77,7 +77,7 @@ NicheHuntは、ニッチ市場向けのビジネスアイデアを発見・共�
 
 ### 📁 プロジェクト構造
 ```
-nichehunt/
+nichenext/
 ├── app/               # Next.js App Router
 ├── components/        # UIコンポーネント
 ├── lib/               # ユーティリティ・API

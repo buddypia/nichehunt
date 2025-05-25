@@ -40,8 +40,11 @@ const sortOptions = [
 export function FilterTopBar({ activeCategory, onCategoryChange, sortBy, onSortChange }: FilterTopBarProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const sortScrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
+  const [showSortLeftArrow, setShowSortLeftArrow] = useState(false);
+  const [showSortRightArrow, setShowSortRightArrow] = useState(true);
   const supabase = createClient();
 
   useEffect(() => {
@@ -67,23 +70,47 @@ export function FilterTopBar({ activeCategory, onCategoryChange, sortBy, onSortC
     }
   };
 
+  const checkSortScroll = () => {
+    if (sortScrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = sortScrollContainerRef.current;
+      setShowSortLeftArrow(scrollLeft > 0);
+      setShowSortRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
   useEffect(() => {
     checkScroll();
+    checkSortScroll();
     const container = scrollContainerRef.current;
+    const sortContainer = sortScrollContainerRef.current;
+    
     if (container) {
       container.addEventListener('scroll', checkScroll);
       window.addEventListener('resize', checkScroll);
-      return () => {
-        container.removeEventListener('scroll', checkScroll);
-        window.removeEventListener('resize', checkScroll);
-      };
     }
+    
+    if (sortContainer) {
+      sortContainer.addEventListener('scroll', checkSortScroll);
+      window.addEventListener('resize', checkSortScroll);
+    }
+    
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', checkScroll);
+      }
+      if (sortContainer) {
+        sortContainer.removeEventListener('scroll', checkSortScroll);
+      }
+      window.removeEventListener('resize', checkScroll);
+      window.removeEventListener('resize', checkSortScroll);
+    };
   }, [categories]);
 
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollContainerRef.current) {
+  const scroll = (direction: 'left' | 'right', container: 'category' | 'sort' = 'category') => {
+    const targetContainer = container === 'category' ? scrollContainerRef.current : sortScrollContainerRef.current;
+    if (targetContainer) {
       const scrollAmount = 200;
-      scrollContainerRef.current.scrollBy({
+      targetContainer.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
       });
@@ -180,28 +207,69 @@ export function FilterTopBar({ activeCategory, onCategoryChange, sortBy, onSortC
           {/* 区切り線 */}
           <div className="hidden sm:block w-px h-8 bg-gray-200 dark:bg-gray-700" />
 
-          {/* ソートオプション */}
-          <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
-            {sortOptions.map((option) => {
-              const Icon = option.icon;
-              return (
-                <Button
-                  key={option.value}
-                  variant={sortBy === option.value ? 'default' : 'ghost'}
-                  size="sm"
-                  className={cn(
-                    "flex items-center gap-1.5 h-9 px-3 rounded-full transition-all",
-                    sortBy === option.value
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "hover:bg-gray-100 dark:hover:bg-gray-800"
-                  )}
-                  onClick={() => onSortChange(option.value as typeof sortBy)}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  <span className="text-sm font-medium">{option.label}</span>
-                </Button>
-              );
-            })}
+          {/* ソートオプション - スクロール可能 */}
+          <div className="hidden sm:block relative overflow-hidden flex-shrink-0" style={{ maxWidth: '320px' }}>
+            {/* 左矢印 */}
+            <div className={cn(
+              "absolute left-0 top-0 bottom-0 flex items-center z-10 bg-gradient-to-r from-white dark:from-gray-900 via-white dark:via-gray-900 to-transparent pr-2",
+              !showSortLeftArrow && "hidden"
+            )}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full shadow-md bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => scroll('left', 'sort')}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* ソートスクロールコンテナ */}
+            <div
+              ref={sortScrollContainerRef}
+              className="flex items-center gap-2 overflow-x-auto scrollbar-hide px-1"
+              style={{ 
+                scrollbarWidth: 'none', 
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
+              {sortOptions.map((option) => {
+                const Icon = option.icon;
+                return (
+                  <Button
+                    key={option.value}
+                    variant={sortBy === option.value ? 'default' : 'ghost'}
+                    size="sm"
+                    className={cn(
+                      "flex items-center gap-1.5 h-9 px-3 rounded-full transition-all flex-shrink-0 whitespace-nowrap",
+                      sortBy === option.value
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                    )}
+                    onClick={() => onSortChange(option.value as typeof sortBy)}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    <span className="text-sm font-medium">{option.label}</span>
+                  </Button>
+                );
+              })}
+            </div>
+
+            {/* 右矢印 */}
+            <div className={cn(
+              "absolute right-0 top-0 bottom-0 flex items-center z-10 bg-gradient-to-l from-white dark:from-gray-900 via-white dark:via-gray-900 to-transparent pl-2",
+              !showSortRightArrow && "hidden"
+            )}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full shadow-md bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => scroll('right', 'sort')}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
 
           {/* モバイル用ソートドロップダウン */}

@@ -1,5 +1,5 @@
 /*
-  # Seed initial data for NicheHunt
+  # Seed initial data for NicheNext
 
   1. Create initial topics
   2. Create sample profiles

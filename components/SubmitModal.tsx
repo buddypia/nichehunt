@@ -269,7 +269,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
                 className={`mt-1 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   errors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
-                placeholder="例: NicheHunt"
+                placeholder="例: NicheNext"
               />
               {errors.name && (
                 <p className="mt-1 text-sm text-red-600 flex items-center">

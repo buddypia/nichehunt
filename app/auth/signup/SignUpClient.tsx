@@ -54,7 +54,7 @@ export default function SignUpClient() {
             <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
               <Trophy className="w-8 h-8 text-white" />
             </div>
-            <span className="font-bold text-3xl text-gray-900">NicheHunt</span>
+            <span className="font-bold text-3xl text-gray-900">NicheNext</span>
           </Link>
           <p className="mt-2 text-gray-600">ニッチなビジネスアイデアを発見・共有</p>
         </div>

@@ -16,12 +16,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   
   if (!category) {
     return {
-      title: 'カテゴリが見つかりません - NicheHunt',
+      title: 'カテゴリが見つかりません - NicheNext',
     };
   }
 
   return {
-    title: `${category.name} - NicheHunt`,
+    title: `${category.name} - NicheNext`,
     description: category.description || `${category.name}カテゴリのビジネスモデル一覧`,
   };
 }

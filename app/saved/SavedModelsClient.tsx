@@ -107,7 +107,7 @@ export default function SavedModelsClient() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {savedModels.map((model) => (
-              <div key={model.id} onClick={() => router.push(`/models/${model.id}`)}>
+              <div key={model.id} onClick={() => router.push(`/products/${model.id}`)}>
                 <BusinessModelCard
                   model={model}
                 />
