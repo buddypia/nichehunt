@@ -100,14 +100,9 @@ export function Header({
                 return (
                   <Link key={item.href} href={item.href}>
                     <Button
-                      variant={isActive ? 'default' : 'ghost'}
+                      variant="ghost"
                       size="sm"
-                      className={cn(
-                        "font-medium transition-all",
-                        isActive
-                          ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-105"
-                          : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-                      )}
+                      className="font-medium transition-all text-gray-700 hover:text-gray-900 hover:bg-gray-100"
                     >
                       {item.label}
                     </Button>
@@ -224,13 +219,8 @@ export function Header({
                       return (
                         <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)}>
                           <Button
-                            variant={isActive ? 'default' : 'ghost'}
-                            className={cn(
-                              "w-full justify-start",
-                              isActive
-                                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-                                : "text-gray-700 hover:text-gray-900"
-                            )}
+                            variant="ghost"
+                            className="w-full justify-start text-gray-700 hover:text-gray-900"
                           >
                             {item.label}
                           </Button>
