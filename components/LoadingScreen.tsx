@@ -20,27 +20,6 @@ export function LoadingScreen({ loadingProgress, loadingMessage }: LoadingScreen
     "from-orange-400/20 to-red-400/20",
   ]
 
-  // ウィンドウサイズのデフォルト値（SSR対応）
-  const defaultWidth = 1200
-  const defaultHeight = 800
-
-  // アイコンの配列と事前計算された位置
-  const floatingIcons = [Rocket, Star, Diamond, Target, Lightbulb, TrendingUp, Flame].map((Icon, i) => ({
-    Icon,
-    initialX: (i * 150) % defaultWidth,
-    targetX: ((i * 150) + 300) % defaultWidth,
-    duration: 15 + (i * 2),
-    delay: i * 0.7,
-  }))
-
-  // パーティクルの事前計算された位置
-  const particles = [...Array(50)].map((_, i) => ({
-    initialX: (i * 24) % defaultWidth,
-    initialY: (i * 16) % defaultHeight,
-    targetX: ((i * 24) + 200) % defaultWidth,
-    targetY: ((i * 16) + 150) % defaultHeight,
-    duration: 10 + (i % 10) * 2,
-  }))
 
   return (
     <motion.div 
@@ -77,101 +56,6 @@ export function LoadingScreen({ loadingProgress, loadingMessage }: LoadingScreen
           ))}
         </div>
 
-        {/* フローティングアイコン */}
-        <div className="absolute inset-0">
-          {floatingIcons.map((item, i) => (
-            <motion.div
-              key={i}
-              className="absolute"
-              initial={{
-                x: item.initialX,
-                y: defaultHeight + 100,
-              }}
-              animate={{
-                y: -100,
-                x: item.targetX,
-                rotate: 360,
-              }}
-              transition={{
-                duration: item.duration,
-                repeat: Infinity,
-                ease: "linear",
-                delay: item.delay,
-              }}
-            >
-              <item.Icon className={`w-8 h-8 text-primary/20`} />
-            </motion.div>
-          ))}
-        </div>
-
-        {/* 動的グラデーションメッシュ */}
-        <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="mesh-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <motion.stop
-                offset="0%"
-                animate={{
-                  stopColor: ["#8b5cf6", "#ec4899", "#f59e0b", "#8b5cf6"],
-                }}
-                transition={{
-                  duration: 8,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
-                stopOpacity="0.1"
-              />
-              <motion.stop
-                offset="100%"
-                animate={{
-                  stopColor: ["#ec4899", "#f59e0b", "#8b5cf6", "#ec4899"],
-                }}
-                transition={{
-                  duration: 8,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
-                stopOpacity="0.1"
-              />
-            </linearGradient>
-          </defs>
-          <motion.rect
-            width="100%"
-            height="100%"
-            fill="url(#mesh-gradient)"
-            animate={{
-              opacity: [0.3, 0.6, 0.3],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-        </svg>
-
-        {/* パーティクルフィールド */}
-        <div className="absolute inset-0">
-          {particles.map((particle, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-1 h-1 bg-primary/30 rounded-full"
-              initial={{
-                x: particle.initialX,
-                y: particle.initialY,
-              }}
-              animate={{
-                x: particle.targetX,
-                y: particle.targetY,
-              }}
-              transition={{
-                duration: particle.duration,
-                repeat: Infinity,
-                repeatType: "reverse",
-                ease: "linear",
-              }}
-            />
-          ))}
-        </div>
       </div>
 
       {/* ヘッダー */}
