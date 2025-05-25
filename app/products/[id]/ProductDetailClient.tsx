@@ -1,25 +1,159 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Heart, MessageCircle, ExternalLink, Share2, Calendar, Tag, Github, Play, Globe } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, ExternalLink, Share2, Calendar, Tag, Github, Play, Globe, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import type { ProductWithRelations, CommentWithRelations } from '@/lib/types/database';
 import { voteProduct } from '@/lib/api/products-client';
-import { fetchComments, createComment } from '@/lib/api/comments-product';
+import { fetchComments, createComment, deleteComment } from '@/lib/api/comments-product';
 import { getCurrentUser } from '@/lib/auth';
 import { toast } from 'sonner';
 
 interface ProductDetailClientProps {
   initialProduct: ProductWithRelations;
 }
+
+interface CommentItemProps {
+  comment: CommentWithRelations;
+  depth?: number;
+  currentUser: any;
+  isReplying: boolean;
+  replyText: string;
+  onReplyToggle: () => void;
+  onReplyTextChange: (text: string) => void;
+  onReplySubmit: (e: React.FormEvent) => void;
+  onReplyCancel: () => void;
+  isSubmittingComment: boolean;
+  onDelete: (commentId: number) => void;
+}
+
+const CommentItem: React.FC<CommentItemProps> = ({ 
+  comment, 
+  depth = 0, 
+  currentUser,
+  isReplying,
+  replyText,
+  onReplyToggle,
+  onReplyTextChange,
+  onReplySubmit,
+  onReplyCancel,
+  isSubmittingComment,
+  onDelete
+}) => {
+  return (
+    <div className={`${depth > 0 ? 'ml-8 mt-4' : ''}`}>
+      <div className="flex space-x-3">
+        <Link href={`/profile?id=${comment.profile?.id}`}>
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={comment.profile?.avatar_url || ''} />
+            <AvatarFallback>{comment.profile?.username?.charAt(0) || 'U'}</AvatarFallback>
+          </Avatar>
+        </Link>
+        <div className="flex-1">
+          <div className="flex items-center space-x-2">
+            <Link href={`/profile?id=${comment.profile?.id}`} className="font-medium hover:underline">
+              {comment.profile?.username}
+            </Link>
+            <span className="text-sm text-gray-500">
+              {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: ja })}
+            </span>
+            {comment.is_edited && (
+              <span className="text-xs text-gray-400">(編集済み)</span>
+            )}
+          </div>
+          <p className="mt-1 text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+          <div className="mt-2 flex items-center space-x-4">
+            {currentUser && (
+              <button
+                onClick={onReplyToggle}
+                className="text-sm text-blue-600 hover:underline"
+              >
+                {isReplying ? 'キャンセル' : '返信'}
+              </button>
+            )}
+            {currentUser && currentUser.id === comment.user_id && (
+              <button
+                onClick={() => onDelete(comment.id)}
+                className="text-sm text-red-600 hover:text-red-700 flex items-center space-x-1"
+              >
+                <Trash2 className="w-3 h-3" />
+                <span>削除</span>
+              </button>
+            )}
+          </div>
+          
+          {/* インライン返信フォーム */}
+          {isReplying && currentUser && (
+            <form onSubmit={onReplySubmit} className="mt-3">
+              <div className="flex space-x-3">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={currentUser.avatar_url} />
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white">
+                    {currentUser.username?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <textarea
+                    value={replyText}
+                    onChange={(e) => onReplyTextChange(e.target.value)}
+                    placeholder={`@${comment.profile?.username} への返信を入力...`}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm transition-all duration-200"
+                    rows={3}
+                    autoFocus
+                  />
+                  <div className="mt-2 flex space-x-2">
+                    <Button
+                      type="submit"
+                      size="sm"
+                      disabled={isSubmittingComment || !replyText.trim()}
+                      className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+                    >
+                      {isSubmittingComment ? (
+                        <>
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                          投稿中...
+                        </>
+                      ) : (
+                        '返信を投稿'
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={onReplyCancel}
+                    >
+                      キャンセル
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
+      {/* 返信は renderCommentWithReplies で表示するため、ここでは表示しない */}
+    </div>
+  );
+};
 
 export function ProductDetailClient({ initialProduct }: ProductDetailClientProps) {
   const [product, setProduct] = useState(initialProduct);
@@ -29,7 +163,10 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [newComment, setNewComment] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-  const [replyTo, setReplyTo] = useState<number | null>(null);
+  const [replyToId, setReplyToId] = useState<number | null>(null);
+  const [replyTexts, setReplyTexts] = useState<Record<number, string>>({});
+  const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
     loadCurrentUser();
@@ -76,7 +213,7 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
     }
   };
 
-  const handleCommentSubmit = async (e: React.FormEvent) => {
+  const handleCommentSubmit = async (e: React.FormEvent, parentId?: number) => {
     e.preventDefault();
     
     if (!currentUser) {
@@ -84,20 +221,25 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
       return;
     }
 
-    if (!newComment.trim()) return;
+    const content = parentId ? replyTexts[parentId] : newComment;
+    if (!content?.trim()) return;
 
     setIsSubmittingComment(true);
     try {
       const result = await createComment({
         productId: product.id.toString(),
-        content: newComment,
-        parentId: replyTo,
+        content,
+        parentId,
       });
 
       if (result) {
         await loadComments();
-        setNewComment('');
-        setReplyTo(null);
+        if (parentId) {
+          setReplyTexts(prev => ({ ...prev, [parentId]: '' }));
+          setReplyToId(null);
+        } else {
+          setNewComment('');
+        }
         setProduct(prev => ({
           ...prev,
           comment_count: prev.comment_count + 1,
@@ -131,45 +273,61 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
     }
   };
 
-  const CommentItem: React.FC<{ comment: CommentWithRelations; depth?: number }> = ({ comment, depth = 0 }) => (
-    <div className={`${depth > 0 ? 'ml-8 mt-4' : ''}`}>
-      <div className="flex space-x-3">
-        <Link href={`/profile?id=${comment.profile?.id}`}>
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={comment.profile?.avatar_url || ''} />
-            <AvatarFallback>{comment.profile?.username?.charAt(0) || 'U'}</AvatarFallback>
-          </Avatar>
-        </Link>
-        <div className="flex-1">
-          <div className="flex items-center space-x-2">
-            <Link href={`/profile?id=${comment.profile?.id}`} className="font-medium hover:underline">
-              {comment.profile?.username}
-            </Link>
-            <span className="text-sm text-gray-500">
-              {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: ja })}
-            </span>
-            {comment.is_edited && (
-              <span className="text-xs text-gray-400">(編集済み)</span>
-            )}
-          </div>
-          <p className="mt-1 text-gray-700 whitespace-pre-wrap">{comment.content}</p>
-          <button
-            onClick={() => setReplyTo(comment.id)}
-            className="mt-2 text-sm text-blue-600 hover:underline"
-          >
-            返信
-          </button>
-        </div>
-      </div>
-      {comment.replies && comment.replies.length > 0 && (
-        <div className="mt-4">
-          {comment.replies.map((reply) => (
-            <CommentItem key={reply.id} comment={reply} depth={depth + 1} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  const handleDeleteClick = (commentId: number) => {
+    setDeletingCommentId(commentId);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingCommentId) return;
+
+    try {
+      const success = await deleteComment(deletingCommentId);
+      if (success) {
+        await loadComments();
+        setProduct(prev => ({
+          ...prev,
+          comment_count: Math.max(0, prev.comment_count - 1),
+        }));
+        toast.success('コメントを削除しました');
+      } else {
+        toast.error('コメントの削除に失敗しました');
+      }
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      toast.error('コメントの削除に失敗しました');
+    } finally {
+      setShowDeleteDialog(false);
+      setDeletingCommentId(null);
+    }
+  };
+
+  const renderCommentWithReplies = (comment: CommentWithRelations, depth: number = 0) => {
+    const isReplying = replyToId === comment.id;
+    const replyText = replyTexts[comment.id] || '';
+
+    return (
+      <React.Fragment key={comment.id}>
+        <CommentItem
+          comment={comment}
+          depth={depth}
+          currentUser={currentUser}
+          isReplying={isReplying}
+          replyText={replyText}
+          onReplyToggle={() => setReplyToId(isReplying ? null : comment.id)}
+          onReplyTextChange={(text) => setReplyTexts(prev => ({ ...prev, [comment.id]: text }))}
+          onReplySubmit={(e) => handleCommentSubmit(e, comment.id)}
+          onReplyCancel={() => {
+            setReplyToId(null);
+            setReplyTexts(prev => ({ ...prev, [comment.id]: '' }));
+          }}
+          isSubmittingComment={isSubmittingComment}
+          onDelete={handleDeleteClick}
+        />
+        {comment.replies && comment.replies.map(reply => renderCommentWithReplies(reply, depth + 1))}
+      </React.Fragment>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -372,7 +530,7 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
           <CardContent className="p-8">
             {/* コメント投稿フォーム */}
             {currentUser ? (
-              <form onSubmit={handleCommentSubmit} className="mb-10">
+              <form onSubmit={(e) => handleCommentSubmit(e)} className="mb-10">
                 <div className="flex space-x-4">
                   <Avatar className="h-12 w-12 ring-2 ring-gray-200">
                     <AvatarImage src={currentUser.avatar_url} />
@@ -381,18 +539,6 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    {replyTo && (
-                      <div className="mb-3 p-2 bg-blue-50 rounded-lg text-sm text-blue-700 flex items-center justify-between">
-                        <span>返信モード</span>
-                        <button
-                          type="button"
-                          onClick={() => setReplyTo(null)}
-                          className="text-red-600 hover:text-red-700 font-medium"
-                        >
-                          × キャンセル
-                        </button>
-                      </div>
-                    )}
                     <textarea
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
@@ -452,7 +598,7 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
                   .filter(comment => !comment.parent_id)
                   .map((comment) => (
                     <div key={comment.id} className="bg-gray-50 rounded-xl p-6 hover:bg-gray-100 transition-colors duration-200">
-                      <CommentItem comment={comment} />
+                      {renderCommentWithReplies(comment)}
                     </div>
                   ))
               )}
@@ -460,6 +606,29 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
           </CardContent>
         </Card>
       </div>
+
+      {/* 削除確認ダイアログ */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>コメントを削除しますか？</AlertDialogTitle>
+            <AlertDialogDescription>
+              この操作は取り消すことができません。このコメントに対する返信も全て削除されます。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletingCommentId(null)}>
+              キャンセル
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              削除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
