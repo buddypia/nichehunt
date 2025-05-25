@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BusinessModelCard } from '@/components/BusinessModelCard';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ProductCard } from '@/components/ProductCard';
 import { 
   ArrowLeft,
   Calendar,
@@ -17,43 +18,42 @@ import {
   Github,
   Linkedin,
   Mail,
-  Edit,
-  Settings,
-  Trophy,
-  TrendingUp,
-  MessageCircle,
   Users,
-  Star,
+  Heart,
+  MessageCircle,
   Briefcase,
-  Award
+  Award,
+  Loader2,
+  UserPlus,
+  Eye,
+  Share2,
+  TrendingUp
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
 import { getCurrentUser } from '@/lib/auth';
-import { BusinessModel } from '@/types/BusinessModel';
+import { 
+  getProfile, 
+  getProfileStats, 
+  getUserProducts,
+  getUserUpvotedProducts,
+  checkFollowStatus,
+  toggleFollow,
+  type Profile,
+  type ProfileStats,
+  type ProfileProduct
+} from '@/lib/api/profiles';
+import { 
+  getMutualFollowers,
+  getSimilarInterests,
+  getInteractionHistory,
+  getSharedCollections,
+  type MutualFollower,
+  type SimilarInterest,
+  type InteractionHistory,
+  type SharedCollection
+} from '@/lib/api/profile-relations';
 
 interface ProfileDetailClientProps {
   userId: string;
-}
-
-interface Profile {
-  id: string;
-  username: string;
-  bio?: string;
-  avatar_url?: string;
-  location?: string;
-  website?: string;
-  twitter?: string;
-  github?: string;
-  linkedin?: string;
-  created_at: string;
-}
-
-interface ProfileStats {
-  totalModels: number;
-  totalUpvotes: number;
-  totalComments: number;
-  followers: number;
-  following: number;
 }
 
 export default function ProfileDetailClient({ userId }: ProfileDetailClientProps) {
@@ -63,14 +63,21 @@ export default function ProfileDetailClient({ userId }: ProfileDetailClientProps
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [stats, setStats] = useState<ProfileStats>({
-    totalModels: 0,
-    totalUpvotes: 0,
+    totalProducts: 0,
+    totalVotes: 0,
     totalComments: 0,
     followers: 0,
     following: 0
   });
-  const [userModels, setUserModels] = useState<BusinessModel[]>([]);
+  const [userProducts, setUserProducts] = useState<ProfileProduct[]>([]);
+  const [upvotedProducts, setUpvotedProducts] = useState<ProfileProduct[]>([]);
+  const [mutualFollowers, setMutualFollowers] = useState<MutualFollower[]>([]);
+  const [similarInterests, setSimilarInterests] = useState<SimilarInterest[]>([]);
+  const [interactionHistory, setInteractionHistory] = useState<InteractionHistory | null>(null);
+  const [sharedCollections, setSharedCollections] = useState<SharedCollection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('products');
 
   useEffect(() => {
     loadProfileData();
@@ -82,6 +89,12 @@ export default function ProfileDetailClient({ userId }: ProfileDetailClientProps
     setCurrentUser(user);
     if (user && user.id === userId) {
       setIsOwnProfile(true);
+    } else if (user && userId) {
+      // フォロー状態をチェック
+      const following = await checkFollowStatus(user.id, userId);
+      setIsFollowing(following);
+      // 関連情報を取得
+      loadRelatedContent(user.id);
     }
   };
 
@@ -89,75 +102,24 @@ export default function ProfileDetailClient({ userId }: ProfileDetailClientProps
     setIsLoading(true);
     try {
       // プロフィール情報を取得
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (profileError) throw profileError;
+      const profileData = await getProfile(userId);
+      if (!profileData) {
+        setProfile(null);
+        return;
+      }
       setProfile(profileData);
 
-      // ユーザーの投稿したビジネスモデルを取得（仮のデータ）
-      const mockModels: BusinessModel[] = [
-        {
-          id: '1',
-          title: 'AIメンタルヘルスコーチ',
-          description: '日々の気分や行動をトラッキングし、AIがパーソナライズされたメンタルヘルスアドバイスを提供。',
-          category: 'ヘルスケア',
-          tags: ['AI', 'メンタルヘルス', 'ウェルビーイング', 'ヘルステック'],
-          upvotes: 523,
-          comments: 89,
-          author: {
-            name: profileData.username,
-            avatar: profileData.avatar_url || '',
-            verified: true
-          },
-          createdAt: '2024-01-22',
-          featured: true,
-          revenue: '月額1,500円/ユーザー',
-          difficulty: 'Medium',
-          timeToMarket: '3-6ヶ月',
-          initialInvestment: '500万円〜',
-          targetMarket: 'ストレスを抱える20-40代のビジネスパーソン',
-          image: 'https://images.pexels.com/photos/4101143/pexels-photo-4101143.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-          userCount: 15000
-        },
-        {
-          id: '2',
-          title: '高齢者向けVR旅行体験サービス',
-          description: '移動が困難な高齢者向けに、VRで世界中の観光地を体験できるサービス。',
-          category: 'エンターテインメント',
-          tags: ['VR', '高齢者', '旅行', 'ウェルビーイング'],
-          upvotes: 412,
-          comments: 67,
-          author: {
-            name: profileData.username,
-            avatar: profileData.avatar_url || '',
-            verified: true
-          },
-          createdAt: '2024-01-20',
-          featured: false,
-          revenue: '月額3,000円/施設',
-          difficulty: 'Hard',
-          timeToMarket: '6-12ヶ月',
-          initialInvestment: '1000万円〜',
-          targetMarket: '介護施設、高齢者向け住宅',
-          image: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-          userCount: 8000
-        }
-      ];
+      // 統計情報を取得
+      const statsData = await getProfileStats(userId);
+      setStats(statsData);
 
-      setUserModels(mockModels);
+      // ユーザーの投稿したプロダクトを取得
+      const products = await getUserProducts(userId);
+      setUserProducts(products);
 
-      // 統計情報を計算
-      setStats({
-        totalModels: mockModels.length,
-        totalUpvotes: mockModels.reduce((sum, model) => sum + model.upvotes, 0),
-        totalComments: mockModels.reduce((sum, model) => sum + model.comments, 0),
-        followers: 1234,
-        following: 567
-      });
+      // アップボートしたプロダクトを取得
+      const upvoted = await getUserUpvotedProducts(userId);
+      setUpvotedProducts(upvoted);
 
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -166,12 +128,49 @@ export default function ProfileDetailClient({ userId }: ProfileDetailClientProps
     }
   };
 
-  const handleFollowToggle = () => {
-    setIsFollowing(!isFollowing);
-    setStats(prev => ({
-      ...prev,
-      followers: isFollowing ? prev.followers - 1 : prev.followers + 1
-    }));
+  const loadRelatedContent = async (currentUserId: string) => {
+    try {
+      // 共通のフォロワーを取得
+      const mutual = await getMutualFollowers(currentUserId, userId);
+      setMutualFollowers(mutual);
+
+      // 似た興味を持つカテゴリを取得
+      const interests = await getSimilarInterests(currentUserId, userId);
+      setSimilarInterests(interests);
+
+      // インタラクション履歴を取得
+      const history = await getInteractionHistory(currentUserId, userId);
+      setInteractionHistory(history);
+
+      // 共有コレクションを取得
+      const collections = await getSharedCollections(currentUserId, userId);
+      setSharedCollections(collections);
+    } catch (error) {
+      console.error('Error loading related content:', error);
+    }
+  };
+
+  const handleFollowToggle = async () => {
+    if (!currentUser) {
+      router.push('/auth/signin');
+      return;
+    }
+
+    setIsFollowLoading(true);
+    try {
+      const success = await toggleFollow(currentUser.id, userId);
+      if (success) {
+        setIsFollowing(!isFollowing);
+        setStats(prev => ({
+          ...prev,
+          followers: isFollowing ? prev.followers - 1 : prev.followers + 1
+        }));
+      }
+    } catch (error) {
+      console.error('Error toggling follow:', error);
+    } finally {
+      setIsFollowLoading(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -185,9 +184,16 @@ export default function ProfileDetailClient({ userId }: ProfileDetailClientProps
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-        <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">プロフィールを読み込み中...</p>
+        <div className="max-w-7xl mx-auto px-4 py-16">
+          <Skeleton className="h-32 w-full mb-8" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Skeleton className="h-96" />
+            <div className="md:col-span-2 space-y-4">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-64 w-full" />
+              <Skeleton className="h-64 w-full" />
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -222,236 +228,368 @@ export default function ProfileDetailClient({ userId }: ProfileDetailClientProps
       </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        {/* プロフィールヘッダー */}
-        <Card className="mb-8">
-          <CardContent className="p-8">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
-              <div className="flex items-center space-x-6 mb-4 md:mb-0">
-                <Avatar className="w-24 h-24">
-                  <AvatarImage src={profile.avatar_url} alt={profile.username} />
-                  <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-2xl">
-                    {profile.username.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{profile.username}</h1>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* 左サイドバー - プロフィール情報 */}
+          <div className="space-y-6">
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-center">
+                  <Avatar className="w-24 h-24 mx-auto mb-4">
+                    <AvatarImage src={profile.avatar_url} alt={profile.username} />
+                    <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-2xl">
+                      {profile.username.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <h1 className="text-2xl font-bold text-gray-900 mb-2">{profile.username}</h1>
                   {profile.bio && (
-                    <p className="text-gray-600 max-w-2xl">{profile.bio}</p>
+                    <p className="text-gray-600 text-sm mb-4">{profile.bio}</p>
                   )}
-                  <div className="flex items-center space-x-4 mt-3 text-sm text-gray-500">
+                  
+                  {!isOwnProfile && (
+                    <Button
+                      onClick={handleFollowToggle}
+                      disabled={isFollowLoading}
+                      className="w-full mb-4"
+                      variant={isFollowing ? "outline" : "default"}
+                    >
+                      {isFollowLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : isFollowing ? (
+                        <>フォロー中</>
+                      ) : (
+                        <>
+                          <UserPlus className="w-4 h-4 mr-2" />
+                          フォロー
+                        </>
+                      )}
+                    </Button>
+                  )}
+
+                  <div className="flex flex-col space-y-2 text-sm text-gray-500">
                     {profile.location && (
-                      <div className="flex items-center">
+                      <div className="flex items-center justify-center">
                         <MapPin className="w-4 h-4 mr-1" />
                         {profile.location}
                       </div>
                     )}
-                    <div className="flex items-center">
+                    <div className="flex items-center justify-center">
                       <Calendar className="w-4 h-4 mr-1" />
                       {formatDate(profile.created_at)}から参加
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex space-x-3">
-                {isOwnProfile ? (
-                  <>
-                    <Button variant="outline">
-                      <Edit className="w-4 h-4 mr-2" />
-                      プロフィール編集
-                    </Button>
-                    <Button variant="outline" size="icon">
-                      <Settings className="w-4 h-4" />
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button
-                      onClick={handleFollowToggle}
-                      className={isFollowing ? "bg-gray-200 text-gray-700 hover:bg-gray-300" : ""}
+                {/* ソーシャルリンク */}
+                <div className="mt-6 space-y-2">
+                  {profile.website && (
+                    <a
+                      href={profile.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
                     >
-                      {isFollowing ? 'フォロー中' : 'フォロー'}
-                    </Button>
-                    <Button variant="outline" size="icon">
-                      <Mail className="w-4 h-4" />
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* ソーシャルリンク */}
-            <div className="flex items-center space-x-4 mb-6">
-              {profile.website && (
-                <a
-                  href={profile.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
-                >
-                  <LinkIcon className="w-4 h-4 mr-1" />
-                  ウェブサイト
-                </a>
-              )}
-              {profile.twitter && (
-                <a
-                  href={`https://twitter.com/${profile.twitter}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
-                >
-                  <Twitter className="w-4 h-4 mr-1" />
-                  Twitter
-                </a>
-              )}
-              {profile.github && (
-                <a
-                  href={`https://github.com/${profile.github}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  <Github className="w-4 h-4 mr-1" />
-                  GitHub
-                </a>
-              )}
-              {profile.linkedin && (
-                <a
-                  href={`https://linkedin.com/in/${profile.linkedin}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
-                >
-                  <Linkedin className="w-4 h-4 mr-1" />
-                  LinkedIn
-                </a>
-              )}
-            </div>
-
-            {/* 統計情報 */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl font-bold text-gray-900">{stats.totalModels}</div>
-                <div className="text-sm text-gray-600">投稿</div>
-              </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl font-bold text-gray-900">{stats.totalUpvotes}</div>
-                <div className="text-sm text-gray-600">獲得投票</div>
-              </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl font-bold text-gray-900">{stats.totalComments}</div>
-                <div className="text-sm text-gray-600">コメント</div>
-              </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl font-bold text-gray-900">{stats.followers}</div>
-                <div className="text-sm text-gray-600">フォロワー</div>
-              </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl font-bold text-gray-900">{stats.following}</div>
-                <div className="text-sm text-gray-600">フォロー中</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* タブコンテンツ */}
-        <Tabs defaultValue="models" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="models">投稿したモデル</TabsTrigger>
-            <TabsTrigger value="upvoted">アップボート</TabsTrigger>
-            <TabsTrigger value="achievements">実績</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="models" className="mt-6">
-            <div className="space-y-6">
-              {userModels.length > 0 ? (
-                userModels.map((model, index) => (
-                  <BusinessModelCard 
-                    key={model.id} 
-                    model={model} 
-                    rank={index + 1}
-                  />
-                ))
-              ) : (
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <Briefcase className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p className="text-gray-600">まだビジネスモデルを投稿していません</p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="upvoted" className="mt-6">
-            <Card>
-              <CardContent className="p-12 text-center">
-                <TrendingUp className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-600">アップボートしたモデルはまだありません</p>
+                      <LinkIcon className="w-4 h-4 mr-2" />
+                      ウェブサイト
+                    </a>
+                  )}
+                  {profile.twitter && (
+                    <a
+                      href={`https://twitter.com/${profile.twitter}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
+                    >
+                      <Twitter className="w-4 h-4 mr-2" />
+                      Twitter
+                    </a>
+                  )}
+                  {profile.github && (
+                    <a
+                      href={`https://github.com/${profile.github}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+                    >
+                      <Github className="w-4 h-4 mr-2" />
+                      GitHub
+                    </a>
+                  )}
+                </div>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          <TabsContent value="achievements" className="mt-6">
-            <div className="grid md:grid-cols-2 gap-6">
+            {/* 統計情報 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">統計</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">投稿</span>
+                  <span className="font-semibold">{stats.totalProducts}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">獲得投票</span>
+                  <span className="font-semibold">{stats.totalVotes}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">コメント</span>
+                  <span className="font-semibold">{stats.totalComments}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">フォロワー</span>
+                  <span className="font-semibold">{stats.followers}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">フォロー中</span>
+                  <span className="font-semibold">{stats.following}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 関連情報 - ログインユーザーとの関係 */}
+            {currentUser && !isOwnProfile && (
               <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
-                      <Trophy className="w-8 h-8 text-white" />
-                    </div>
+                <CardHeader>
+                  <CardTitle className="text-lg">あなたとの関係</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* 共通のフォロワー */}
+                  {mutualFollowers.length > 0 && (
                     <div>
-                      <h3 className="font-bold text-lg">トップコントリビューター</h3>
-                      <p className="text-sm text-gray-600">10個以上のモデルを投稿</p>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">
+                        <Users className="w-4 h-4 inline mr-1" />
+                        共通のフォロワー ({mutualFollowers.length}人)
+                      </h4>
+                      <div className="flex -space-x-2">
+                        {mutualFollowers.slice(0, 5).map((follower) => (
+                          <Avatar
+                            key={follower.id}
+                            className="w-8 h-8 border-2 border-white cursor-pointer"
+                            onClick={() => router.push(`/profiles/${follower.id}`)}
+                          >
+                            <AvatarImage src={follower.avatar_url} alt={follower.username} />
+                            <AvatarFallback className="text-xs">
+                              {follower.username.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        ))}
+                        {mutualFollowers.length > 5 && (
+                          <div className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-xs text-gray-600">
+                            +{mutualFollowers.length - 5}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* 似た興味 */}
+                  {similarInterests.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">
+                        <Heart className="w-4 h-4 inline mr-1" />
+                        共通の興味
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {similarInterests.map((interest) => (
+                          <Badge key={interest.category} variant="secondary" className="text-xs">
+                            {interest.category} ({interest.sharedCount})
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* インタラクション履歴 */}
+                  {interactionHistory && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">
+                        <MessageCircle className="w-4 h-4 inline mr-1" />
+                        インタラクション
+                      </h4>
+                      <div className="space-y-1 text-xs text-gray-600">
+                        <div>相互アップボート: {interactionHistory.mutualVotes}回</div>
+                        <div>相互コメント: {interactionHistory.mutualComments}回</div>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
+            )}
+          </div>
 
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-                      <Star className="w-8 h-8 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-lg">人気クリエイター</h3>
-                      <p className="text-sm text-gray-600">合計1000以上のアップボートを獲得</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          {/* メインコンテンツ */}
+          <div className="md:col-span-2">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="products">
+                  <Briefcase className="w-4 h-4 mr-2" />
+                  プロダクト
+                </TabsTrigger>
+                <TabsTrigger value="upvoted">
+                  <Heart className="w-4 h-4 mr-2" />
+                  アップボート
+                </TabsTrigger>
+                <TabsTrigger value="activity">
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  アクティビティ
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="products" className="mt-6">
+                <div className="space-y-4">
+                  {userProducts.length > 0 ? (
+                    userProducts.map((product) => (
+                      <ProductCard
+                        key={product.id}
+                        product={{
+                          id: product.id,
+                          user_id: profile.id,
+                          name: product.title,
+                          tagline: product.description.substring(0, 100),
+                          description: product.description,
+                          product_url: null,
+                          github_url: null,
+                          demo_url: null,
+                          thumbnail_url: product.images[0] || null,
+                          category_id: null,
+                          status: 'published' as const,
+                          launch_date: product.created_at,
+                          is_featured: product.featured,
+                          view_count: 0,
+                          created_at: product.created_at,
+                          updated_at: product.created_at,
+                          vote_count: product.votes,
+                          comment_count: product.comments,
+                          profile: {
+                            id: profile.id,
+                            username: profile.username,
+                            display_name: profile.username,
+                            bio: profile.bio,
+                            avatar_url: profile.avatar_url,
+                            website_url: profile.website,
+                            twitter_handle: profile.twitter,
+                            created_at: profile.created_at,
+                            updated_at: profile.created_at
+                          },
+                          category: product.category ? {
+                            id: 1,
+                            name: product.category,
+                            slug: product.category.toLowerCase().replace(/\s+/g, '-'),
+                            description: null,
+                            icon_name: null,
+                            created_at: product.created_at
+                          } : undefined,
+                          tags: product.tags.map((tag, index) => ({
+                            id: index + 1,
+                            name: tag,
+                            slug: tag.toLowerCase().replace(/\s+/g, '-'),
+                            created_at: product.created_at
+                          })),
+                          images: product.images.map((image, index) => ({
+                            id: index + 1,
+                            product_id: product.id,
+                            image_url: image,
+                            caption: null as string | null,
+                            display_order: index,
+                            created_at: product.created_at
+                          })),
+                          has_voted: false
+                        }}
+                      />
+                    ))
+                  ) : (
+                    <Card>
+                      <CardContent className="p-12 text-center">
+                        <Briefcase className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                        <p className="text-gray-600">まだプロダクトを投稿していません</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              </TabsContent>
 
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full flex items-center justify-center">
-                      <MessageCircle className="w-8 h-8 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-lg">アクティブコメンター</h3>
-                      <p className="text-sm text-gray-600">100以上のコメントを投稿</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <TabsContent value="upvoted" className="mt-6">
+                <div className="space-y-4">
+                  {upvotedProducts.length > 0 ? (
+                    upvotedProducts.map((product) => (
+                      <ProductCard
+                        key={product.id}
+                        product={{
+                          id: product.id,
+                          user_id: '',
+                          name: product.title,
+                          tagline: product.description.substring(0, 100),
+                          description: product.description,
+                          product_url: null,
+                          github_url: null,
+                          demo_url: null,
+                          thumbnail_url: product.images[0] || null,
+                          category_id: null,
+                          status: 'published' as const,
+                          launch_date: product.created_at,
+                          is_featured: product.featured,
+                          view_count: 0,
+                          created_at: product.created_at,
+                          updated_at: product.created_at,
+                          vote_count: product.votes,
+                          comment_count: product.comments,
+                          profile: undefined,
+                          category: product.category ? {
+                            id: 1,
+                            name: product.category,
+                            slug: product.category.toLowerCase().replace(/\s+/g, '-'),
+                            description: null,
+                            icon_name: null,
+                            created_at: product.created_at
+                          } : undefined,
+                          tags: product.tags.map((tag, index) => ({
+                            id: index + 1,
+                            name: tag,
+                            slug: tag.toLowerCase().replace(/\s+/g, '-'),
+                            created_at: product.created_at
+                          })),
+                          images: product.images.map((image, index) => ({
+                            id: index + 1,
+                            product_id: product.id,
+                            image_url: image,
+                            caption: null as string | null,
+                            display_order: index,
+                            created_at: product.created_at
+                          })),
+                          has_voted: true
+                        }}
+                      />
+                    ))
+                  ) : (
+                    <Card>
+                      <CardContent className="p-12 text-center">
+                        <Heart className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                        <p className="text-gray-600">アップボートしたプロダクトはまだありません</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              </TabsContent>
 
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center">
-                      <Award className="w-8 h-8 text-white" />
+              <TabsContent value="activity" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>最近のアクティビティ</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {/* アクティビティタイムライン */}
+                      <div className="text-center text-gray-500 py-8">
+                        アクティビティ機能は現在開発中です
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-bold text-lg">アーリーアダプター</h3>
-                      <p className="text-sm text-gray-600">サービス開始初期からの参加</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
       </main>
     </div>
   );

@@ -70,7 +70,7 @@ export function Header({
 
   const handleProfileClick = () => {
     if (currentUser?.id) {
-      router.push(`/profiles/${currentUser.id}`);
+      router.push(`/profile?id=${currentUser.id}`);
     }
   };
 

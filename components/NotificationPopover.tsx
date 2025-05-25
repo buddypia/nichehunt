@@ -86,7 +86,7 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
       router.push(`/products/${notification.data.product_id}`);
       setIsOpen(false);
     } else if (notification.data?.user_id) {
-      router.push(`/profiles/${notification.data.user_id}`);
+      router.push(`/profile?id=${notification.data.user_id}`);
       setIsOpen(false);
     }
   };
