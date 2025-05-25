@@ -76,26 +76,35 @@ export function ProductCard({ product, onVote, className }: ProductCardProps) {
       {/* 背景装飾 */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       
-      {/* ステータスバッジ */}
-      {(isNew || isHot || product.is_featured) && (
-        <div className="absolute top-3 right-3 z-10 flex flex-col gap-1">
+      {/* ステータスバッジ - 右上に配置 */}
+      {(product.is_featured || isHot || isNew) && (
+        <div className="absolute top-2 right-2 z-10">
           {product.is_featured && (
-            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg">
-              <Star className="w-3 h-3 mr-1" />
-              Featured
-            </Badge>
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur-sm opacity-75" />
+              <div className="relative bg-gradient-to-r from-purple-600 to-pink-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1">
+                <Star className="w-3 h-3" />
+                <span>Featured</span>
+              </div>
+            </div>
           )}
-          {isNew && (
-            <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-md">
-              <Sparkles className="w-3 h-3 mr-1" />
-              New
-            </Badge>
+          {isHot && !product.is_featured && (
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-red-600 rounded-full blur-sm opacity-75" />
+              <div className="relative bg-gradient-to-r from-orange-600 to-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1">
+                <TrendingUp className="w-3 h-3" />
+                <span>Hot</span>
+              </div>
+            </div>
           )}
-          {isHot && (
-            <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 shadow-md">
-              <TrendingUp className="w-3 h-3 mr-1" />
-              Hot
-            </Badge>
+          {isNew && !product.is_featured && !isHot && (
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full blur-sm opacity-75" />
+              <div className="relative bg-gradient-to-r from-green-600 to-emerald-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1">
+                <Sparkles className="w-3 h-3" />
+                <span>New</span>
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -122,7 +131,7 @@ export function ProductCard({ product, onVote, className }: ProductCardProps) {
                 </div>
               )}
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 pr-20">
               <h3 className="text-lg font-semibold line-clamp-1 group-hover:text-primary transition-colors">
                 {product.name}
               </h3>
