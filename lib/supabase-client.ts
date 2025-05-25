@@ -28,25 +28,9 @@ export const supabase = createSupabaseClient<Database>(supabaseUrl, supabaseAnon
   }
 });
 
-// Export createClient function
+// Export createClient function that returns the singleton instance
 export function createClient() {
-  return createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: true,
-      storageKey: 'nichenext-auth',
-      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    },
-    global: {
-      headers: {
-        'x-application-name': 'nichehunt'
-      }
-    },
-    db: {
-      schema: 'public'
-    }
-  });
+  return supabase;
 }
 
 // Re-export types from the main supabase file
