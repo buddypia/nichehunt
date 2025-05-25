@@ -6,7 +6,7 @@ import { Bookmark } from 'lucide-react';
 import { BusinessModelCard } from '@/components/BusinessModelCard';
 import { Button } from '@/components/ui/button';
 import { BusinessModel } from '@/types/BusinessModel';
-import { getSavedModels } from '@/lib/api/saved-models';
+import { getSavedModels } from '@/lib/api/collections';
 import { getCurrentUser } from '@/lib/auth';
 
 export default function SavedModelsClient() {
@@ -37,11 +37,7 @@ export default function SavedModelsClient() {
     
     setIsLoading(true);
     try {
-      const models = await getSavedModels(currentUser.id);
-      // Extract businessModel from each saved model
-      const businessModels = models
-        .filter(model => model.businessModel)
-        .map(model => model.businessModel!);
+      const { businessModels } = await getSavedModels(currentUser.id);
       setSavedModels(businessModels);
     } catch (error) {
       console.error('Error loading saved models:', error);
