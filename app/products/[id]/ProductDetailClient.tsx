@@ -43,6 +43,7 @@ interface CommentItemProps {
   onReplyCancel: () => void;
   isSubmittingComment: boolean;
   onDelete: (commentId: number) => void;
+  parentComment?: CommentWithRelations;
 }
 
 const CommentItem: React.FC<CommentItemProps> = ({ 
@@ -56,7 +57,8 @@ const CommentItem: React.FC<CommentItemProps> = ({
   onReplySubmit,
   onReplyCancel,
   isSubmittingComment,
-  onDelete
+  onDelete,
+  parentComment
 }) => {
   return (
     <div className={`${depth > 0 ? 'ml-8 mt-4' : ''}`}>
@@ -72,6 +74,14 @@ const CommentItem: React.FC<CommentItemProps> = ({
             <Link href={`/profile?id=${comment.profile?.id}`} className="font-medium hover:underline">
               {comment.profile?.username}
             </Link>
+            {parentComment && (
+              <div className="flex items-center space-x-1">
+                <span className="text-gray-400">→</span>
+                <Link href={`/profile?id=${parentComment.profile?.id}`} className="text-sm text-blue-600 hover:underline">
+                  @{parentComment.profile?.username}
+                </Link>
+              </div>
+            )}
             <span className="text-sm text-gray-500">
               {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true, locale: ja })}
             </span>
@@ -302,7 +312,7 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
     }
   };
 
-  const renderCommentWithReplies = (comment: CommentWithRelations, depth: number = 0) => {
+  const renderCommentWithReplies = (comment: CommentWithRelations, depth: number = 0, parentComment?: CommentWithRelations) => {
     const isReplying = replyToId === comment.id;
     const replyText = replyTexts[comment.id] || '';
 
@@ -323,8 +333,9 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
           }}
           isSubmittingComment={isSubmittingComment}
           onDelete={handleDeleteClick}
+          parentComment={parentComment}
         />
-        {comment.replies && comment.replies.map(reply => renderCommentWithReplies(reply, depth + 1))}
+        {comment.replies && comment.replies.map(reply => renderCommentWithReplies(reply, depth + 1, comment))}
       </React.Fragment>
     );
   };
