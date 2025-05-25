@@ -131,10 +131,10 @@ export function Header({
               <NotificationPopover userId={currentUser.id} />
             )}
 
-            {/* 投稿ボタン */}
+            {/* 投稿ボタン（デスクトップのみ表示） */}
             <Button 
               onClick={onSubmitClick}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
+              className="hidden md:flex bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
             >
               <Plus className="w-4 h-4 mr-2" />
               投稿する
@@ -188,6 +188,7 @@ export function Header({
               <Button
                 variant="outline"
                 onClick={() => router.push('/auth/signin')}
+                className="hidden md:block"
               >
                 ログイン
               </Button>
@@ -251,6 +252,20 @@ export function Header({
                   )}
 
                   <Separator />
+
+                  {/* 投稿ボタン（モバイル） */}
+                  <div className="px-4">
+                    <Button
+                      onClick={() => {
+                        onSubmitClick();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      投稿する
+                    </Button>
+                  </div>
                   
                   {currentUser ? (
                     <div className="px-4">
