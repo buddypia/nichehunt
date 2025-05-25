@@ -108,7 +108,7 @@ export function Hero({ onSubmitClick }: HeroProps) {
             </Button>
           </motion.div>
 
-          {/* 統計情報 */}
+          {/* 統計情報
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -148,6 +148,7 @@ export function Hero({ onSubmitClick }: HeroProps) {
               </div>
             </div>
           </motion.div>
+          */}
         </motion.div>
       </div>
 

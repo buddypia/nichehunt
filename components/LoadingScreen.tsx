@@ -279,62 +279,6 @@ export function LoadingScreen({ loadingProgress, loadingMessage }: LoadingScreen
             </motion.div>
           </div>
         </motion.div>
-
-        {/* コンテンツプレビュー */}
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto"
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 1.4 }}
-        >
-          {[
-            { icon: Trophy, title: "トップランキング", color: "text-purple-500" },
-            { icon: Star, title: "注目のアイデア", color: "text-pink-500" },
-            { icon: Flame, title: "トレンディング", color: "text-orange-500" },
-          ].map((item, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 1.6 + i * 0.1 }}
-              whileHover={{ scale: 1.05 }}
-              className="relative"
-            >
-              <Card className="overflow-hidden border-2 border-gray-100 dark:border-gray-800 hover:border-primary/50 transition-all duration-300">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-3">
-                    <motion.div
-                      animate={{
-                        rotate: [0, 10, -10, 0],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        delay: i * 0.3,
-                      }}
-                    >
-                      <item.icon className={`w-8 h-8 ${item.color}`} />
-                    </motion.div>
-                    <Skeleton className="h-6 w-32 shimmer-advanced" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {[...Array(3)].map((_, j) => (
-                      <div key={j} className="flex items-center gap-3">
-                        <Skeleton className="h-10 w-10 rounded-full shimmer-advanced" />
-                        <div className="flex-1 space-y-1">
-                          <Skeleton className="h-4 w-full shimmer-advanced" />
-                          <Skeleton className="h-3 w-3/4 shimmer-advanced" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
       </div>
 
       {/* カスタムCSS */}
