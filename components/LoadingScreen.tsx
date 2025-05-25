@@ -58,58 +58,6 @@ export function LoadingScreen({ loadingProgress, loadingMessage }: LoadingScreen
 
       </div>
 
-      {/* ヘッダー */}
-      <motion.div 
-        className="border-b backdrop-blur-md bg-white/60 dark:bg-gray-900/60"
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, type: "spring" }}
-      >
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <motion.div
-                className="relative"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              >
-                <Zap className="w-8 h-8 text-primary" />
-                <motion.div
-                  className="absolute inset-0 w-8 h-8"
-                  animate={{
-                    boxShadow: [
-                      "0 0 0 0 rgba(139, 92, 246, 0.4)",
-                      "0 0 0 20px rgba(139, 92, 246, 0)",
-                    ],
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                  }}
-                  style={{ borderRadius: "50%" }}
-                />
-              </motion.div>
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: "auto" }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="overflow-hidden"
-              >
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  NicheNext
-                </h1>
-              </motion.div>
-            </div>
-            <div className="flex items-center gap-4">
-              {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-8 w-24 shimmer-advanced" />
-              ))}
-              <Skeleton className="h-8 w-8 rounded-full shimmer-advanced" />
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
       {/* メインローディングエリア */}
       <div className="container mx-auto px-4 py-16">
         {/* 中央の3Dローディングアニメーション */}
