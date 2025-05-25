@@ -10,11 +10,12 @@ export async function getNotificationsClient(userId: string): Promise<Notificati
     .limit(50);
 
   if (error) {
-    console.error('Error fetching notifications:', {
+    console.error('❌ Error fetching notifications:', {
       message: error.message,
       details: error.details,
       hint: error.hint,
-      code: error.code
+      code: error.code,
+      userId: userId
     });
     return [];
   }
@@ -25,7 +26,7 @@ export async function getNotificationsClient(userId: string): Promise<Notificati
 export async function markNotificationAsReadClient(notificationId: string): Promise<boolean> {
   const { error } = await supabase
     .from('notifications')
-    .update({ read: true })
+    .update({ is_read: true })
     .eq('id', notificationId);
 
   if (error) {
@@ -44,9 +45,9 @@ export async function markNotificationAsReadClient(notificationId: string): Prom
 export async function markAllNotificationsAsReadClient(userId: string): Promise<boolean> {
   const { error } = await supabase
     .from('notifications')
-    .update({ read: true })
+    .update({ is_read: true })
     .eq('user_id', userId)
-    .eq('read', false);
+    .eq('is_read', false);
 
   if (error) {
     console.error('Error marking all notifications as read:', {

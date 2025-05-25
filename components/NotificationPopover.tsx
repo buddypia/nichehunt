@@ -40,6 +40,13 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
     }
   }, [userId]);
 
+  useEffect(() => {
+    // ポップオーバーを開いた時にも通知を再読み込み
+    if (isOpen && userId && userId !== 'undefined') {
+      loadNotifications();
+    }
+  }, [isOpen, userId]);
+
   const loadNotifications = async () => {
     if (!userId || userId === 'undefined') {
       console.error('Invalid userId for notifications:', userId);
@@ -51,7 +58,7 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
       const data = await getNotificationsClient(userId);
       setNotifications(data);
     } catch (error) {
-      console.error('Failed to load notifications:', error);
+      console.error('ailed to load notifications:', error);
     } finally {
       setIsLoading(false);
     }
@@ -63,8 +70,10 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
       return;
     }
     
+    console.log('Loading unread count for userId:', userId);
     try {
       const count = await getUnreadNotificationCountClient(userId);
+      console.log('Unread count:', count);
       setUnreadCount(count);
     } catch (error) {
       console.error('Failed to load unread count:', error);
@@ -73,36 +82,38 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
 
   const handleNotificationClick = async (notification: Notification) => {
     // 既読にする
-    if (!notification.read) {
-      await markNotificationAsReadClient(notification.id);
+    if (!notification.is_read) {
+      await markNotificationAsReadClient(notification.id.toString());
       setNotifications(prev => 
-        prev.map(n => n.id === notification.id ? { ...n, read: true } : n)
+        prev.map(n => n.id === notification.id ? { ...n, is_read: true } : n)
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
     }
 
     // ナビゲーション
-    if (notification.data?.product_id) {
-      router.push(`/products/${notification.data.product_id}`);
+    if (notification.related_product_id) {
+      router.push(`/products/${notification.related_product_id}`);
       setIsOpen(false);
-    } else if (notification.data?.user_id) {
-      router.push(`/profile?id=${notification.data.user_id}`);
+    } else if (notification.related_user_id) {
+      router.push(`/profiles/${notification.related_user_id}`);
       setIsOpen(false);
     }
   };
 
   const handleMarkAllAsRead = async () => {
     await markAllNotificationsAsReadClient(userId);
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
     setUnreadCount(0);
   };
 
   const getIcon = (type: Notification['type']) => {
     switch (type) {
-      case 'upvote':
+      case 'vote':
         return <Heart className="w-4 h-4 text-red-500" />;
       case 'comment':
         return <MessageCircle className="w-4 h-4 text-blue-500" />;
+      case 'reply':
+        return <MessageCircle className="w-4 h-4 text-indigo-500" />;
       case 'follow':
         return <UserPlus className="w-4 h-4 text-green-500" />;
       case 'mention':
@@ -157,7 +168,7 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
                 <div
                   key={notification.id}
                   className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-                    !notification.read ? 'bg-blue-50/50' : ''
+                    !notification.is_read ? 'bg-blue-50/50' : ''
                   }`}
                   onClick={() => handleNotificationClick(notification)}
                 >
@@ -179,7 +190,7 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
                         })}
                       </p>
                     </div>
-                    {!notification.read && (
+                    {!notification.is_read && (
                       <div className="flex-shrink-0">
                         <div className="w-2 h-2 bg-blue-600 rounded-full" />
                       </div>

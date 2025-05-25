@@ -1,14 +1,17 @@
 export interface Notification {
-  id: string;
+  id: number;
   user_id: string;
-  type: 'upvote' | 'comment' | 'follow' | 'mention' | 'system';
+  type: 'vote' | 'comment' | 'reply' | 'follow' | 'mention' | 'system';
   title: string;
-  message: string;
-  read: boolean;
+  message: string | null;
+  related_product_id: number | null;
+  related_user_id: string | null;
+  is_read: boolean;
   created_at: string;
   data?: {
     product_id?: string;
     comment_id?: string;
+    voter_id?: string;
     user_id?: string;
     [key: string]: any;
   };
