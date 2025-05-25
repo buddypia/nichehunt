@@ -10,7 +10,12 @@ export async function getNotificationsClient(userId: string): Promise<Notificati
     .limit(50);
 
   if (error) {
-    console.error('Error fetching notifications:', error);
+    console.error('Error fetching notifications:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    });
     return [];
   }
 
@@ -24,7 +29,12 @@ export async function markNotificationAsReadClient(notificationId: string): Prom
     .eq('id', notificationId);
 
   if (error) {
-    console.error('Error marking notification as read:', error);
+    console.error('Error marking notification as read:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    });
     return false;
   }
 
@@ -39,7 +49,12 @@ export async function markAllNotificationsAsReadClient(userId: string): Promise<
     .eq('read', false);
 
   if (error) {
-    console.error('Error marking all notifications as read:', error);
+    console.error('Error marking all notifications as read:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    });
     return false;
   }
 
@@ -51,10 +66,16 @@ export async function getUnreadNotificationCountClient(userId: string): Promise<
     .from('notifications')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId)
-    .eq('read', false);
+    .eq('is_read', false);
 
   if (error) {
-    console.error('Error fetching unread notification count:', error);
+    console.error('Error fetching unread notification count:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+      userId: userId
+    });
     return 0;
   }
 

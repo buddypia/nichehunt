@@ -29,7 +29,7 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (userId) {
+    if (userId && userId !== 'undefined') {
       loadNotifications();
       loadUnreadCount();
       // ポーリングで通知をチェック
@@ -41,6 +41,11 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
   }, [userId]);
 
   const loadNotifications = async () => {
+    if (!userId || userId === 'undefined') {
+      console.error('Invalid userId for notifications:', userId);
+      return;
+    }
+    
     setIsLoading(true);
     try {
       const data = await getNotificationsClient(userId);
@@ -53,6 +58,11 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
   };
 
   const loadUnreadCount = async () => {
+    if (!userId || userId === 'undefined') {
+      console.error('Invalid userId for unread count:', userId);
+      return;
+    }
+    
     try {
       const count = await getUnreadNotificationCountClient(userId);
       setUnreadCount(count);
@@ -73,7 +83,7 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
 
     // ナビゲーション
     if (notification.data?.product_id) {
-      router.push(`/models/${notification.data.product_id}`);
+      router.push(`/products/${notification.data.product_id}`);
       setIsOpen(false);
     } else if (notification.data?.user_id) {
       router.push(`/profiles/${notification.data.user_id}`);

@@ -5,7 +5,11 @@ import { Sparkles, TrendingUp, Users, Rocket, Star, ArrowRight, Zap } from "luci
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
-export function Hero() {
+interface HeroProps {
+  onSubmitClick?: () => void;
+}
+
+export function Hero({ onSubmitClick }: HeroProps) {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
       {/* 背景パターン */}
@@ -86,19 +90,22 @@ export function Hero() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
           >
-            <Link href="#products">
+            <Link href="/products">
               <Button size="lg" className="group bg-white text-purple-900 hover:bg-gray-100 px-8">
                 <Rocket className="w-5 h-5 mr-2" />
                 プロダクトを探す
                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-            <Link href="/submit">
-              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 px-8">
-                <Zap className="w-5 h-5 mr-2" />
-                アイデアを投稿
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              className="group bg-white text-purple-900 hover:bg-gray-100 px-8"
+              onClick={onSubmitClick}
+            >
+              <Zap className="w-5 h-5 mr-2" />
+              アイデアを投稿
+              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </Button>
           </motion.div>
 
           {/* 統計情報 */}

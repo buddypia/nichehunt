@@ -18,12 +18,10 @@ export async function generateMetadata({ params }: ProductDetailPageProps): Prom
 }
 
 export async function generateStaticParams() {
-  // 静的エクスポートのため、いくつかのダミーIDを生成
-  return [
-    { id: '1' },
-    { id: '2' },
-    { id: '3' },
-  ];
+  // 静的エクスポートのため、1-20のIDを生成
+  return Array.from({ length: 20 }, (_, i) => ({
+    id: String(i + 1)
+  }));
 }
 
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {

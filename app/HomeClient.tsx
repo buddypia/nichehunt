@@ -14,6 +14,7 @@ import type { ProductWithRelations } from "@/lib/types/database"
 import { useSearch } from "@/contexts/SearchContext"
 import { motion } from "framer-motion"
 import Link from "next/link"
+import { SubmitModal } from "@/components/SubmitModal"
 
 interface HomeClientProps {
   initialProducts: ProductWithRelations[]
@@ -27,6 +28,7 @@ export function HomeClient({ initialProducts, featuredProducts, todaysPicks }: H
   const [sortBy, setSortBy] = useState<"popular" | "newest" | "comments" | "featured">("popular")
   const [isLoading, setIsLoading] = useState(false)
   const [topProducts, setTopProducts] = useState<ProductWithRelations[]>([])
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
   const { searchQuery, selectedCategory } = useSearch()
 
   useEffect(() => {
@@ -222,6 +224,10 @@ export function HomeClient({ initialProducts, featuredProducts, todaysPicks }: H
     ))
   }
 
+  const handleSubmitClick = () => {
+    setIsSubmitModalOpen(true)
+  }
+
   return (
     <main className="min-h-screen">
       {/* フィルタートップバー */}
@@ -232,7 +238,7 @@ export function HomeClient({ initialProducts, featuredProducts, todaysPicks }: H
         onSortChange={setSortBy}
       />
       
-      <Hero />
+      <Hero onSubmitClick={handleSubmitClick} />
       
       <div className="container mx-auto px-4 py-8">
         {/* 注目のトップ5 */}
@@ -294,7 +300,7 @@ export function HomeClient({ initialProducts, featuredProducts, todaysPicks }: H
 
                       {/* プロダクト情報 */}
                       <div className="flex-1 min-w-0">
-                        <Link href={`/models/${product.id}`} className="group">
+                        <Link href={`/products/${product.id}`} className="group">
                           <h3 className="font-semibold text-lg group-hover:text-primary transition-colors truncate">
                             {product.name}
                           </h3>
@@ -435,6 +441,12 @@ export function HomeClient({ initialProducts, featuredProducts, todaysPicks }: H
           )}
         </section>
       </div>
+      
+      {/* 投稿モーダル */}
+      <SubmitModal
+        isOpen={isSubmitModalOpen}
+        onClose={() => setIsSubmitModalOpen(false)}
+      />
     </main>
   )
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Calendar, MessageCircle, ChevronUp, Users, Tag, Zap, Star, Sparkles, TrendingUp, Heart } from "lucide-react"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -22,9 +23,11 @@ export function ProductCard({ product, onVote, className }: ProductCardProps) {
   const [hasVoted, setHasVoted] = useState(product.has_voted || false)
   const [voteCount, setVoteCount] = useState(product.vote_count || 0)
   const supabase = createClient()
+  const router = useRouter()
 
   const handleVote = async (e: React.MouseEvent) => {
     e.preventDefault()
+    e.stopPropagation()
     if (isVoting) return
 
     setIsVoting(true)
@@ -49,16 +52,27 @@ export function ProductCard({ product, onVote, className }: ProductCardProps) {
     }
   }
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // 投票ボタンのクリックの場合は何もしない
+    if ((e.target as HTMLElement).closest('button')) {
+      return
+    }
+    router.push(`/products/${product.id}`)
+  }
+
   const isNew = new Date(product.launch_date).getTime() > Date.now() - 24 * 60 * 60 * 1000
   const isHot = (product.vote_count || 0) > 10 || (product.comment_count || 0) > 5
 
   return (
-    <Card className={cn(
-      "group relative overflow-hidden transition-all duration-300",
-      "hover:shadow-2xl hover:-translate-y-1",
-      "bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50",
-      className
-    )}>
+    <Card 
+      className={cn(
+        "group relative overflow-hidden transition-all duration-300 cursor-pointer",
+        "hover:shadow-2xl hover:-translate-y-1",
+        "bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50",
+        className
+      )}
+      onClick={handleCardClick}
+    >
       {/* 背景装飾 */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       
@@ -86,8 +100,7 @@ export function ProductCard({ product, onVote, className }: ProductCardProps) {
         </div>
       )}
 
-      <Link href={`/products/${product.id}`}>
-        <CardHeader className="pb-4">
+      <CardHeader className="pb-4">
           <div className="flex items-start space-x-4">
             <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
               {product.thumbnail_url ? (
@@ -118,9 +131,9 @@ export function ProductCard({ product, onVote, className }: ProductCardProps) {
               </p>
             </div>
           </div>
-        </CardHeader>
+      </CardHeader>
 
-        <CardContent className="pb-4">
+      <CardContent className="pb-4">
           <div className="flex flex-wrap gap-2 mb-4">
             {product.category && (
               <Badge variant="secondary" className="text-xs bg-primary/10 hover:bg-primary/20 transition-colors">
@@ -156,8 +169,7 @@ export function ProductCard({ product, onVote, className }: ProductCardProps) {
               <span className="text-xs font-medium">{voteCount}</span>
             </div>
           </div>
-        </CardContent>
-      </Link>
+      </CardContent>
 
       <CardFooter className="pt-0 border-t border-gray-100 dark:border-gray-800">
         <div className="flex items-center justify-between w-full">

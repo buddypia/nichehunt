@@ -79,7 +79,7 @@ export function BusinessModelCard({ model, rank }: BusinessModelCardProps) {
         </div>
       )}
       
-      <Link href={`/models/${model.id}`}>
+      <Link href={`/products/${model.id}`}>
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between mb-2">
             <Badge variant={model.featured ? "default" : "secondary"} className="text-xs">
@@ -99,7 +99,7 @@ export function BusinessModelCard({ model, rank }: BusinessModelCardProps) {
 
       <CardContent className="space-y-4">
         {model.image && (
-          <Link href={`/models/${model.id}`}>
+          <Link href={`/products/${model.id}`}>
             <div className="relative h-48 w-full overflow-hidden rounded-lg cursor-pointer">
               <img 
                 src={model.image} 
@@ -143,7 +143,7 @@ export function BusinessModelCard({ model, rank }: BusinessModelCardProps) {
         </div>
 
         <div className="flex items-center justify-between pt-3 border-t">
-          <Link href={`/profiles/${model.author.name}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <div className="flex items-center gap-2">
             <Avatar className="h-8 w-8">
               <AvatarImage src={model.author.avatar} alt={model.author.name} />
               <AvatarFallback>{model.author.name.slice(0, 2)}</AvatarFallback>
@@ -154,7 +154,7 @@ export function BusinessModelCard({ model, rank }: BusinessModelCardProps) {
                 <CheckCircle2 className="h-3.5 w-3.5 text-blue-500" />
               )}
             </div>
-          </Link>
+          </div>
 
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
