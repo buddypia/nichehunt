@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Hero } from "@/components/Hero"
 import { ProductCard } from "@/components/ProductCard"
 import { FilterTopBar } from "@/components/FilterTopBar"
@@ -8,11 +8,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
-import { TrendingUp, Clock, MessageCircle, Star, Trophy, Medal, Crown, Zap, Sparkles, ChevronRight, Users, Eye } from "lucide-react"
+import { TrendingUp, Clock, MessageCircle, Star, Trophy, Medal, Crown, Zap, Sparkles, ChevronRight, Users, Eye, Filter, Loader2 } from "lucide-react"
 import { supabase } from "@/lib/supabase-client"
 import type { ProductWithRelations } from "@/lib/types/database"
 import { useSearch } from "@/contexts/SearchContext"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import { SubmitModal } from "@/components/SubmitModal"
 
@@ -29,7 +29,10 @@ export function HomeClient({ initialProducts, featuredProducts, todaysPicks }: H
   const [isLoading, setIsLoading] = useState(false)
   const [topProducts, setTopProducts] = useState<ProductWithRelations[]>([])
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
+  const [showCategoryChange, setShowCategoryChange] = useState(false)
+  const [categoryDisplayName, setCategoryDisplayName] = useState<string | null>(null)
   const { searchQuery, selectedCategory } = useSearch()
+  const productsRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     // selectedCategoryが'all'でない場合はactiveCategoryとして使用
@@ -211,8 +214,32 @@ export function HomeClient({ initialProducts, featuredProducts, todaysPicks }: H
     }
   }
 
-  const handleCategoryChange = (categorySlug: string | null) => {
+  const handleCategoryChange = async (categorySlug: string | null) => {
     setActiveCategory(categorySlug)
+    
+    // カテゴリー名を取得して表示
+    if (categorySlug) {
+      const { data: category } = await supabase
+        .from('categories')
+        .select('name')
+        .eq('slug', categorySlug)
+        .single()
+      
+      if (category && 'name' in category) {
+        setCategoryDisplayName(category.name)
+      }
+    } else {
+      setCategoryDisplayName(null)
+    }
+    
+    // 変更通知を表示
+    setShowCategoryChange(true)
+    setTimeout(() => setShowCategoryChange(false), 3000)
+    
+    // プロダクト一覧セクションまでスムーズスクロール
+    setTimeout(() => {
+      productsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
   }
 
   const handleVote = (productId: number) => {
@@ -356,9 +383,6 @@ export function HomeClient({ initialProducts, featuredProducts, todaysPicks }: H
                   本日投稿された注目のプロダクト
                 </p>
               </div>
-              <Badge variant="secondary">
-                {new Date().toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' })}
-              </Badge>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {todaysPicks.slice(0, 3).map((product) => (
@@ -398,10 +422,63 @@ export function HomeClient({ initialProducts, featuredProducts, todaysPicks }: H
         )}
 
         {/* プロダクト一覧 */}
-        <section>
-          <h2 className="text-2xl font-bold mb-6">
-            {activeCategory ? `カテゴリ: ${activeCategory}` : "すべてのプロダクト"}
-          </h2>
+        <section ref={productsRef} className="relative scroll-mt-20">
+          {/* カテゴリー変更時の通知バナー */}
+          <AnimatePresence>
+            {showCategoryChange && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="absolute -top-16 left-0 right-0 z-20"
+              >
+                <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg p-4 shadow-lg flex items-center justify-center gap-2">
+                  <Filter className="w-5 h-5" />
+                  <span className="font-medium">
+                    {categoryDisplayName 
+                      ? `「${categoryDisplayName}」カテゴリのプロダクトを表示中`
+                      : "すべてのプロダクトを表示中"
+                    }
+                  </span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <motion.div
+            className="flex items-center gap-3 mb-6"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {isLoading && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </motion.div>
+            )}
+            <h2 className="text-2xl font-bold">
+              {categoryDisplayName 
+                ? (
+                  <span>
+                    カテゴリ: 
+                    <Badge variant="outline" className="ml-2 text-lg px-3 py-1">
+                      {categoryDisplayName}
+                    </Badge>
+                  </span>
+                )
+                : "すべてのプロダクト"
+              }
+            </h2>
+            {isLoading && (
+              <span className="text-sm text-muted-foreground animate-pulse">
+                更新中...
+              </span>
+            )}
+          </motion.div>
           
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
