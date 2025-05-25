@@ -39,6 +39,7 @@ export default function SignUpClient() {
     try {
       await signUp(email, password, username);
       router.push('/');
+      router.refresh();
     } catch (error: any) {
       setError(error.message || '登録に失敗しました');
     } finally {

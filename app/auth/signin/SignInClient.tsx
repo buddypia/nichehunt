@@ -26,6 +26,7 @@ export default function SignInClient() {
     try {
       await signIn(email, password);
       router.push('/');
+      router.refresh();
     } catch (error: any) {
       setError(error.message || 'ログインに失敗しました');
     } finally {
