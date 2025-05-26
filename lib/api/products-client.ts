@@ -178,6 +178,14 @@ async function enrichProducts(products: ProductWithStats[]): Promise<ProductWith
   const supabase = createClient()
   const user = await supabase.auth.getUser()
 
+  // ユーザーの投票状態を一括取得
+  let votedProductIds = new Set<number>()
+  if (user.data.user) {
+    const productIds = products.map(p => p.id)
+    votedProductIds = await checkUserVotesBatch(productIds, user.data.user.id)
+  }
+
+  // 各プロダクトの関連情報を並列で取得
   return Promise.all(products.map(async (product) => {
     const [profile, category, tags] = await Promise.all([
       getProfile(product.user_id),
@@ -185,14 +193,12 @@ async function enrichProducts(products: ProductWithStats[]): Promise<ProductWith
       getProductTags(product.id),
     ])
 
-    const hasVoted = user.data.user ? await checkUserVote(product.id, user.data.user.id) : false
-
     return {
       ...product,
       profile,
       category,
       tags,
-      has_voted: hasVoted,
+      has_voted: votedProductIds.has(product.id),
     } as unknown as ProductWithRelations
   }))
 }
@@ -254,6 +260,27 @@ async function checkUserVote(productId: number, userId: string) {
     .eq('user_id', userId as any)
     .single()
   return !!data
+}
+
+// 複数のプロダクトに対する投票状態を一括取得
+async function checkUserVotesBatch(productIds: number[], userId: string): Promise<Set<number>> {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('votes')
+    .select('product_id')
+    .eq('user_id', userId as any)
+    .in('product_id', productIds)
+
+  const votedProductIds = new Set<number>()
+  if (data && Array.isArray(data)) {
+    data.forEach(vote => {
+      if ('product_id' in vote) {
+        votedProductIds.add(vote.product_id as number)
+      }
+    })
+  }
+
+  return votedProductIds
 }
 
 // 今日のピックアップを取得
