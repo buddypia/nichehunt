@@ -83,21 +83,6 @@ export function ProductCard({ product, onVote, className }: ProductCardProps) {
     }
   }
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    // ボタンやインタラクティブな要素のクリックの場合は何もしない
-    const target = e.target as HTMLElement
-    const isInteractiveElement = 
-      target.closest('button') || 
-      target.closest('.bookmark-button') ||
-      target.closest('.vote-button')
-    
-    if (isInteractiveElement) {
-      return
-    }
-    
-    router.push(`/products/${product.id}`)
-  }
-
   const isNew = new Date(product.launch_date).getTime() > Date.now() - 24 * 60 * 60 * 1000
   const isHot = (product.vote_count || 0) > 10 || (product.comment_count || 0) > 5
 
@@ -109,6 +94,18 @@ export function ProductCard({ product, onVote, className }: ProductCardProps) {
         "bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50",
         className
       )}
+      onClick={(e) => {
+        // ボタンやインタラクティブな要素のクリックの場合は何もしない
+        const target = e.target as HTMLElement
+        const isInteractiveElement = 
+          target.closest('button') || 
+          target.closest('.bookmark-button') ||
+          target.closest('.vote-button')
+        
+        if (!isInteractiveElement) {
+          router.push(`/products/${product.id}`)
+        }
+      }}
     >
       {/* 背景装飾 */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -146,7 +143,7 @@ export function ProductCard({ product, onVote, className }: ProductCardProps) {
         </div>
       )}
 
-      <CardHeader className="pb-4" onClick={handleCardClick}>
+      <CardHeader className="pb-4">
           <div className="flex items-start space-x-4">
             <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
               {product.thumbnail_url ? (
@@ -179,7 +176,7 @@ export function ProductCard({ product, onVote, className }: ProductCardProps) {
           </div>
       </CardHeader>
 
-      <CardContent className="pb-4" onClick={handleCardClick}>
+      <CardContent className="pb-4">
           <div className="flex flex-wrap gap-2 mb-4">
             {product.category && (
               <Badge variant="secondary" className="text-xs bg-primary/10 hover:bg-primary/20 transition-colors">
