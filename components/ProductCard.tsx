@@ -36,6 +36,15 @@ export function ProductCard({ product, onVote, className }: ProductCardProps) {
     
     try {
       const supabase = createClient()
+      
+      // 認証チェック
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        router.push('/auth/signin')
+        return
+      }
+
       const { data, error } = await supabase
         .rpc('toggle_vote', { p_product_id: product.id })
       

@@ -72,7 +72,6 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
     
     try {
       const count = await getUnreadNotificationCountClient(userId);
-      console.log('Unread count:', count);
       setUnreadCount(count);
     } catch (error) {
       console.error('Failed to load unread count:', error);

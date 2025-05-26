@@ -27,6 +27,7 @@ import { fetchComments, createComment, deleteComment } from '@/lib/api/comments-
 import { isModelSaved, toggleSaveModel } from '@/lib/api/collections';
 import { getCurrentUser } from '@/lib/auth';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase-client';
 
 interface ProductDetailClientProps {
   initialProduct: ProductWithRelations;
@@ -191,6 +192,28 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
     setCurrentUser(user);
     if (user) {
       checkIfSaved(user.id);
+      checkUserVote(user.id);
+    }
+  };
+
+  const checkUserVote = async (userId: string) => {
+    try {
+      const { data: existingVote } = await supabase
+        .from('votes')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('product_id', product.id)
+        .single();
+      
+      if (existingVote) {
+        setProduct(prev => ({
+          ...prev,
+          has_voted: true,
+        }));
+      }
+    } catch (error) {
+      // エラーが発生した場合（レコードが存在しない場合も含む）は何もしない
+      console.log('No existing vote or error:', error);
     }
   };
 
