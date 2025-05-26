@@ -50,7 +50,6 @@ export function Header({
   const loadCurrentUser = async () => {
     try {
       const user = await getCurrentUser();
-      console.log('Current user loaded:', user);
       setCurrentUser(user);
     } catch (error) {
       console.error('Error loading user:', error);

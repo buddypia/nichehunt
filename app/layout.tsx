@@ -1,46 +1,19 @@
-'use client';
-
 import './globals.css';
 import { Inter } from 'next/font/google';
-import React, { useState } from 'react';
-import { Header } from '@/components/Header';
-import { SubmitModal } from '@/components/SubmitModal';
-import { usePathname } from 'next/navigation';
-import { SearchProvider, useSearch } from '@/contexts/SearchContext';
+import { Metadata } from 'next';
+import ClientLayout from './ClientLayout';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true,
+  variable: '--font-inter'
+});
 
-function RootLayoutContent({ children }: { children: React.ReactNode }) {
-  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
-  const pathname = usePathname();
-  const { searchQuery, setSearchQuery, selectedCategory, setSelectedCategory } = useSearch();
-
-  const handleSubmitClick = () => {
-    setIsSubmitModalOpen(true);
-  };
-
-  // ホームページでのみ検索機能を有効にする
-  const showSearch = pathname === '/' || pathname === '/products' || pathname === '/trending';
-
-  return (
-    <>
-      <Header
-        onSubmitClick={handleSubmitClick}
-        searchQuery={showSearch ? searchQuery : undefined}
-        onSearchChange={showSearch ? setSearchQuery : undefined}
-        selectedCategory={showSearch ? selectedCategory : undefined}
-        onCategoryFilter={showSearch ? setSelectedCategory : undefined}
-      />
-      <main>
-        {children}
-      </main>
-      <SubmitModal
-        isOpen={isSubmitModalOpen}
-        onClose={() => setIsSubmitModalOpen(false)}
-      />
-    </>
-  );
-}
+export const metadata: Metadata = {
+  title: 'NicheNext - ニッチ市場向けビジネスアイデアプラットフォーム',
+  description: '革新的なニッチビジネスモデルを発見・共有するためのプラットフォーム',
+};
 
 export default function RootLayout({
   children,
@@ -48,11 +21,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ja">
-      <body className={inter.className}>
-        <SearchProvider>
-          <RootLayoutContent>{children}</RootLayoutContent>
-        </SearchProvider>
+    <html lang="ja" className={`${inter.variable}`}>
+      <body className={`${inter.className} font-sans`}>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );

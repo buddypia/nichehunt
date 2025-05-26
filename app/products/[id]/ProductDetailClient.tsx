@@ -394,6 +394,8 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
                 src={product.thumbnail_url}
                 alt={product.name}
                 fill
+                priority
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 896px"
                 className="object-cover"
               />
             </div>
@@ -553,6 +555,7 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
                           src={image.image_url}
                           alt={image.caption || ''}
                           fill
+                          sizes="(max-width: 768px) 100vw, 50vw"
                           className="object-cover rounded-xl shadow-md transition-transform duration-300 group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-xl"></div>
