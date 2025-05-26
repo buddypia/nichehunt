@@ -36,7 +36,7 @@ const DEFAULT_COLLECTION_DESCRIPTION = 'お気に入りのビジネスモデル�
 
 // ユーザーのデフォルトコレクションを取得または作成
 export async function getOrCreateDefaultCollection(userId: string): Promise<Collection | null> {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   // まず既存のデフォルトコレクションを探す
   const { data: existingCollection, error: fetchError } = await supabase
@@ -44,7 +44,7 @@ export async function getOrCreateDefaultCollection(userId: string): Promise<Coll
     .select('*')
     .eq('user_id', userId)
     .eq('name', DEFAULT_COLLECTION_NAME)
-    .single();
+    .maybeSingle();
 
   if (existingCollection) {
     return existingCollection;
@@ -57,7 +57,7 @@ export async function getOrCreateDefaultCollection(userId: string): Promise<Coll
       user_id: userId,
       name: DEFAULT_COLLECTION_NAME,
       description: DEFAULT_COLLECTION_DESCRIPTION,
-      is_public: false
+      is_public: true
     })
     .select()
     .single();
@@ -72,7 +72,7 @@ export async function getOrCreateDefaultCollection(userId: string): Promise<Coll
 
 // コレクション内のプロダクトを取得
 export async function getCollectionProducts(collectionId: number): Promise<ProductWithRelations[]> {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { data, error } = await supabase
     .from('collection_products')
@@ -140,7 +140,7 @@ export async function getSavedModels(userId: string): Promise<{ products: Produc
 
 // プロダクトをコレクションに追加
 export async function addProductToCollection(collectionId: number, productId: number): Promise<boolean> {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { error } = await supabase
     .from('collection_products')
@@ -159,7 +159,7 @@ export async function addProductToCollection(collectionId: number, productId: nu
 
 // プロダクトをコレクションから削除
 export async function removeProductFromCollection(collectionId: number, productId: number): Promise<boolean> {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { error } = await supabase
     .from('collection_products')
@@ -177,20 +177,16 @@ export async function removeProductFromCollection(collectionId: number, productI
 
 // プロダクトがコレクションに含まれているかチェック
 export async function isProductInCollection(collectionId: number, productId: number): Promise<boolean> {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { data, error } = await supabase
     .from('collection_products')
     .select('collection_id')
     .eq('collection_id', collectionId)
     .eq('product_id', productId)
-    .single();
+    .maybeSingle();
 
   if (error) {
-    if (error.code === 'PGRST116') {
-      // No rows returned
-      return false;
-    }
     console.error('Error checking product in collection:', error);
     return false;
   }

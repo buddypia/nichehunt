@@ -24,21 +24,8 @@ export function ProductCard({ product, onVote, className }: ProductCardProps) {
   const [hasVoted, setHasVoted] = useState(product.has_voted || false)
   const [voteCount, setVoteCount] = useState(product.vote_count || 0)
   const [isSaving, setIsSaving] = useState(false)
-  const [isSaved, setIsSaved] = useState(false)
+  const [isSaved, setIsSaved] = useState(product.is_saved || false)
   const router = useRouter()
-
-  // 保存状態を初期化時にチェック
-  useEffect(() => {
-    const checkSavedStatus = async () => {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const saved = await isModelSaved(user.id, product.id.toString())
-        setIsSaved(saved)
-      }
-    }
-    checkSavedStatus()
-  }, [product.id])
 
   const handleVote = async (e: React.MouseEvent) => {
     e.preventDefault()

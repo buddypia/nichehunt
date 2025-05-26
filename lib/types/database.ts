@@ -399,6 +399,7 @@ export interface ProductWithRelations extends ProductWithStats {
   tags?: Tag[]
   images?: ProductImage[]
   has_voted?: boolean
+  is_saved?: boolean
 }
 
 export interface CommentWithRelations extends Comment {
