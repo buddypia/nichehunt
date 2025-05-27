@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Calendar, MessageCircle, ChevronUp, Users, Tag, Zap, Star, Sparkles, TrendingUp, Heart, Bookmark } from "lucide-react"
+import { Calendar, MessageCircle, ChevronUp, Users, Tag, Zap, Star, Sparkles, TrendingUp, Heart, Bookmark, Trophy, Medal, Award } from "lucide-react"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -17,9 +17,10 @@ interface ProductCardProps {
   product: ProductWithRelations
   onVote?: (productId: number) => void
   className?: string
+  rank?: number
 }
 
-export function ProductCard({ product, onVote, className }: ProductCardProps) {
+export function ProductCard({ product, onVote, className, rank }: ProductCardProps) {
   const [isVoting, setIsVoting] = useState(false)
   const [hasVoted, setHasVoted] = useState(product.has_voted || false)
   const [voteCount, setVoteCount] = useState(product.vote_count || 0)
@@ -118,6 +119,45 @@ export function ProductCard({ product, onVote, className }: ProductCardProps) {
     >
       {/* 背景装飾 */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      
+      {/* ランキングバッジ - 左上に配置 */}
+      {rank && rank <= 3 && (
+        <div className="absolute top-2 left-2 z-10">
+          <div className="relative">
+            {rank === 1 && (
+              <>
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full blur-sm opacity-75 animate-pulse" />
+                <div className="relative bg-gradient-to-r from-yellow-400 to-amber-500 text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center">
+                  <Trophy className="w-5 h-5" />
+                </div>
+              </>
+            )}
+            {rank === 2 && (
+              <>
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-400 to-slate-500 rounded-full blur-sm opacity-75" />
+                <div className="relative bg-gradient-to-r from-gray-400 to-slate-500 text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center">
+                  <Medal className="w-5 h-5" />
+                </div>
+              </>
+            )}
+            {rank === 3 && (
+              <>
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-amber-600 rounded-full blur-sm opacity-75" />
+                <div className="relative bg-gradient-to-r from-orange-400 to-amber-600 text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center">
+                  <Award className="w-5 h-5" />
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+      {rank && rank > 3 && (
+        <div className="absolute top-2 left-2 z-10">
+          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center">
+            {rank}
+          </div>
+        </div>
+      )}
       
       {/* ステータスバッジ - 右上に配置 */}
       {(product.is_featured || isHot || isNew) && (
