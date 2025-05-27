@@ -3,15 +3,15 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Bookmark } from 'lucide-react';
-import { BusinessModelCard } from '@/components/BusinessModelCard';
+import { ProductCard } from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
-import { BusinessModel } from '@/types/BusinessModel';
+import { ProductWithRelations } from '@/lib/types/database';
 import { getSavedModels } from '@/lib/api/collections';
 import { getCurrentUser } from '@/lib/auth';
 
 export default function SavedModelsClient() {
   const router = useRouter();
-  const [savedModels, setSavedModels] = useState<BusinessModel[]>([]);
+  const [savedProducts, setSavedProducts] = useState<ProductWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
@@ -37,8 +37,8 @@ export default function SavedModelsClient() {
     
     setIsLoading(true);
     try {
-      const { businessModels } = await getSavedModels(currentUser.id);
-      setSavedModels(businessModels);
+      const { products } = await getSavedModels(currentUser.id);
+      setSavedProducts(products);
     } catch (error) {
       console.error('Error loading saved models:', error);
     } finally {
@@ -84,7 +84,7 @@ export default function SavedModelsClient() {
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
           </div>
-        ) : savedModels.length === 0 ? (
+        ) : savedProducts.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <Bookmark className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -102,12 +102,12 @@ export default function SavedModelsClient() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {savedModels.map((model) => (
-              <div key={model.id} onClick={() => router.push(`/products/${model.id}`)}>
-                <BusinessModelCard
-                  model={model}
-                />
-              </div>
+            {savedProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onVote={() => loadSavedModels()}
+              />
             ))}
           </div>
         )}
