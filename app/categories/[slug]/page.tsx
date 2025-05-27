@@ -1,9 +1,10 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import CategoryDetailClient from './CategoryDetailClient';
-import { Topic } from '@/lib/topics-client';
-import { getCategoryBySlug, getProductsByCategoryWithTags } from '@/lib/api/category-products';
+import { getCategoryBySlug } from '@/lib/api/category-products';
 import { createStaticClient } from '@/lib/supabase/static';
+import { createClient } from '@/lib/supabase/server';
+import type { ProductWithRelations } from '@/lib/types/database';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -40,6 +41,7 @@ export async function generateStaticParams() {
 
 export default async function CategoryDetailPage({ params }: PageProps) {
   const { slug } = await params;
+  const supabase = await createClient();
 
   // Supabaseからカテゴリ情報を取得
   const category = await getCategoryBySlug(slug);
@@ -48,18 +50,66 @@ export default async function CategoryDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  // カテゴリに属するプロダクトを取得
-  const businessModels = await getProductsByCategoryWithTags(category.id);
+  // カテゴリに属するプロダクトを取得（人気順）
+  const { data: productsData } = await supabase
+    .from('products_with_stats')
+    .select('*')
+    .eq('status', 'published')
+    .eq('category_id', category.id)
+    .order('vote_count', { ascending: false })
+    .limit(20);
 
-  // Topic形式に変換
-  const topic: Topic = {
-    id: category.id.toString(),
-    name: category.name,
-    slug: category.slug,
-    description: category.description,
-    created_at: category.created_at,
-    updated_at: category.created_at // categoriesテーブルにupdated_atがないため
+  // カテゴリ内の注目プロダクトを取得
+  const { data: featuredData } = await supabase
+    .from('products_with_stats')
+    .select('*')
+    .eq('status', 'published')
+    .eq('category_id', category.id)
+    .eq('featured', true)
+    .order('launch_date', { ascending: false })
+    .limit(3);
+
+  // プロダクトに関連情報を追加
+  const enrichProducts = async (products: any[]): Promise<ProductWithRelations[]> => {
+    return await Promise.all((products || []).map(async (product) => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', product.user_id)
+        .single();
+
+      const { data: productTags } = await supabase
+        .from('product_tags')
+        .select('tag_id')
+        .eq('product_id', product.id);
+
+      let tags: any[] = [];
+      if (productTags && productTags.length > 0) {
+        const tagIds = productTags.map(pt => pt.tag_id);
+        const { data: tagData } = await supabase
+          .from('tags')
+          .select('*')
+          .in('id', tagIds);
+        tags = tagData || [];
+      }
+
+      return {
+        ...product,
+        profile,
+        category,
+        tags,
+      } as ProductWithRelations;
+    }));
   };
 
-  return <CategoryDetailClient topic={topic} businessModels={businessModels} />;
+  const initialProducts = await enrichProducts(productsData || []);
+  const featuredProducts = await enrichProducts(featuredData || []);
+
+  return (
+    <CategoryDetailClient 
+      category={category}
+      initialProducts={initialProducts}
+      featuredProducts={featuredProducts}
+    />
+  );
 }
