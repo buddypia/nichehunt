@@ -208,11 +208,6 @@ export function ProductCard({ product, onVote, className, rank }: ProductCardPro
                   </span>
                 </div>
               )}
-              {product.status === 'published' && (
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center shadow-md">
-                  <Zap className="w-3 h-3 text-white" />
-                </div>
-              )}
             </div>
             <div className="flex-1 min-w-0 pr-20">
               <h3 className="text-lg font-semibold line-clamp-1 group-hover:text-primary transition-colors">
