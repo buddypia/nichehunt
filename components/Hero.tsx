@@ -90,8 +90,8 @@ export function Hero({ onSubmitClick }: HeroProps) {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
           >
-            <Link href="/products">
-              <Button size="lg" className="group bg-white text-purple-900 hover:bg-gray-100 px-8">
+            <Link href="/products" className="w-full sm:w-auto">
+              <Button size="lg" className="group bg-white text-purple-900 hover:bg-gray-100 px-8 w-full">
                 <Rocket className="w-5 h-5 mr-2" />
                 プロダクトを探す
                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -99,7 +99,7 @@ export function Hero({ onSubmitClick }: HeroProps) {
             </Link>
             <Button 
               size="lg" 
-              className="group bg-white text-purple-900 hover:bg-gray-100 px-8"
+              className="group bg-white text-purple-900 hover:bg-gray-100 px-8 w-full sm:w-auto"
               onClick={onSubmitClick}
             >
               <Zap className="w-5 h-5 mr-2" />
