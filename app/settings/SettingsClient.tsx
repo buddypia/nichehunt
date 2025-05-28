@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Settings, User, Bell, Shield, Palette, Mail, LogOut, Save, Loader2 } from 'lucide-react';
+import { Settings, User, Bell, Shield, Mail, LogOut, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -184,7 +184,7 @@ export default function SettingsClient() {
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="profile">
               <User className="w-4 h-4 mr-2" />
               プロフィール
@@ -196,10 +196,6 @@ export default function SettingsClient() {
             <TabsTrigger value="privacy">
               <Shield className="w-4 h-4 mr-2" />
               プライバシー
-            </TabsTrigger>
-            <TabsTrigger value="appearance">
-              <Palette className="w-4 h-4 mr-2" />
-              外観
             </TabsTrigger>
           </TabsList>
 
@@ -447,21 +443,6 @@ export default function SettingsClient() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="appearance" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>外観設定</CardTitle>
-                <CardDescription>
-                  サイトの表示をカスタマイズ
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Coming soon...
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
 
         <div className="mt-8 pt-8 border-t">
