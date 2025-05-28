@@ -94,27 +94,25 @@ export function ProductCard({ product, onVote, className, rank }: ProductCardPro
       
       {/* ランキングバッジ - 右上に配置 */}
       {rank && rank <= 3 && (
-        <div className="absolute -top-2 -right-2 z-10">
-          <div className="relative">
-            {rank === 1 && (
-              <div className="bg-amber-500 text-white w-16 h-16 rounded-full shadow-lg flex flex-col items-center justify-center transform -rotate-12 hover:rotate-0 transition-transform duration-300">
-                <Trophy className="w-8 h-8" />
-                <span className="text-xs font-bold">1st</span>
-              </div>
-            )}
-            {rank === 2 && (
-              <div className="bg-gray-500 text-white w-14 h-14 rounded-full shadow-lg flex flex-col items-center justify-center transform -rotate-12 hover:rotate-0 transition-transform duration-300">
-                <Medal className="w-7 h-7" />
-                <span className="text-xs font-bold">2nd</span>
-              </div>
-            )}
-            {rank === 3 && (
-              <div className="bg-orange-600 text-white w-14 h-14 rounded-full shadow-lg flex flex-col items-center justify-center transform -rotate-12 hover:rotate-0 transition-transform duration-300">
-                <Award className="w-7 h-7" />
-                <span className="text-xs font-bold">3rd</span>
-              </div>
-            )}
-          </div>
+        <div className="absolute top-2 right-2 z-10">
+          {rank === 1 && (
+            <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-yellow-200 shadow-sm">
+              <Trophy className="w-4 h-4 text-yellow-600" />
+              <span className="text-xs font-medium text-yellow-700">1st</span>
+            </div>
+          )}
+          {rank === 2 && (
+            <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
+              <Medal className="w-4 h-4 text-gray-600" />
+              <span className="text-xs font-medium text-gray-700">2nd</span>
+            </div>
+          )}
+          {rank === 3 && (
+            <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-orange-200 shadow-sm">
+              <Award className="w-4 h-4 text-orange-600" />
+              <span className="text-xs font-medium text-orange-700">3rd</span>
+            </div>
+          )}
         </div>
       )}
       
