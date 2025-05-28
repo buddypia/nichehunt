@@ -98,19 +98,16 @@ export function ProductCard({ product, onVote, className, rank }: ProductCardPro
           {rank === 1 && (
             <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-yellow-200 shadow-sm">
               <Trophy className="w-4 h-4 text-yellow-600" />
-              <span className="text-xs font-medium text-yellow-700">1st</span>
             </div>
           )}
           {rank === 2 && (
             <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
               <Medal className="w-4 h-4 text-gray-600" />
-              <span className="text-xs font-medium text-gray-700">2nd</span>
             </div>
           )}
           {rank === 3 && (
             <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-orange-200 shadow-sm">
               <Award className="w-4 h-4 text-orange-600" />
-              <span className="text-xs font-medium text-orange-700">3rd</span>
             </div>
           )}
         </div>
