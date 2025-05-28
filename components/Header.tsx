@@ -77,7 +77,6 @@ export function Header({
   const navItems = [
     { href: '/', label: 'ホーム' },
     { href: '/products', label: 'プロダクト' },
-    { href: '/trending', label: 'トレンド' },
     { href: '/categories', label: 'カテゴリー' },
     { href: '/about', label: 'About' },
   ];

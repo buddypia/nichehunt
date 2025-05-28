@@ -210,35 +210,39 @@ async function enrichProductsEfficiently(products: ProductWithStats[]): Promise<
   })
 }
 
-// 今日のピックアップを効率的に取得
-export async function getTodaysPicksEfficiently() {
+
+
+// トレンドプロダクトを効率的に取得
+export async function getTrendingProductsEfficiently(period: 'today' | 'week' | 'month' = 'today') {
   const supabase = await createClient()
-  const today = new Date().toISOString().split('T')[0]
+  
+  // 期間でフィルタリング用の日付を計算
+  const now = new Date()
+  let dateFilter: string
+  
+  switch (period) {
+    case 'today':
+      const today = new Date(now)
+      today.setHours(0, 0, 0, 0)
+      dateFilter = today.toISOString()
+      break
+    case 'week':
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+      dateFilter = weekAgo.toISOString()
+      break
+    case 'month':
+      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+      dateFilter = monthAgo.toISOString()
+      break
+  }
 
   const { data: products } = await supabase
     .from('products_with_stats')
     .select('*')
     .eq('status', 'published' as any)
-    .eq('launch_date', today as any)
+    .gte('launch_date', dateFilter as any)
     .order('vote_count', { ascending: false })
-    .limit(5)
-
-  if (!products) return []
-
-  return enrichProductsEfficiently(products as unknown as ProductWithStats[])
-}
-
-// 注目のプロダクトを効率的に取得
-export async function getFeaturedProductsEfficiently() {
-  const supabase = await createClient()
-
-  const { data: products } = await supabase
-    .from('products_with_stats')
-    .select('*')
-    .eq('status', 'published' as any)
-    .eq('is_featured', true as any)
-    .order('launch_date', { ascending: false })
-    .limit(10)
+    .limit(20)
 
   if (!products) return []
 

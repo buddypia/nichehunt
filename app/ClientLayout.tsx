@@ -16,7 +16,7 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
   };
 
   // ホームページでのみ検索機能を有効にする
-  const showSearch = pathname === '/' || pathname === '/products' || pathname === '/trending';
+  const showSearch = pathname === '/' || pathname === '/products';
 
   return (
     <>
