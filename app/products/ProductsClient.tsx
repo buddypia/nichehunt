@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { ProductCard } from '@/components/ProductCard';
-import { SearchStats } from '@/components/SearchStats';
 import { getProducts } from '@/lib/api/products-client';
 import { fetchCategories, fetchTags } from '@/lib/api/categories-tags';
 import { ProductWithRelations, Category, Tag } from '@/lib/types/database';
@@ -151,17 +150,6 @@ export default function ProductsClient() {
               </div>
             </div>
           </div>
-
-        {/* Search Stats */}
-        {searchQuery && (
-          <SearchStats
-            query={searchQuery}
-            resultCount={filteredProducts.length}
-            topCategory=""
-            avgUpvotes={0}
-            avgComments={0}
-          />
-        )}
 
         {/* Results Header */}
         <div className="mb-6">
