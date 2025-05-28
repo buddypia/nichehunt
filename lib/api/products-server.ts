@@ -258,20 +258,22 @@ export async function getAllTrendingProductsEfficiently() {
   today.setHours(0, 0, 0, 0)
   const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
-  // 過去30日間のすべてのプロダクトを一度に取得
+  // 過去30日間のすべてのプロダクトを一度に取得（制限なし）
   const { data: products } = await supabase
     .from('products_with_stats')
     .select('*')
     .eq('status', 'published' as any)
     .gte('launch_date', monthAgo.toISOString() as any)
     .order('vote_count', { ascending: false })
-    .limit(60) // 各期間で最大20件表示するので余裕を持って60件取得
 
   if (!products) {
     return {
       today: [],
       week: [],
-      month: []
+      month: [],
+      todayTotal: 0,
+      weekTotal: 0,
+      monthTotal: 0
     }
   }
 
@@ -283,7 +285,7 @@ export async function getAllTrendingProductsEfficiently() {
   const weekProducts = products.filter(p => p.launch_date >= weekAgo)
   const monthProducts = products // すでに月間でフィルタリング済み
 
-  // 一括でエンリッチメント
+  // 一括でエンリッチメント（表示する分だけ）
   const allUniqueProducts = Array.from(new Set([
     ...todayProducts.slice(0, 6),
     ...weekProducts.slice(0, 6),
@@ -298,6 +300,9 @@ export async function getAllTrendingProductsEfficiently() {
   return {
     today: todayProducts.slice(0, 6).map(p => enrichedMap.get(p.id)!).filter(Boolean),
     week: weekProducts.slice(0, 6).map(p => enrichedMap.get(p.id)!).filter(Boolean),
-    month: monthProducts.slice(0, 6).map(p => enrichedMap.get(p.id)!).filter(Boolean)
+    month: monthProducts.slice(0, 6).map(p => enrichedMap.get(p.id)!).filter(Boolean),
+    todayTotal: todayProducts.length,
+    weekTotal: weekProducts.length,
+    monthTotal: monthProducts.length
   }
 }

@@ -11,9 +11,19 @@ interface HomeClientProps {
   trendingToday: ProductWithRelations[]
   trendingWeek: ProductWithRelations[]
   trendingMonth: ProductWithRelations[]
+  trendingTodayTotal: number
+  trendingWeekTotal: number
+  trendingMonthTotal: number
 }
 
-export function HomeClient({ trendingToday, trendingWeek, trendingMonth }: HomeClientProps) {
+export function HomeClient({ 
+  trendingToday, 
+  trendingWeek, 
+  trendingMonth,
+  trendingTodayTotal,
+  trendingWeekTotal,
+  trendingMonthTotal
+}: HomeClientProps) {
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
 
   const handleVote = (productId: number) => {
@@ -38,7 +48,10 @@ export function HomeClient({ trendingToday, trendingWeek, trendingMonth }: HomeC
               <div className="p-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg">
                 <Clock className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">今日のトレンド</h2>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">今日のトレンド</h2>
+                <p className="text-gray-600">{trendingTodayTotal}件のビジネスモデルが話題になっています</p>
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {trendingToday.slice(0, 6).map((product) => (
@@ -59,7 +72,10 @@ export function HomeClient({ trendingToday, trendingWeek, trendingMonth }: HomeC
               <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg">
                 <TrendingUp className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">今週のトレンド</h2>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">今週のトレンド</h2>
+                <p className="text-gray-600">{trendingWeekTotal}件のビジネスモデルが話題になっています</p>
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {trendingWeek.slice(0, 6).map((product) => (
@@ -80,7 +96,10 @@ export function HomeClient({ trendingToday, trendingWeek, trendingMonth }: HomeC
               <div className="p-3 bg-gradient-to-r from-green-500 to-teal-500 rounded-lg">
                 <Award className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">今月のトレンド</h2>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">今月のトレンド</h2>
+                <p className="text-gray-600">{trendingMonthTotal}件のビジネスモデルが話題になっています</p>
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {trendingMonth.slice(0, 6).map((product) => (
