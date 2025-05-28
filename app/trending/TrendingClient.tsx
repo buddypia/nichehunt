@@ -14,7 +14,7 @@ interface TrendingClientProps {
 }
 
 export function TrendingClient({ initialProducts }: TrendingClientProps) {
-  const [selectedPeriod, setSelectedPeriod] = useState<TrendingPeriod>('week');
+  const [selectedPeriod, setSelectedPeriod] = useState<TrendingPeriod>('today');
   const [products, setProducts] = useState<ProductWithRelations[]>(initialProducts);
   const [isLoading, setIsLoading] = useState(false);
   const [isFirstLoad, setIsFirstLoad] = useState(true);

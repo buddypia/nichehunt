@@ -11,13 +11,14 @@ export const metadata: Metadata = {
 export default async function TrendingPage() {
   const supabase = await createClient()
 
-  // トレンドプロダクトを取得（デフォルトは今週）
-  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  // トレンドプロダクトを取得（デフォルトは今日）
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
   const { data: trendingProducts } = await supabase
     .from('products_with_stats')
     .select('*')
     .eq('status', 'published')
-    .gte('launch_date', weekAgo.toISOString())
+    .gte('launch_date', today.toISOString())
     .order('vote_count', { ascending: false })
     .limit(20)
 
