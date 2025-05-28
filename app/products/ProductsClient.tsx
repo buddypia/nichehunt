@@ -3,16 +3,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { ProductCard } from '@/components/ProductCard';
 import { SearchStats } from '@/components/SearchStats';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getProducts, getTrendingProducts } from '@/lib/api/products-client';
+import { getProducts } from '@/lib/api/products-client';
 import { fetchCategories, fetchTags } from '@/lib/api/categories-tags';
 import { ProductWithRelations, Category, Tag } from '@/lib/types/database';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TrendingUp, Clock, Package } from 'lucide-react';
 import { useSearch } from '@/contexts/SearchContext';
-
-type ViewMode = 'all' | 'trending' | 'new';
 
 export default function ProductsClient() {
   const [products, setProducts] = useState<ProductWithRelations[]>([]);
@@ -20,7 +15,6 @@ export default function ProductsClient() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTag, setSelectedTag] = useState<string>('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('all');
   const { searchQuery, selectedCategory, setSelectedCategory } = useSearch();
 
   // Fetch categories and tags on mount
@@ -47,22 +41,15 @@ export default function ProductsClient() {
       setIsLoading(true);
       
       try {
-        let result;
+        const productsResult = await getProducts({
+          search: searchQuery || undefined,
+          categorySlug: selectedCategory !== 'all' ? selectedCategory : undefined,
+          tagSlug: selectedTag !== 'all' ? selectedTag : undefined,
+          sort: 'popular'
+        });
         
-        if (viewMode === 'trending') {
-          const trendingProducts = await getTrendingProducts();
-          setProducts(trendingProducts);
-        } else {
-          const productsResult = await getProducts({
-            search: searchQuery || undefined,
-            categorySlug: selectedCategory !== 'all' ? selectedCategory : undefined,
-            tagSlug: selectedTag !== 'all' ? selectedTag : undefined,
-            sort: viewMode === 'new' ? 'newest' : 'popular'
-          });
-          
-          if (!productsResult.error) {
-            setProducts(productsResult.products);
-          }
+        if (!productsResult.error) {
+          setProducts(productsResult.products);
         }
       } catch (error) {
         console.error('Error loading products:', error);
@@ -72,7 +59,7 @@ export default function ProductsClient() {
     };
 
     loadProducts();
-  }, [viewMode, selectedCategory, selectedTag, searchQuery]);
+  }, [selectedCategory, selectedTag, searchQuery]);
 
   // Filter products based on search
   const filteredProducts = useMemo(() => {
@@ -90,15 +77,7 @@ export default function ProductsClient() {
     if (searchQuery) {
       return `「${searchQuery}」の検索結果`;
     }
-    
-    switch (viewMode) {
-      case 'trending':
-        return 'トレンドプロダクト';
-      case 'new':
-        return '新着プロダクト';
-      default:
-        return 'すべてのプロダクト';
-    }
+    return 'すべてのプロダクト';
   };
 
   return (
@@ -110,62 +89,68 @@ export default function ProductsClient() {
           <p className="text-gray-600">実際に立ち上げられたプロダクトやサービスを探索</p>
         </div>
 
-        {/* View Mode Tabs */}
-        <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)} className="mb-8">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
-            <TabsTrigger value="all" className="flex items-center gap-2">
-              <Package className="w-4 h-4" />
-              すべて
-            </TabsTrigger>
-            <TabsTrigger value="trending" className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" />
-              トレンド
-            </TabsTrigger>
-            <TabsTrigger value="new" className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              新着
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-
         {/* Filters */}
-        {viewMode === 'all' && (
-          <div className="mb-6 flex flex-wrap gap-4">
+        <div className="mb-8 space-y-6">
             {/* Category Filter */}
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">カテゴリ</label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">すべて</option>
+              <h3 className="text-sm font-medium text-gray-900 mb-3">カテゴリ</h3>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setSelectedCategory('all')}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    selectedCategory === 'all'
+                      ? 'bg-gray-900 text-white'
+                      : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  すべて
+                </button>
                 {categories.map(category => (
-                  <option key={category.id} value={category.slug}>
+                  <button
+                    key={category.id}
+                    onClick={() => setSelectedCategory(category.slug)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                      selectedCategory === category.slug
+                        ? 'bg-gray-900 text-white'
+                        : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
                     {category.name}
-                  </option>
+                  </button>
                 ))}
-              </select>
+              </div>
             </div>
 
             {/* Tag Filter */}
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">タグ</label>
-              <select
-                value={selectedTag}
-                onChange={(e) => setSelectedTag(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">すべて</option>
+              <h3 className="text-sm font-medium text-gray-900 mb-3">タグ</h3>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setSelectedTag('all')}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    selectedTag === 'all'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-blue-50 text-blue-700 border border-blue-200 hover:border-blue-300'
+                  }`}
+                >
+                  すべて
+                </button>
                 {tags.map(tag => (
-                  <option key={tag.id} value={tag.slug}>
-                    {tag.name}
-                  </option>
+                  <button
+                    key={tag.id}
+                    onClick={() => setSelectedTag(tag.slug)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      selectedTag === tag.slug
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-blue-50 text-blue-700 border border-blue-200 hover:border-blue-300'
+                    }`}
+                  >
+                    #{tag.name}
+                  </button>
                 ))}
-              </select>
+              </div>
             </div>
           </div>
-        )}
 
         {/* Search Stats */}
         {searchQuery && (
@@ -190,25 +175,28 @@ export default function ProductsClient() {
 
         {/* Products List */}
         {isLoading ? (
-          <div className="grid gap-6">
-            {[...Array(3)].map((_, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
               <Card key={i} className="p-6">
-                <div className="flex items-start space-x-4">
-                  <Skeleton className="w-12 h-12 rounded-lg" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-5 w-1/3" />
-                    <Skeleton className="h-4 w-1/2" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-3 w-1/4" />
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <Skeleton className="w-16 h-16 rounded-lg" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-4 w-full" />
+                    </div>
                   </div>
-                  <Skeleton className="w-16 h-16" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-3 w-1/2" />
+                    <Skeleton className="h-8 w-full" />
+                  </div>
                 </div>
               </Card>
             ))}
           </div>
         ) : (
           <>
-            <div className="grid gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
