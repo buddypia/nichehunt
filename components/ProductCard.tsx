@@ -120,78 +120,39 @@ export function ProductCard({ product, onVote, className, rank }: ProductCardPro
       {/* 背景装飾 */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       
-      {/* ランキングバッジ - 左上に配置 */}
+      {/* ランキングバッジ - 右上に配置 */}
       {rank && rank <= 3 && (
-        <div className="absolute top-2 left-2 z-10">
+        <div className="absolute -top-2 -right-2 z-10">
           <div className="relative">
             {rank === 1 && (
-              <>
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full blur-sm opacity-75 animate-pulse" />
-                <div className="relative bg-gradient-to-r from-yellow-400 to-amber-500 text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center">
-                  <Trophy className="w-5 h-5" />
-                </div>
-              </>
+              <div className="bg-amber-500 text-white w-16 h-16 rounded-full shadow-lg flex flex-col items-center justify-center transform -rotate-12 hover:rotate-0 transition-transform duration-300">
+                <Trophy className="w-8 h-8" />
+                <span className="text-xs font-bold">1st</span>
+              </div>
             )}
             {rank === 2 && (
-              <>
-                <div className="absolute inset-0 bg-gradient-to-r from-gray-400 to-slate-500 rounded-full blur-sm opacity-75" />
-                <div className="relative bg-gradient-to-r from-gray-400 to-slate-500 text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center">
-                  <Medal className="w-5 h-5" />
-                </div>
-              </>
+              <div className="bg-gray-500 text-white w-14 h-14 rounded-full shadow-lg flex flex-col items-center justify-center transform -rotate-12 hover:rotate-0 transition-transform duration-300">
+                <Medal className="w-7 h-7" />
+                <span className="text-xs font-bold">2nd</span>
+              </div>
             )}
             {rank === 3 && (
-              <>
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-amber-600 rounded-full blur-sm opacity-75" />
-                <div className="relative bg-gradient-to-r from-orange-400 to-amber-600 text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center">
-                  <Award className="w-5 h-5" />
-                </div>
-              </>
+              <div className="bg-orange-600 text-white w-14 h-14 rounded-full shadow-lg flex flex-col items-center justify-center transform -rotate-12 hover:rotate-0 transition-transform duration-300">
+                <Award className="w-7 h-7" />
+                <span className="text-xs font-bold">3rd</span>
+              </div>
             )}
           </div>
         </div>
       )}
       {rank && rank > 3 && (
-        <div className="absolute top-2 left-2 z-10">
-          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center">
-            {rank}
+        <div className="absolute top-2 right-2 z-10">
+          <div className="bg-blue-600 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center transform hover:scale-110 transition-transform duration-300">
+            <span className="text-xl font-bold">{rank}</span>
           </div>
         </div>
       )}
       
-      {/* ステータスバッジ - 右上に配置 */}
-      {(product.is_featured || isHot || isNew) && (
-        <div className="absolute top-2 right-2 z-10">
-          {product.is_featured && (
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur-sm opacity-75" />
-              <div className="relative bg-gradient-to-r from-purple-600 to-pink-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1">
-                <Star className="w-3 h-3" />
-                <span>Featured</span>
-              </div>
-            </div>
-          )}
-          {isHot && !product.is_featured && (
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-red-600 rounded-full blur-sm opacity-75" />
-              <div className="relative bg-gradient-to-r from-orange-600 to-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                <span>Hot</span>
-              </div>
-            </div>
-          )}
-          {isNew && !product.is_featured && !isHot && (
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full blur-sm opacity-75" />
-              <div className="relative bg-gradient-to-r from-green-600 to-emerald-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1">
-                <Sparkles className="w-3 h-3" />
-                <span>New</span>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
       <CardHeader className="pb-4">
           <div className="flex items-start space-x-4">
             <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
@@ -221,6 +182,37 @@ export function ProductCard({ product, onVote, className, rank }: ProductCardPro
       </CardHeader>
 
       <CardContent className="pb-4">
+          {/* ステータスバッジ - タグの上に表示 */}
+          {(product.is_featured || isHot || isNew || (product.comment_count || 0) > 5) && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {isHot && (
+                <Badge className="text-xs bg-gradient-to-r from-orange-600 to-red-600 text-white border-0 shadow-sm hover:shadow-md transition-shadow">
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                  Popular
+                </Badge>
+              )}
+              {isNew && (
+                <Badge className="text-xs bg-gradient-to-r from-green-600 to-emerald-600 text-white border-0 shadow-sm hover:shadow-md transition-shadow">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  Newest
+                </Badge>
+              )}
+              {(product.comment_count || 0) > 5 && (
+                <Badge className="text-xs bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0 shadow-sm hover:shadow-md transition-shadow">
+                  <MessageCircle className="w-3 h-3 mr-1" />
+                  Comments
+                </Badge>
+              )}
+              {product.is_featured && (
+                <Badge className="text-xs bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 shadow-sm hover:shadow-md transition-shadow">
+                  <Star className="w-3 h-3 mr-1" />
+                  Featured
+                </Badge>
+              )}
+            </div>
+          )}
+
+          {/* カテゴリとタグバッジ */}
           <div className="flex flex-wrap gap-2 mb-4">
             {product.category && (
               <Badge variant="secondary" className="text-xs bg-primary/10 hover:bg-primary/20 transition-colors">
