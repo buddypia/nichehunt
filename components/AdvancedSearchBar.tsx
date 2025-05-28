@@ -90,10 +90,15 @@ export function AdvancedSearchBar({
               type="text"
               placeholder="ビジネスモデルを検索..."
               value={localValue}
-              onChange={(e) => setLocalValue(e.target.value)}
+              onChange={(e) => {
+                const newValue = e.target.value;
+                setLocalValue(newValue);
+                onChange(newValue); // リアルタイムで親コンポーネントに値を伝える
+              }}
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
                   handleSearch(localValue);
+                  setShowSuggestions(false);
                 }
               }}
               onFocus={() => {
