@@ -112,8 +112,12 @@ export async function uploadProductImage(file: File): Promise<{ url: string | nu
     .upload(fileName, file)
 
   if (error) {
-    console.error('Error uploading image:', error)
-    return { url: null, error }
+    console.error('Error uploading image:', {
+      message: error.message || 'Unknown error',
+      name: error.name,
+      details: error,
+    })
+    return { url: null, error: error.message || 'Failed to upload image' }
   }
 
   // 公開URLを取得
