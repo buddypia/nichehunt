@@ -56,7 +56,7 @@ export default function SavedModelsClient() {
               ログインが必要です
             </h3>
             <p className="text-gray-500 mb-6">
-              保存したモデルを表示するにはログインしてください
+              マイコレクションを表示するにはログインしてください
             </p>
             <Button
               onClick={() => router.push('/auth/signin')}
@@ -74,7 +74,7 @@ export default function SavedModelsClient() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">保存したモデル</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">マイコレクション</h1>
           <p className="text-gray-600">
             後で見返したいビジネスモデルのコレクション
           </p>
@@ -88,10 +88,10 @@ export default function SavedModelsClient() {
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <Bookmark className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              保存したモデルはありません
+              マイコレクションはありません
             </h3>
             <p className="text-gray-500 mb-6">
-              気に入ったビジネスモデルを保存して、後で見返すことができます
+              気に入ったビジネスモデルをマイコレクションに追加して、後で見返すことができます
             </p>
             <Button
               onClick={() => router.push('/')}

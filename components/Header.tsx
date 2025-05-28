@@ -170,7 +170,7 @@ export function Header({
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push('/saved')} className="cursor-pointer">
                     <Bookmark className="mr-2 h-4 w-4" />
-                    <span>保存したモデル</span>
+                    <span>マイコレクション</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push('/settings')} className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
@@ -237,7 +237,7 @@ export function Header({
                         <Link href="/saved" onClick={() => setIsMobileMenuOpen(false)}>
                           <Button variant="ghost" className="w-full justify-start">
                             <Bookmark className="mr-2 h-4 w-4" />
-                            保存したモデル
+                            マイコレクション
                           </Button>
                         </Link>
                         <Link href="/settings" onClick={() => setIsMobileMenuOpen(false)}>

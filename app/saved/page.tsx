@@ -2,8 +2,8 @@ import { Metadata } from 'next';
 import SavedModelsClient from './SavedModelsClient';
 
 export const metadata: Metadata = {
-  title: '保存したモデル - NicheNext',
-  description: '保存したビジネスモデルの一覧',
+  title: 'マイコレクション - NicheNext',
+  description: 'お気に入りのビジネスモデルコレクション',
 };
 
 export default function SavedModelsPage() {
