@@ -54,11 +54,12 @@ export function HomeClient({
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {trendingToday.slice(0, 6).map((product) => (
+              {trendingToday.slice(0, 6).map((product, index) => (
                 <ProductCard
                   key={product.id}
                   product={product}
                   onVote={handleVote}
+                  rank={index + 1}
                 />
               ))}
             </div>
@@ -78,11 +79,12 @@ export function HomeClient({
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {trendingWeek.slice(0, 6).map((product) => (
+              {trendingWeek.slice(0, 6).map((product, index) => (
                 <ProductCard
                   key={product.id}
                   product={product}
                   onVote={handleVote}
+                  rank={index + 1}
                 />
               ))}
             </div>
@@ -102,11 +104,12 @@ export function HomeClient({
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {trendingMonth.slice(0, 6).map((product) => (
+              {trendingMonth.slice(0, 6).map((product, index) => (
                 <ProductCard
                   key={product.id}
                   product={product}
                   onVote={handleVote}
+                  rank={index + 1}
                 />
               ))}
             </div>

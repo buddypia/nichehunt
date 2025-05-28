@@ -117,13 +117,6 @@ export function ProductCard({ product, onVote, className, rank }: ProductCardPro
           </div>
         </div>
       )}
-      {rank && rank > 3 && (
-        <div className="absolute top-2 right-2 z-10">
-          <div className="bg-blue-600 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center transform hover:scale-110 transition-transform duration-300">
-            <span className="text-xl font-bold">{rank}</span>
-          </div>
-        </div>
-      )}
       
       <CardHeader className="pb-4">
           <div className="flex items-start space-x-4">
