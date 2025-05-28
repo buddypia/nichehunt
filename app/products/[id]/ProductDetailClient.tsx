@@ -3,12 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Heart, MessageCircle, ExternalLink, Share2, Calendar, Tag, Github, Play, Globe, Trash2, Bookmark } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, ExternalLink, Share2, Calendar, Tag, Github, Play, Globe, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { SaveToCollectionPopover } from '@/components/SaveToCollectionPopover';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +25,6 @@ import { ja } from 'date-fns/locale';
 import type { ProductWithRelations, CommentWithRelations } from '@/lib/types/database';
 import { voteProduct } from '@/lib/api/products-client';
 import { fetchComments, createComment, deleteComment } from '@/lib/api/comments-product';
-import { isModelSaved, toggleSaveModel } from '@/lib/api/collections';
 import { getCurrentUser } from '@/lib/auth';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase-client';
@@ -179,8 +179,6 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
   const [replyTexts, setReplyTexts] = useState<Record<number, string>>({});
   const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     loadCurrentUser();
@@ -191,7 +189,6 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
     const user = await getCurrentUser();
     setCurrentUser(user);
     if (user) {
-      checkIfSaved(user.id);
       checkUserVote(user.id);
     }
   };
@@ -214,15 +211,6 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
     } catch (error) {
       // エラーが発生した場合（レコードが存在しない場合も含む）は何もしない
       console.log('No existing vote or error:', error);
-    }
-  };
-
-  const checkIfSaved = async (userId: string) => {
-    try {
-      const saved = await isModelSaved(userId, product.id.toString());
-      setIsSaved(saved);
-    } catch (error) {
-      console.error('Error checking saved status:', error);
     }
   };
 
@@ -299,27 +287,6 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
       toast.error('コメントの投稿に失敗しました');
     } finally {
       setIsSubmittingComment(false);
-    }
-  };
-
-  const handleSave = async () => {
-    if (!currentUser) {
-      toast.error('保存するにはログインが必要です');
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      const success = await toggleSaveModel(currentUser.id, product.id.toString());
-      if (success) {
-        setIsSaved(!isSaved);
-        toast.success(isSaved ? 'コレクションから削除しました' : 'コレクションに保存しました');
-      }
-    } catch (error) {
-      console.error('Error saving:', error);
-      toast.error('保存に失敗しました');
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -442,15 +409,9 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
                   <Heart className={`w-4 h-4 ${product.has_voted ? 'fill-current' : ''}`} />
                   <span>{product.vote_count}</span>
                 </Button>
-                <Button
-                  variant={isSaved ? "default" : "outline"}
-                  size="sm"
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="flex items-center space-x-1"
-                >
-                  <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
-                </Button>
+                {currentUser && (
+                  <SaveToCollectionPopover productId={product.id} />
+                )}
                 <Button
                   variant="outline"
                   size="sm"
