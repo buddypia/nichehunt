@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import type { ProductWithRelations, ProductWithStats } from '@/lib/types/database'
 
+// デフォルトコレクション名の定数
+const DEFAULT_COLLECTION_NAME = 'Default Collection'
+
 // 効率的にプロダクトデータを取得してProductCard形式に整形
 export async function getProductsWithRelations({
   categorySlug,
@@ -120,7 +123,7 @@ async function enrichProductsEfficiently(products: ProductWithStats[]): Promise<
       .from('collections')
       .select('id')
       .eq('user_id', user.id)
-      .eq('name', '保存したモデル')
+      .eq('name', DEFAULT_COLLECTION_NAME)
       .single()
     
     defaultCollectionId = collection?.id || null

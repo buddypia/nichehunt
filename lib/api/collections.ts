@@ -31,7 +31,7 @@ function mapProductToBusinessModel(product: ProductWithRelations): BusinessModel
 }
 
 // デフォルトコレクションの名前
-const DEFAULT_COLLECTION_NAME = '保存したモデル';
+const DEFAULT_COLLECTION_NAME = 'Default Collection';
 const DEFAULT_COLLECTION_DESCRIPTION = 'お気に入りのビジネスモデルのコレクション';
 
 // ユーザーのデフォルトコレクションを取得または作成
@@ -124,7 +124,7 @@ export async function getCollectionProducts(collectionId: number): Promise<Produ
   return products;
 }
 
-// ユーザーの保存したモデルを取得（デフォルトコレクションから）
+// ユーザーの保存したビジネスモデルを取得（デフォルトコレクションから）
 export async function getSavedModels(userId: string): Promise<{ products: ProductWithRelations[], businessModels: BusinessModel[] }> {
   const collection = await getOrCreateDefaultCollection(userId);
   
@@ -192,6 +192,119 @@ export async function isProductInCollection(collectionId: number, productId: num
   }
 
   return !!data;
+}
+
+// ユーザーの全コレクションを取得
+export async function getUserCollections(userId: string): Promise<Collection[]> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('collections')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching user collections:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+// コレクションを作成
+export async function createCollection(
+  userId: string,
+  name: string,
+  description: string = '',
+  isPublic: boolean = true
+): Promise<Collection | null> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('collections')
+    .insert({
+      user_id: userId,
+      name,
+      description,
+      is_public: isPublic
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating collection:', error);
+    return null;
+  }
+
+  return data;
+}
+
+// コレクションを更新
+export async function updateCollection(
+  collectionId: number,
+  updates: {
+    name?: string;
+    description?: string;
+    is_public?: boolean;
+  }
+): Promise<Collection | null> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('collections')
+    .update(updates)
+    .eq('id', collectionId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating collection:', error);
+    return null;
+  }
+
+  return data;
+}
+
+// コレクションを削除
+export async function deleteCollection(collectionId: number): Promise<boolean> {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from('collections')
+    .delete()
+    .eq('id', collectionId);
+
+  if (error) {
+    console.error('Error deleting collection:', error);
+    return false;
+  }
+
+  return true;
+}
+
+// コレクションの詳細を取得（プロダクト数を含む）
+export async function getCollectionWithCount(collectionId: number): Promise<Collection & { product_count: number } | null> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('collections')
+    .select(`
+      *,
+      collection_products (count)
+    `)
+    .eq('id', collectionId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching collection with count:', error);
+    return null;
+  }
+
+  return {
+    ...data,
+    product_count: data.collection_products?.[0]?.count || 0
+  };
 }
 
 // デフォルトコレクションに対するヘルパー関数
