@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase-client"
 import type { ProductWithRelations } from "@/lib/types/database"
-import { toggleSaveModel, isModelSaved } from "@/lib/api/collections"
+import { SaveToCollectionPopover } from "@/components/SaveToCollectionPopover"
 
 interface ProductCardProps {
   product: ProductWithRelations
@@ -24,7 +24,6 @@ export function ProductCard({ product, onVote, className, rank }: ProductCardPro
   const [isVoting, setIsVoting] = useState(false)
   const [hasVoted, setHasVoted] = useState(product.has_voted || false)
   const [voteCount, setVoteCount] = useState(product.vote_count || 0)
-  const [isSaving, setIsSaving] = useState(false)
   const [isSaved, setIsSaved] = useState(product.is_saved || false)
   const router = useRouter()
 
@@ -65,33 +64,6 @@ export function ProductCard({ product, onVote, className, rank }: ProductCardPro
     }
   }
 
-  const handleSave = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (isSaving) return
-
-    setIsSaving(true)
-
-    try {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (!user) {
-        router.push('/auth/signin')
-        return
-      }
-
-      const success = await toggleSaveModel(user.id, product.id.toString())
-      
-      if (success) {
-        setIsSaved(!isSaved)
-      }
-    } catch (error) {
-      console.error('Failed to save:', error)
-    } finally {
-      setIsSaving(false)
-    }
-  }
 
   const isNew = new Date(product.launch_date).getTime() > Date.now() - 24 * 60 * 60 * 1000
   const isHot = (product.vote_count || 0) > 10 || (product.comment_count || 0) > 5
@@ -275,35 +247,15 @@ export function ProductCard({ product, onVote, className, rank }: ProductCardPro
             )}
           </div>
           <div className="flex items-center gap-2">
-            <div className="relative group/bookmark bookmark-button">
-              <Button
-                variant={isSaved ? "default" : "outline"}
-                size="icon"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleSave(e)
-                }}
-                disabled={isSaving}
-                className={cn(
-                  "h-8 w-8 transition-all duration-200 relative z-20",
-                  isSaved ? "bg-amber-500 hover:bg-amber-600 border-amber-500" : "hover:border-amber-500 hover:text-amber-500"
-                )}
-              >
-                <Bookmark className={cn(
-                  "w-4 h-4 transition-all duration-200",
-                  isSaved && "fill-current",
-                  isSaving && "animate-pulse",
-                  !isSaved && "group-hover/bookmark:fill-amber-500/20"
-                )} />
-              </Button>
-              {/* ホバー時のツールチップ */}
-              <div className={cn(
-                "absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap",
-                "opacity-0 group-hover/bookmark:opacity-100 transition-opacity duration-200 pointer-events-none"
-              )}>
-                {isSaved ? "保存済み" : "保存する"}
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45" />
-              </div>
+            <div 
+              className="relative bookmark-button"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <SaveToCollectionPopover
+                productId={product.id}
+                onSaveStateChange={setIsSaved}
+                isSaved={isSaved}
+              />
             </div>
             <div className="vote-button">
               <Button
