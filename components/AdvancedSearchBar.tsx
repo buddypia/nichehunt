@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { getPopularTags } from '@/lib/api/popular-tags';
 
 interface AdvancedSearchBarProps {
   value: string;
@@ -23,16 +24,8 @@ interface AdvancedSearchBarProps {
   selectedCategory?: string;
 }
 
-const popularSearches = [
-  'AI', 
-  'サブスクリプション', 
-  '副業', 
-  'エコビジネス',
-  'フリーランス',
-  'オンライン教育'
-];
-
-const recentSearches = [
+// デフォルトの最近の検索（ローカルストレージから取得するまで）
+const defaultRecentSearches = [
   'AIチャットボット',
   'レンタルサービス',
   'マーケットプレイス'
@@ -47,11 +40,46 @@ export function AdvancedSearchBar({
   const [isFocused, setIsFocused] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [localValue, setLocalValue] = useState(value);
+  const [popularSearches, setPopularSearches] = useState<string[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>(defaultRecentSearches);
+  const [isLoading, setIsLoading] = useState(true);
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setLocalValue(value);
   }, [value]);
+
+  // 人気のタグを取得
+  useEffect(() => {
+    async function fetchPopularTags() {
+      setIsLoading(true);
+      try {
+        const tags = await getPopularTags(6);
+        setPopularSearches(tags);
+      } catch (error) {
+        console.error('Failed to fetch popular tags:', error);
+        // エラー時はデフォルト値を使用
+        setPopularSearches(['AI', 'サブスクリプション', '副業', 'エコビジネス', 'フリーランス', 'オンライン教育']);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchPopularTags();
+  }, []);
+
+  // 最近の検索履歴をローカルストレージから取得
+  useEffect(() => {
+    const savedSearches = localStorage.getItem('recentSearches');
+    if (savedSearches) {
+      try {
+        const parsed = JSON.parse(savedSearches);
+        setRecentSearches(parsed.slice(0, 3)); // 最新の3件のみ表示
+      } catch (error) {
+        console.error('Failed to parse recent searches:', error);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -68,6 +96,28 @@ export function AdvancedSearchBar({
     setLocalValue(searchValue);
     onChange(searchValue);
     setShowSuggestions(false);
+
+    // 検索履歴に追加（重複を避ける）
+    const currentSearches = localStorage.getItem('recentSearches');
+    let searches: string[] = [];
+    
+    if (currentSearches) {
+      try {
+        searches = JSON.parse(currentSearches);
+      } catch (error) {
+        console.error('Failed to parse recent searches:', error);
+      }
+    }
+
+    // 既存の同じ検索を削除して最新を先頭に追加
+    searches = searches.filter(s => s !== searchValue);
+    searches.unshift(searchValue);
+    
+    // 最大10件まで保存
+    searches = searches.slice(0, 10);
+    
+    localStorage.setItem('recentSearches', JSON.stringify(searches));
+    setRecentSearches(searches.slice(0, 3)); // 表示は3件まで
   };
 
   const clearSearch = () => {
@@ -139,16 +189,25 @@ export function AdvancedSearchBar({
                 <span className="text-xs font-semibold text-gray-700">人気の検索</span>
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {popularSearches.map((term) => (
-                  <button
-                    key={term}
-                    className="inline-flex items-center px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    onClick={() => handleSearch(term)}
-                  >
-                    <Sparkles className="w-2.5 h-2.5 mr-1 text-yellow-500" />
-                    {term}
-                  </button>
-                ))}
+                {isLoading ? (
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <div className="w-3 h-3 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
+                    読み込み中...
+                  </div>
+                ) : popularSearches.length > 0 ? (
+                  popularSearches.map((term) => (
+                    <button
+                      key={term}
+                      className="inline-flex items-center px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                      onClick={() => handleSearch(term)}
+                    >
+                      <Sparkles className="w-2.5 h-2.5 mr-1 text-yellow-500" />
+                      {term}
+                    </button>
+                  ))
+                ) : (
+                  <span className="text-xs text-gray-500">タグがありません</span>
+                )}
               </div>
             </div>
 
