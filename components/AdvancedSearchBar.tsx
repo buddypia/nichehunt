@@ -95,8 +95,9 @@ export function AdvancedSearchBar({
                 setLocalValue(newValue);
                 onChange(newValue); // リアルタイムで親コンポーネントに値を伝える
               }}
-              onKeyPress={(e) => {
+              onKeyDown={(e) => {
                 if (e.key === 'Enter') {
+                  e.preventDefault();
                   handleSearch(localValue);
                   setShowSuggestions(false);
                 }

@@ -42,6 +42,18 @@ export function Header({
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // 検索実行時の処理
+  const handleSearchChange = (value: string) => {
+    if (onSearchChange) {
+      onSearchChange(value);
+      
+      // プロダクトページ以外で検索が実行された場合、プロダクトページへ遷移
+      if (pathname !== '/products' && value.trim() !== '') {
+        router.push('/products');
+      }
+    }
+  };
 
   useEffect(() => {
     loadCurrentUser();
@@ -136,7 +148,7 @@ export function Header({
             <div className="hidden lg:block flex-1 max-w-xl mx-8">
               <AdvancedSearchBar 
                 value={searchQuery} 
-                onChange={onSearchChange}
+                onChange={handleSearchChange}
                 onCategoryFilter={onCategoryFilter}
                 selectedCategory={selectedCategory}
               />
@@ -226,7 +238,7 @@ export function Header({
                     <div className="px-4">
                       <AdvancedSearchBar 
                         value={searchQuery} 
-                        onChange={onSearchChange}
+                        onChange={handleSearchChange}
                         onCategoryFilter={onCategoryFilter}
                         selectedCategory={selectedCategory}
                       />
