@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, User, Settings, LogOut, Trophy, Bookmark, Bell, Menu, X } from 'lucide-react';
+import { Plus, User, Settings, LogOut, Bookmark, Bell, Menu, X, Sparkles } from 'lucide-react';
 import { getCurrentUser, signOut } from '@/lib/auth';
 import { Badge } from '@/components/ui/badge';
 import { AdvancedSearchBar } from '@/components/AdvancedSearchBar';
@@ -87,11 +87,31 @@ export function Header({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center space-x-8">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <Trophy className="w-5 h-5 text-white" />
+            <Link href="/" className="flex items-center space-x-3 group">
+              <div className="relative">
+                {/* グロー効果 */}
+                <div className="absolute inset-0 w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl blur-md opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
+                
+                {/* メインアイコンコンテナ */}
+                <div className="relative w-10 h-10 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 rounded-xl shadow-lg transform group-hover:scale-105 transition-all duration-300">
+                  {/* 内側のグラデーション */}
+                  <div className="absolute inset-[2px] bg-gradient-to-br from-white/20 to-transparent rounded-[10px]" />
+                  
+                  {/* アイコン */}
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-white" />
+                  </div>
+                </div>
               </div>
-              <span className="font-bold text-xl text-gray-900">NicheNext</span>
+              
+              <div className="flex flex-col">
+                <span className="font-extrabold text-xl bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent group-hover:from-blue-600 group-hover:to-purple-600 transition-all duration-300">
+                  NicheNext
+                </span>
+                <span className="text-[10px] font-medium text-gray-500 -mt-1 tracking-wider">
+                  DISCOVER NICHES
+                </span>
+              </div>
             </Link>
             
             <nav className="hidden md:flex items-center space-x-2">
