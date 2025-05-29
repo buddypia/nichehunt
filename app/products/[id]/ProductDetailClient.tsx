@@ -3,13 +3,21 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Heart, MessageCircle, ExternalLink, Share2, Calendar, Tag, Github, Play, Globe, Trash2 } from 'lucide-react';
+import { ArrowLeft, Heart, MessageCircle, ExternalLink, Share2, Calendar, Tag, Github, Play, Globe, Trash2, Image as ImageIconLucide } from 'lucide-react'; // Added ImageIconLucide for clarity if needed
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { SaveToCollectionPopover } from '@/components/SaveToCollectionPopover';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi, // Import CarouselApi type
+} from "@/components/ui/carousel"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -180,10 +188,28 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
   const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
+  // State for Carousel API and slide tracking
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>()
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const [slideCount, setSlideCount] = useState(0)
+
   useEffect(() => {
     loadCurrentUser();
     loadComments();
   }, []);
+
+  useEffect(() => {
+    if (!carouselApi) {
+      return
+    }
+
+    setSlideCount(carouselApi.scrollSnapList().length)
+    setCurrentSlide(carouselApi.selectedScrollSnap())
+
+    carouselApi.on("select", () => {
+      setCurrentSlide(carouselApi.selectedScrollSnap())
+    })
+  }, [carouselApi])
 
   const loadCurrentUser = async () => {
     const user = await getCurrentUser();
@@ -501,6 +527,65 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
           </div>
         </div>
 
+        {/* Image Carousel Section - No Card, Sized to Fit Layout */}
+        {product.images && product.images.length > 0 && (
+          <div className="mt-8 w-full"> {/* Full width within parent, margin top for separation */}
+            <Carousel
+              setApi={setCarouselApi}
+              opts={{
+                align: "start",
+                loop: product.images.length > 1,
+              }}
+              className="w-full relative" 
+            >
+              <CarouselContent className="-ml-1 sm:-ml-2 md:-ml-4"> {/* Adjust negative margin based on item padding */}
+                {product.images.map((image, index) => (
+                  // Adjust basis to show multiple images, e.g., main image larger, peeks of others
+                  <CarouselItem key={image.id || index} className="pl-1 sm:pl-2 md:pl-4 basis-full sm:basis-5/6 md:basis-4/5 lg:basis-3/4 xl:basis-2/3">
+                    <div className="p-1">
+                      {/* Maintain aspect ratio for images, e.g., 16:9 or 4:3 or 16:10 */}
+                      <div className="relative aspect-[16/10] rounded-lg overflow-hidden bg-gray-100 shadow-lg">
+                        <Image
+                          src={image.image_url}
+                          alt={image.caption || `${product.name} - 画像 ${index + 1}`}
+                          fill
+                          // Adjust sizes for better responsive behavior
+                          sizes="(max-width: 640px) 90vw, (max-width: 768px) 80vw, (max-width: 1024px) 70vw, (max-width: 1280px) 60vw, 800px"
+                          className="object-contain"
+                        />
+                      </div>
+                      {image.caption && (
+                        <p className="mt-2 text-xs text-center text-gray-500">{image.caption}</p>
+                      )}
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              {product.images.length > 1 && (
+                <>
+                  {/* Adjust button positioning if they are outside the main image area */}
+                  <CarouselPrevious className="absolute left-0 sm:left-1 md:left-2 top-1/2 -translate-y-1/2 z-10 hidden sm:flex h-8 w-8 p-0 disabled:opacity-50" />
+                  <CarouselNext className="absolute right-0 sm:right-1 md:right-2 top-1/2 -translate-y-1/2 z-10 hidden sm:flex h-8 w-8 p-0 disabled:opacity-50" />
+                </>
+              )}
+            </Carousel>
+            {/* Dot Indicators */}
+            {slideCount > 1 && (
+              <div className="flex justify-center space-x-2 mt-4">
+                {Array.from({ length: slideCount }).map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => carouselApi?.scrollTo(index)}
+                    className={`h-2.5 w-2.5 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                      ${index === currentSlide ? 'bg-purple-600 w-4' : 'bg-gray-300 hover:bg-gray-400'}`} // Active dot wider
+                    aria-label={`Go to image ${index + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* 説明セクション */}
         <Card className="mt-8 shadow-lg">
           <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
@@ -517,39 +602,7 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
             <div className="prose prose-gray max-w-none">
               <p className="whitespace-pre-wrap text-gray-700 leading-relaxed text-lg">{product.description}</p>
             </div>
-
-            {/* 追加画像があれば表示 */}
-            {product.images && product.images.length > 0 && (
-              <div className="mt-12 space-y-6">
-                <h3 className="text-xl font-bold text-gray-900 flex items-center">
-                  <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center mr-2">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  画像ギャラリー
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {product.images.map((image) => (
-                    <div key={image.id} className="space-y-2">
-                      <div className="relative h-64 group">
-                        <Image
-                          src={image.image_url}
-                          alt={image.caption || ''}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 50vw"
-                          className="object-cover rounded-xl shadow-md transition-transform duration-300 group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-xl"></div>
-                      </div>
-                      {image.caption && (
-                        <p className="text-sm text-gray-600 px-2">{image.caption}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Carousel has been moved out of this CardContent */}
           </CardContent>
         </Card>
 

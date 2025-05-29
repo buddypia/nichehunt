@@ -12,6 +12,7 @@ interface CreateProductInput {
   category_id: number
   tags?: string[]
   launch_date?: string
+  image_urls?: string[] // Added for multiple images
 }
 
 export async function createProduct(input: CreateProductInput) {
@@ -86,6 +87,27 @@ export async function createProduct(input: CreateProductInput) {
       await supabase
         .from('product_tags')
         .insert(productTags)
+    }
+  }
+
+  // プロダクト画像を処理
+  if (input.image_urls && input.image_urls.length > 0 && product) {
+    const productImagesData = input.image_urls.map((url, index) => ({
+      product_id: product.id,
+      image_url: url,
+      display_order: index + 1, // 1-based display order
+      // caption: null, // Caption can be added later if needed
+    }));
+
+    const { error: imageError } = await supabase
+      .from('product_images')
+      .insert(productImagesData);
+
+    if (imageError) {
+      console.error('Error inserting product images:', imageError);
+      // Optionally, decide if this error should roll back product creation or just be logged
+      // For now, we'll return the product but log the error.
+      // Consider a transaction if atomicity is critical.
     }
   }
 

@@ -51,8 +51,8 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
     tags: [] as string[],
   });
 
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
-  const [thumbnailPreview, setThumbnailPreview] = useState<string>('');
+  const [productImageFiles, setProductImageFiles] = useState<File[]>([]);
+  const [productImagePreviews, setProductImagePreviews] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -73,21 +73,44 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
     }
   };
 
-  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('画像サイズは5MB以下にしてください');
+  const MAX_IMAGES = 5; // Maximum number of images allowed
+
+  const handleProductImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const newFiles: File[] = [];
+      const newPreviews: string[] = [];
+      
+      if (productImageFiles.length + files.length > MAX_IMAGES) {
+        toast.error(`画像は最大${MAX_IMAGES}枚までアップロードできます`);
+        // Optionally, only take enough files to reach the limit
+        // files = Array.from(files).slice(0, MAX_IMAGES - productImageFiles.length);
         return;
       }
-      
-      setThumbnailFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setThumbnailPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+
+      Array.from(files).forEach(file => {
+        if (file.size > 5 * 1024 * 1024) {
+          toast.error(`${file.name}の画像サイズは5MB以下にしてください`);
+          return; // Skip this file
+        }
+        newFiles.push(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          newPreviews.push(reader.result as string);
+          // Update previews once all selected files are read
+          if (newPreviews.length === newFiles.length) {
+            setProductImageFiles(prevFiles => [...prevFiles, ...newFiles]);
+            setProductImagePreviews(prevPreviews => [...prevPreviews, ...newPreviews]);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
     }
+  };
+
+  const removeProductImage = (index: number) => {
+    setProductImageFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+    setProductImagePreviews(prevPreviews => prevPreviews.filter((_, i) => i !== index));
   };
 
   const validateForm = () => {
@@ -129,18 +152,21 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
     setIsSubmitting(true);
     
     try {
-      let thumbnailUrl = '';
+      const imageUrls: string[] = [];
       
       // 画像をアップロード
-      if (thumbnailFile) {
-        const { url, error: uploadError } = await uploadProductImage(thumbnailFile);
+      for (const file of productImageFiles) {
+        const { url, error: uploadError } = await uploadProductImage(file); // Assuming uploadProductImage uploads one file and returns URL
         if (uploadError) {
-          throw new Error('画像のアップロードに失敗しました');
+          throw new Error(`画像 (${file.name}) のアップロードに失敗しました`);
         }
-        thumbnailUrl = url || '';
+        if (url) {
+          imageUrls.push(url);
+        }
       }
       
       // プロダクトを作成
+      // TODO: createProduct needs to be updated to accept imageUrls and handle product_images table
       const { data: product, error } = await createProduct({
         name: formData.name,
         tagline: formData.tagline,
@@ -148,7 +174,11 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
         product_url: formData.product_url || undefined,
         github_url: formData.github_url || undefined,
         demo_url: formData.demo_url || undefined,
-        thumbnail_url: thumbnailUrl || undefined,
+        // Assuming the first image is the thumbnail, or thumbnail_url is handled differently.
+        // For now, let's pass the first image as thumbnail_url if available,
+        // and all images as a new `image_urls` property.
+        thumbnail_url: imageUrls.length > 0 ? imageUrls[0] : undefined,
+        image_urls: imageUrls, // This will require modification in createProduct
         category_id: parseInt(formData.category_id),
         tags: formData.tags,
         launch_date: formData.launch_date,
@@ -172,8 +202,8 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
         launch_date: new Date().toISOString().split('T')[0],
         tags: [],
       });
-      setThumbnailFile(null);
-      setThumbnailPreview('');
+      setProductImageFiles([]);
+      setProductImagePreviews([]);
       setErrors({});
       
       onClose();
@@ -374,53 +404,56 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
               </div>
             </div>
 
-            {/* サムネイル画像 */}
+            {/* プロダクト画像 */}
             <div>
-              <Label htmlFor="thumbnail" className="text-sm font-medium text-gray-700">
-                サムネイル画像
+              <Label htmlFor="product_images" className="text-sm font-medium text-gray-700">
+                プロダクト画像 (最大{MAX_IMAGES}枚)
               </Label>
               <div className="mt-1">
-                <div className="flex items-center space-x-4">
-                  <div className="flex-1">
-                    <input
-                      id="thumbnail"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleThumbnailChange}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="thumbnail"
-                      className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      <ImageIcon className="w-4 h-4 mr-2" />
-                      画像を選択
-                    </label>
-                    <p className="mt-1 text-xs text-gray-500">
-                      推奨: 1200x600px、最大5MB
-                    </p>
-                  </div>
-                  {thumbnailPreview && (
-                    <div className="relative w-32 h-16">
+                <input
+                  id="product_images"
+                  type="file"
+                  accept="image/*"
+                  multiple // Allow multiple file selection
+                  onChange={handleProductImagesChange}
+                  className="hidden"
+                  disabled={productImageFiles.length >= MAX_IMAGES}
+                />
+                <label
+                  htmlFor="product_images"
+                  className={`cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                    productImageFiles.length >= MAX_IMAGES ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <ImageIcon className="w-4 h-4 mr-2" />
+                  画像を選択
+                </label>
+                <p className="mt-1 text-xs text-gray-500">
+                  各画像 最大5MB。最初の画像がサムネイルとして使用されます。
+                </p>
+              </div>
+
+              {productImagePreviews.length > 0 && (
+                <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {productImagePreviews.map((preview, index) => (
+                    <div key={index} className="relative group">
                       <img
-                        src={thumbnailPreview}
-                        alt="サムネイルプレビュー"
-                        className="w-full h-full object-cover rounded-lg"
+                        src={preview}
+                        alt={`プロダクト画像プレビュー ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg border border-gray-200"
                       />
                       <button
                         type="button"
-                        onClick={() => {
-                          setThumbnailFile(null);
-                          setThumbnailPreview('');
-                        }}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        onClick={() => removeProductImage(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600"
+                        aria-label={`画像を削除 ${index + 1}`}
                       >
                         <X className="w-3 h-3" />
                       </button>
                     </div>
-                  )}
+                  ))}
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
