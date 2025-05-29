@@ -26,16 +26,12 @@ interface HeaderProps {
   onSubmitClick: () => void;
   searchQuery?: string;
   onSearchChange?: (value: string) => void;
-  selectedCategory?: string;
-  onCategoryFilter?: (category: string) => void;
 }
 
 export function Header({ 
   onSubmitClick,
   searchQuery = '',
-  onSearchChange,
-  selectedCategory = 'all',
-  onCategoryFilter 
+  onSearchChange
 }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -89,7 +85,6 @@ export function Header({
   const navItems = [
     { href: '/', label: 'ホーム' },
     { href: '/products', label: 'プロダクト' },
-    { href: '/categories', label: 'カテゴリー' },
     { href: '/about', label: 'About' },
   ];
 
@@ -149,8 +144,6 @@ export function Header({
               <AdvancedSearchBar 
                 value={searchQuery} 
                 onChange={handleSearchChange}
-                onCategoryFilter={onCategoryFilter}
-                selectedCategory={selectedCategory}
               />
             </div>
           )}
@@ -239,8 +232,6 @@ export function Header({
                       <AdvancedSearchBar 
                         value={searchQuery} 
                         onChange={handleSearchChange}
-                        onCategoryFilter={onCategoryFilter}
-                        selectedCategory={selectedCategory}
                       />
                     </div>
                   )}

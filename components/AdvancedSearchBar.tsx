@@ -20,8 +20,6 @@ import { getPopularTags } from '@/lib/api/popular-tags';
 interface AdvancedSearchBarProps {
   value: string;
   onChange: (value: string) => void;
-  onCategoryFilter?: (category: string) => void;
-  selectedCategory?: string;
 }
 
 // デフォルトの最近の検索（ローカルストレージから取得するまで）
@@ -33,9 +31,7 @@ const defaultRecentSearches = [
 
 export function AdvancedSearchBar({ 
   value, 
-  onChange, 
-  onCategoryFilter,
-  selectedCategory 
+  onChange
 }: AdvancedSearchBarProps) {
   const [isFocused, setIsFocused] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);

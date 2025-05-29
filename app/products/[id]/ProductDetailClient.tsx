@@ -440,9 +440,7 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
                 <span>{product.comment_count} コメント</span>
               </div>
               {product.category && (
-                <Link href={`/categories/${product.category.slug}`}>
-                  <Badge variant="secondary">{product.category.name}</Badge>
-                </Link>
+                <Badge variant="secondary">{product.category.name}</Badge>
               )}
             </div>
 
