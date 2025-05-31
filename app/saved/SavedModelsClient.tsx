@@ -11,7 +11,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ProductWithRelations, Collection } from '@/lib/types/database';
 import { 
-  getSavedModels, 
   getUserCollections, 
   getCollectionProducts,
   createCollection, 

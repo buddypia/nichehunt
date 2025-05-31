@@ -34,11 +34,6 @@ export interface ProfileProduct {
   comments: number;
   created_at: string;
   featured: boolean;
-  revenue: string;
-  difficulty: string;
-  timeToMarket: string;
-  initialInvestment: string;
-  targetMarket: string;
   images: string[];
 }
 
@@ -153,11 +148,6 @@ export async function getUserProducts(userId: string): Promise<ProfileProduct[]>
       comments: product.comments?.length || 0,
       created_at: product.created_at,
       featured: product.is_featured || false,
-      revenue: '未設定',
-      difficulty: 'Medium',
-      timeToMarket: '3-6ヶ月',
-      initialInvestment: '未設定',
-      targetMarket: '未設定',
       images: product.images?.map((img: any) => img.image_url) || []
     }));
   } catch (error) {
@@ -202,11 +192,6 @@ export async function getUserUpvotedProducts(userId: string): Promise<ProfilePro
       comments: vote.product.comments?.length || 0,
       created_at: vote.product.created_at,
       featured: vote.product.is_featured || false,
-      revenue: '未設定',
-      difficulty: 'Medium',
-      timeToMarket: '3-6ヶ月',
-      initialInvestment: '未設定',
-      targetMarket: '未設定',
       images: vote.product.images?.map((img: any) => img.image_url) || []
     }));
   } catch (error) {

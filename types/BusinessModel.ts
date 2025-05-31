@@ -13,11 +13,6 @@ export interface BusinessModel {
   };
   createdAt: string;
   featured: boolean;
-  revenue: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  timeToMarket: string;
-  initialInvestment: string;
-  targetMarket: string;
   image: string;
   website?: string;
   userCount?: number;

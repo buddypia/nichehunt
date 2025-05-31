@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BusinessModelCard } from '@/components/BusinessModelCard';
 import { 
   ArrowLeft,
   Calendar,
@@ -20,15 +19,12 @@ import {
   Edit,
   Settings,
   Trophy,
-  TrendingUp,
   MessageCircle,
   Users,
   Star,
   Briefcase,
   Award,
   Loader2,
-  Code,
-  Palette,
   Zap,
   Heart
 } from 'lucide-react';
@@ -42,8 +38,10 @@ import {
   toggleFollow,
   type Profile,
   type ProfileStats,
-  type ProfileProduct
+  type ProfileProduct,
 } from '@/lib/api/profiles';
+import { ProductCard } from '@/components/ProductCard';
+import type { ProductWithRelations } from "@/lib/types/database";
 
 interface Achievement {
   id: string;
@@ -437,34 +435,44 @@ export default function ProfileClient() {
           <TabsContent value="products" className="mt-6">
             <div className="space-y-6">
               {userProducts.length > 0 ? (
-                userProducts.map((product) => (
-                  <BusinessModelCard 
-                    key={product.id} 
-                    model={{
-                      id: product.id.toString(),
-                      title: product.title,
-                      description: product.description,
-                      category: product.category,
-                      tags: product.tags,
-                      upvotes: product.votes,
-                      comments: product.comments,
-                      author: {
-                        name: profile.username,
-                        avatar: profile.avatar_url || '',
-                        verified: true
-                      },
-                      createdAt: product.created_at,
-                      featured: product.featured,
-                      revenue: product.revenue,
-                      difficulty: product.difficulty as 'Easy' | 'Medium' | 'Hard',
-                      timeToMarket: product.timeToMarket,
-                      initialInvestment: product.initialInvestment,
-                      targetMarket: product.targetMarket,
-                      image: product.images[0] || undefined,
-                      userCount: 0
-                    }}
-                  />
-                ))
+                userProducts.map((product: ProfileProduct) => {
+                  const cardProduct: ProductWithRelations = {
+                    id: product.id,
+                    name: product.title,
+                    tagline: product.description.substring(0, 100) + (product.description.length > 100 ? '...' : ''),
+                    description: product.description,
+                    product_url: null,
+                    github_url: null,
+                    demo_url: null,
+                    thumbnail_url: product.images && product.images.length > 0 ? product.images[0] : null,
+                    category_id: 0, // Placeholder category_id
+                    category: product.category ? { id: 0, name: product.category, slug: product.category.toLowerCase(), description: '', icon_name: '', created_at: new Date().toISOString() } : null,
+                    status: 'published',
+                    launch_date: product.created_at,
+                    is_featured: product.featured,
+                    view_count: 0,
+                    vote_count: product.votes,
+                    comment_count: product.comments,
+                    created_at: product.created_at,
+                    updated_at: product.created_at,
+                    user_id: profile.id,
+                    profile: { // This maps to ProductWithRelations['profile']
+                      id: profile.id,
+                      username: profile.username,
+                      display_name: profile.username, // Use username as display_name if not available
+                      avatar_url: profile.avatar_url || null,
+                      bio: profile.bio || null,
+                      website_url: profile.website || null, // Use profile.website
+                      twitter_handle: profile.twitter || null, // Use profile.twitter
+                      created_at: profile.created_at,
+                      updated_at: profile.updated_at || profile.created_at,
+                    },
+                    tags: product.tags ? product.tags.map((tag, index) => ({ id: index, name: tag, slug: tag.toLowerCase(), created_at: new Date().toISOString() })) : [],
+                    has_voted: false,
+                    is_saved: false,
+                  };
+                  return <ProductCard key={product.id} product={cardProduct} />;
+                })
               ) : (
                 <Card>
                   <CardContent className="p-12 text-center">
@@ -484,34 +492,49 @@ export default function ProfileClient() {
           <TabsContent value="upvoted" className="mt-6">
             <div className="space-y-6">
               {upvotedProducts.length > 0 ? (
-                upvotedProducts.map((product) => (
-                  <BusinessModelCard 
-                    key={product.id} 
-                    model={{
-                      id: product.id.toString(),
-                      title: product.title,
-                      description: product.description,
-                      category: product.category,
-                      tags: product.tags,
-                      upvotes: product.votes,
-                      comments: product.comments,
-                      author: {
-                        name: 'Unknown',
-                        avatar: '',
-                        verified: false
-                      },
-                      createdAt: product.created_at,
-                      featured: product.featured,
-                      revenue: product.revenue,
-                      difficulty: product.difficulty as 'Easy' | 'Medium' | 'Hard',
-                      timeToMarket: product.timeToMarket,
-                      initialInvestment: product.initialInvestment,
-                      targetMarket: product.targetMarket,
-                      image: product.images[0] || undefined,
-                      userCount: 0
-                    }}
-                  />
-                ))
+                upvotedProducts.map((product: ProfileProduct) => {
+                  // For upvoted products, author information is not directly available in ProfileProduct.
+                  // We will use a placeholder for the author profile.
+                  // Ideally, getUserUpvotedProducts would return more author details or we'd fetch them.
+                  const placeholderAuthorProfile = {
+                    id: 'unknown-author-id', // Placeholder ID
+                    username: 'Unknown Author',
+                    display_name: 'Unknown Author',
+                    avatar_url: null,
+                    bio: null,
+                    website_url: null,
+                    twitter_handle: null,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                  };
+
+                  const cardProduct: ProductWithRelations = {
+                    id: product.id,
+                    name: product.title,
+                    tagline: product.description.substring(0, 100) + (product.description.length > 100 ? '...' : ''),
+                    description: product.description,
+                    product_url: null,
+                    github_url: null,
+                    demo_url: null,
+                    thumbnail_url: product.images && product.images.length > 0 ? product.images[0] : null,
+                    category_id: 0, // Placeholder category_id
+                    category: product.category ? { id: 0, name: product.category, slug: product.category.toLowerCase(), description: '', icon_name: '', created_at: new Date().toISOString() } : null,
+                    status: 'published',
+                    launch_date: product.created_at,
+                    is_featured: product.featured,
+                    view_count: 0,
+                    vote_count: product.votes,
+                    comment_count: product.comments,
+                    created_at: product.created_at,
+                    updated_at: product.created_at,
+                    user_id: 'unknown-author-id', // Placeholder user_id for the product's author
+                    profile: placeholderAuthorProfile, // Use the placeholder author profile
+                    tags: product.tags ? product.tags.map((tag, index) => ({ id: index, name: tag, slug: tag.toLowerCase(), created_at: new Date().toISOString() })) : [],
+                    has_voted: true, // User has upvoted this product
+                    is_saved: false,
+                  };
+                  return <ProductCard key={product.id} product={cardProduct} />;
+                })
               ) : (
                 <Card>
                   <CardContent className="p-12 text-center">

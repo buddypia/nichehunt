@@ -1,74 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
 import { Collection, ProductWithRelations } from '@/lib/types/database';
-import { BusinessModel } from '@/types/BusinessModel';
-
-// Helper function to convert Product to BusinessModel format
-function mapProductToBusinessModel(product: ProductWithRelations): BusinessModel {
-  return {
-    id: product.id.toString(),
-    title: product.name,
-    description: product.description,
-    category: product.category?.name || 'Unknown',
-    tags: product.tags?.map(tag => tag.name) || [],
-    upvotes: product.vote_count || 0,
-    comments: product.comment_count || 0,
-    author: {
-      name: product.profile?.display_name || product.profile?.username || 'Anonymous',
-      avatar: product.profile?.avatar_url || '/placeholder-avatar.png',
-      verified: false
-    },
-    createdAt: product.created_at,
-    featured: product.is_featured,
-    revenue: 'Unknown',
-    difficulty: 'Medium' as const,
-    timeToMarket: 'Unknown',
-    initialInvestment: 'Unknown',
-    targetMarket: 'Unknown',
-    image: product.thumbnail_url || '/placeholder-product.png',
-    website: product.product_url || undefined,
-    userCount: product.view_count
-  };
-}
-
-// デフォルトコレクションの名前
-const DEFAULT_COLLECTION_NAME = 'Default Collection';
-const DEFAULT_COLLECTION_DESCRIPTION = 'お気に入りのビジネスモデルのコレクション';
-
-// ユーザーのデフォルトコレクションを取得または作成
-export async function getOrCreateDefaultCollection(userId: string): Promise<Collection | null> {
-  const supabase = createClient();
-
-  // まず既存のデフォルトコレクションを探す
-  const { data: existingCollection, error: fetchError } = await supabase
-    .from('collections')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('name', DEFAULT_COLLECTION_NAME)
-    .maybeSingle();
-
-  if (existingCollection) {
-    return existingCollection;
-  }
-
-  // 存在しない場合は作成
-  const { data: newCollection, error: createError } = await supabase
-    .from('collections')
-    .insert({
-      user_id: userId,
-      name: DEFAULT_COLLECTION_NAME,
-      description: DEFAULT_COLLECTION_DESCRIPTION,
-      is_public: true
-    })
-    .select()
-    .single();
-
-  if (createError) {
-    console.error('Error creating default collection:', createError);
-    return null;
-  }
-
-  return newCollection;
-}
 
 // コレクション内のプロダクトを取得
 export async function getCollectionProducts(collectionId: number): Promise<ProductWithRelations[]> {
@@ -122,20 +53,6 @@ export async function getCollectionProducts(collectionId: number): Promise<Produ
   }).filter(Boolean);
 
   return products;
-}
-
-// ユーザーの保存したビジネスモデルを取得（デフォルトコレクションから）
-export async function getSavedModels(userId: string): Promise<{ products: ProductWithRelations[], businessModels: BusinessModel[] }> {
-  const collection = await getOrCreateDefaultCollection(userId);
-  
-  if (!collection) {
-    return { products: [], businessModels: [] };
-  }
-
-  const products = await getCollectionProducts(collection.id);
-  const businessModels = products.map(product => mapProductToBusinessModel(product));
-
-  return { products, businessModels };
 }
 
 // プロダクトをコレクションに追加
@@ -281,63 +198,4 @@ export async function deleteCollection(collectionId: number): Promise<boolean> {
   }
 
   return true;
-}
-
-// コレクションの詳細を取得（プロダクト数を含む）
-export async function getCollectionWithCount(collectionId: number): Promise<Collection & { product_count: number } | null> {
-  const supabase = createClient();
-
-  const { data, error } = await supabase
-    .from('collections')
-    .select(`
-      *,
-      collection_products (count)
-    `)
-    .eq('id', collectionId)
-    .single();
-
-  if (error) {
-    console.error('Error fetching collection with count:', error);
-    return null;
-  }
-
-  return {
-    ...data,
-    product_count: data.collection_products?.[0]?.count || 0
-  };
-}
-
-// デフォルトコレクションに対するヘルパー関数
-export async function saveModel(userId: string, productId: string): Promise<boolean> {
-  const collection = await getOrCreateDefaultCollection(userId);
-  if (!collection) return false;
-
-  const numericProductId = Number(productId);
-  return await addProductToCollection(collection.id, numericProductId);
-}
-
-export async function unsaveModel(userId: string, productId: string): Promise<boolean> {
-  const collection = await getOrCreateDefaultCollection(userId);
-  if (!collection) return false;
-
-  const numericProductId = Number(productId);
-  return await removeProductFromCollection(collection.id, numericProductId);
-}
-
-export async function isModelSaved(userId: string, productId: string): Promise<boolean> {
-  const collection = await getOrCreateDefaultCollection(userId);
-  if (!collection) return false;
-
-  const numericProductId = Number(productId);
-  return await isProductInCollection(collection.id, numericProductId);
-}
-
-export async function toggleSaveModel(userId: string, productId: string): Promise<boolean> {
-  const isSaved = await isModelSaved(userId, productId);
-  
-  if (isSaved) {
-    return await unsaveModel(userId, productId);
-  } else {
-    return await saveModel(userId, productId);
-  }
 }

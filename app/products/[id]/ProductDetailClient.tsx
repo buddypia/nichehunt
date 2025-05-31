@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
+import MDEditor from '@uiw/react-md-editor';
 import type { ProductWithRelations, CommentWithRelations } from '@/lib/types/database';
 import { voteProduct, deleteProduct } from '@/lib/api/products-client'; // Added deleteProduct
 import { fetchComments, createComment, deleteComment } from '@/lib/api/comments-product';
@@ -508,8 +509,12 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
             <Card className="shadow-lg">
               <CardContent className="p-6 md:p-8">
                 {/* 説明 */}
-                <div className="prose prose-gray max-w-none mb-8"> {/* Added mb-8 here, removed outer div and h2 */}
-                  <p className="whitespace-pre-wrap text-gray-700 leading-relaxed text-lg">{product.description}</p>
+                <div className="prose prose-gray dark:prose-invert max-w-none mb-8" data-color-mode="light"> {/* Added data-color-mode for MDEditor compatibility */}
+                  {product.description ? (
+                    <MDEditor.Markdown source={product.description} style={{ whiteSpace: 'pre-wrap', background: 'transparent' }} />
+                  ) : (
+                    <p className="text-gray-500">説明はありません。</p>
+                  )}
                 </div>
 
                 <Separator className="my-8" /> {/* Separator between description and discussion */}
