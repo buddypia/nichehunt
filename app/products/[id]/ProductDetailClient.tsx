@@ -394,7 +394,7 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-8"> {/* Changed max-w-4xl to max-w-6xl */}
         <Link href="/products">
           <Button variant="ghost" className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -402,192 +402,76 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
           </Button>
         </Link>
 
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          {/* サムネイル画像 */}
-          {product.thumbnail_url && (
-            <div className="relative h-64 md:h-96">
-              <Image
-                src={product.thumbnail_url}
-                alt={product.name}
-                fill
-                priority
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 896px"
-                className="object-cover"
-              />
-            </div>
-          )}
-
-          {/* プロダクト情報 */}
-          <div className="p-6 md:p-8">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
-                <p className="text-xl text-gray-600">{product.tagline}</p>
-              </div>
-              <div className="flex space-x-2">
-                <Button
-                  variant={product.has_voted ? "default" : "outline"}
-                  size="sm"
-                  onClick={handleVote}
-                  disabled={isVoting}
-                  className="flex items-center space-x-1"
+        <div className="lg:grid lg:grid-cols-3 lg:gap-8 mt-6">
+          {/* Main Content Area (Left - 2 columns on lg) */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Image Carousel Section or Thumbnail */}
+            {(product.images && product.images.length > 0) ? (
+              <div className="w-full"> {/* Full width within parent */}
+                <Carousel
+                  setApi={setCarouselApi}
+                  opts={{
+                    align: "start",
+                    loop: product.images.length > 1,
+                  }}
+                  className="w-full relative"
                 >
-                  <Heart className={`w-4 h-4 ${product.has_voted ? 'fill-current' : ''}`} />
-                  <span>{product.vote_count}</span>
-                </Button>
-                {currentUser && (
-                  <SaveToCollectionPopover productId={product.id} />
+                  <CarouselContent className="-ml-1 sm:-ml-2 md:-ml-4">
+                    {product.images.map((image, index) => (
+                      <CarouselItem key={image.id || index} className="pl-1 sm:pl-2 md:pl-4 basis-full sm:basis-5/6 md:basis-4/5 lg:basis-3/4 xl:basis-2/3">
+                        <div className="p-1">
+                          <div className="relative aspect-[16/10] rounded-lg overflow-hidden bg-gray-100 shadow-lg">
+                            <Image
+                              src={image.image_url}
+                              alt={image.caption || `${product.name} - 画像 ${index + 1}`}
+                              fill
+                              sizes="(max-width: 640px) 90vw, (max-width: 768px) 80vw, (max-width: 1024px) 70vw, (max-width: 1280px) 60vw, 800px"
+                              className="object-contain"
+                            />
+                          </div>
+                          {image.caption && (
+                            <p className="mt-2 text-xs text-center text-gray-500">{image.caption}</p>
+                          )}
+                        </div>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  {product.images.length > 1 && (
+                    <>
+                      <CarouselPrevious className="absolute left-0 sm:left-1 md:left-2 top-1/2 -translate-y-1/2 z-10 hidden sm:flex h-8 w-8 p-0 disabled:opacity-50" />
+                      <CarouselNext className="absolute right-0 sm:right-1 md:right-2 top-1/2 -translate-y-1/2 z-10 hidden sm:flex h-8 w-8 p-0 disabled:opacity-50" />
+                    </>
+                  )}
+                </Carousel>
+                {slideCount > 1 && (
+                  <div className="flex justify-center space-x-2 mt-4">
+                    {Array.from({ length: slideCount }).map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => carouselApi?.scrollTo(index)}
+                        className={`h-2.5 w-2.5 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                          ${index === currentSlide ? 'bg-purple-600 w-4' : 'bg-gray-300 hover:bg-gray-400'}`}
+                        aria-label={`Go to image ${index + 1}`}
+                      />
+                    ))}
+                  </div>
                 )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleShare}
-                >
-                  <Share2 className="w-4 h-4" />
-                </Button>
               </div>
-            </div>
-
-            {/* メタ情報 */}
-            <div className="flex flex-wrap items-center gap-4 mb-6 text-sm text-gray-600">
-              <Link href={`/profile?id=${product.profile?.id}`} className="flex items-center space-x-2 hover:text-gray-900">
-                <Avatar className="h-6 w-6">
-                  <AvatarImage src={product.profile?.avatar_url || ''} />
-                  <AvatarFallback>{product.profile?.username?.charAt(0) || 'U'}</AvatarFallback>
-                </Avatar>
-                <span>{product.profile?.username}</span>
-              </Link>
-              <div className="flex items-center space-x-1">
-                <Calendar className="w-4 h-4" />
-                <span>{new Date(product.launch_date).toLocaleDateString('ja-JP')}</span>
+            ) : product.thumbnail_url ? (
+              <div className="relative h-64 md:h-96 rounded-lg shadow-lg overflow-hidden bg-gray-100">
+                <Image
+                  src={product.thumbnail_url}
+                  alt={product.name}
+                  fill
+                  priority
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 896px"
+                  className="object-cover"
+                />
               </div>
-              <div className="flex items-center space-x-1">
-                <MessageCircle className="w-4 h-4" />
-                <span>{product.comment_count} コメント</span>
-              </div>
-              {product.category && (
-                <Badge variant="secondary">{product.category.name}</Badge>
-              )}
-            </div>
+            ) : null}
 
-            {/* タグ */}
-            {product.tags && product.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-6">
-                {product.tags.map((tag) => (
-                  <Link key={tag.id} href={`/products?tag=${tag.slug}`}>
-                    <Badge variant="outline" className="cursor-pointer hover:bg-gray-100">
-                      <Tag className="w-3 h-3 mr-1" />
-                      {tag.name}
-                    </Badge>
-                  </Link>
-                ))}
-              </div>
-            )}
-
-            {/* リンク */}
-            <div className="flex flex-wrap gap-3 mb-6">
-              {product.product_url && (
-                <a
-                  href={product.product_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700"
-                >
-                  <Globe className="w-4 h-4" />
-                  <span>ウェブサイト</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              )}
-              {product.github_url && (
-                <a
-                  href={product.github_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-2 text-gray-700 hover:text-gray-900"
-                >
-                  <Github className="w-4 h-4" />
-                  <span>GitHub</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              )}
-              {product.demo_url && (
-                <a
-                  href={product.demo_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-2 text-purple-600 hover:text-purple-700"
-                >
-                  <Play className="w-4 h-4" />
-                  <span>デモ</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              )}
-            </div>
-
-          </div>
-        </div>
-
-        {/* Image Carousel Section - No Card, Sized to Fit Layout */}
-        {product.images && product.images.length > 0 && (
-          <div className="mt-8 w-full"> {/* Full width within parent, margin top for separation */}
-            <Carousel
-              setApi={setCarouselApi}
-              opts={{
-                align: "start",
-                loop: product.images.length > 1,
-              }}
-              className="w-full relative" 
-            >
-              <CarouselContent className="-ml-1 sm:-ml-2 md:-ml-4"> {/* Adjust negative margin based on item padding */}
-                {product.images.map((image, index) => (
-                  // Adjust basis to show multiple images, e.g., main image larger, peeks of others
-                  <CarouselItem key={image.id || index} className="pl-1 sm:pl-2 md:pl-4 basis-full sm:basis-5/6 md:basis-4/5 lg:basis-3/4 xl:basis-2/3">
-                    <div className="p-1">
-                      {/* Maintain aspect ratio for images, e.g., 16:9 or 4:3 or 16:10 */}
-                      <div className="relative aspect-[16/10] rounded-lg overflow-hidden bg-gray-100 shadow-lg">
-                        <Image
-                          src={image.image_url}
-                          alt={image.caption || `${product.name} - 画像 ${index + 1}`}
-                          fill
-                          // Adjust sizes for better responsive behavior
-                          sizes="(max-width: 640px) 90vw, (max-width: 768px) 80vw, (max-width: 1024px) 70vw, (max-width: 1280px) 60vw, 800px"
-                          className="object-contain"
-                        />
-                      </div>
-                      {image.caption && (
-                        <p className="mt-2 text-xs text-center text-gray-500">{image.caption}</p>
-                      )}
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              {product.images.length > 1 && (
-                <>
-                  {/* Adjust button positioning if they are outside the main image area */}
-                  <CarouselPrevious className="absolute left-0 sm:left-1 md:left-2 top-1/2 -translate-y-1/2 z-10 hidden sm:flex h-8 w-8 p-0 disabled:opacity-50" />
-                  <CarouselNext className="absolute right-0 sm:right-1 md:right-2 top-1/2 -translate-y-1/2 z-10 hidden sm:flex h-8 w-8 p-0 disabled:opacity-50" />
-                </>
-              )}
-            </Carousel>
-            {/* Dot Indicators */}
-            {slideCount > 1 && (
-              <div className="flex justify-center space-x-2 mt-4">
-                {Array.from({ length: slideCount }).map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => carouselApi?.scrollTo(index)}
-                    className={`h-2.5 w-2.5 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
-                      ${index === currentSlide ? 'bg-purple-600 w-4' : 'bg-gray-300 hover:bg-gray-400'}`} // Active dot wider
-                    aria-label={`Go to image ${index + 1}`}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 説明セクション */}
-        <Card className="mt-8 shadow-lg">
+            {/* 説明セクション */}
+            <Card className="shadow-lg">
           <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
             <CardTitle className="text-2xl font-bold text-gray-900 flex items-center">
               <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
@@ -602,12 +486,11 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
             <div className="prose prose-gray max-w-none">
               <p className="whitespace-pre-wrap text-gray-700 leading-relaxed text-lg">{product.description}</p>
             </div>
-            {/* Carousel has been moved out of this CardContent */}
           </CardContent>
         </Card>
 
-        {/* コメントセクション */}
-        <Card className="mt-8 shadow-lg">
+            {/* コメントセクション */}
+            <Card className="shadow-lg">
           <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
             <CardTitle className="text-2xl font-bold text-gray-900 flex items-center justify-between">
               <div className="flex items-center">
@@ -699,6 +582,134 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
             </div>
           </CardContent>
         </Card>
+          </div>
+
+          {/* Sidebar (Right - 1 column on lg) */}
+          <div className="lg:col-span-1 space-y-6 mt-8 lg:mt-0">
+            <Card className="shadow-lg rounded-lg overflow-hidden">
+              <CardContent className="p-6 space-y-6">
+                {/* プロダクト名とタグライン */}
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
+                  <p className="text-xl text-gray-600">{product.tagline}</p>
+                </div>
+
+                {/* アクションボタン */}
+                <div className="flex space-x-2">
+                  <Button
+                    variant={product.has_voted ? "default" : "outline"}
+                    size="sm"
+                    onClick={handleVote}
+                    disabled={isVoting}
+                    className="flex items-center space-x-1 flex-grow"
+                  >
+                    <Heart className={`w-4 h-4 ${product.has_voted ? 'fill-current' : ''}`} />
+                    <span>{product.vote_count}</span>
+                  </Button>
+                  {currentUser && (
+                    <SaveToCollectionPopover productId={product.id} />
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleShare}
+                    className="flex-shrink-0"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </Button>
+                </div>
+                
+                <Separator />
+
+                {/* メタ情報 */}
+                <div className="space-y-3 text-sm text-gray-600">
+                  <Link href={`/profile?id=${product.profile?.id}`} className="flex items-center space-x-2 hover:text-gray-900 group">
+                    <Avatar className="h-8 w-8 group-hover:ring-2 group-hover:ring-blue-500 transition-all">
+                      <AvatarImage src={product.profile?.avatar_url || ''} />
+                      <AvatarFallback>{product.profile?.username?.charAt(0) || 'U'}</AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">{product.profile?.username}</span>
+                  </Link>
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="w-4 h-4 text-gray-500" />
+                    <span>公開日: {new Date(product.launch_date).toLocaleDateString('ja-JP')}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <MessageCircle className="w-4 h-4 text-gray-500" />
+                    <span>{product.comment_count} コメント</span>
+                  </div>
+                  {product.category && (
+                    <div className="flex items-center space-x-2">
+                       <ImageIconLucide className="w-4 h-4 text-gray-500" /> {/* Assuming ImageIconLucide is appropriate for category */}
+                       <Badge variant="secondary">{product.category.name}</Badge>
+                    </div>
+                  )}
+                </div>
+
+                {/* タグ */}
+                {product.tags && product.tags.length > 0 && (
+                  <div>
+                    <h3 className="text-xs text-gray-500 uppercase font-semibold mb-2">タグ</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {product.tags.map((tag) => (
+                        <Link key={tag.id} href={`/products?tag=${tag.slug}`}>
+                          <Badge variant="outline" className="cursor-pointer hover:bg-gray-100 transition-colors">
+                            {tag.name}
+                          </Badge>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <Separator />
+
+                {/* リンク */}
+                <div>
+                  <h3 className="text-xs text-gray-500 uppercase font-semibold mb-3">関連リンク</h3>
+                  <div className="space-y-3">
+                    {product.product_url && (
+                      <a
+                        href={product.product_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 hover:underline group"
+                      >
+                        <Globe className="w-5 h-5 group-hover:animate-pulse" />
+                        <span className="font-medium">ウェブサイト</span>
+                        <ExternalLink className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                      </a>
+                    )}
+                    {product.github_url && (
+                      <a
+                        href={product.github_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 hover:underline group"
+                      >
+                        <Github className="w-5 h-5 group-hover:animate-pulse" />
+                        <span className="font-medium">GitHub</span>
+                        <ExternalLink className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                      </a>
+                    )}
+                    {product.demo_url && (
+                      <a
+                        href={product.demo_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-2 text-purple-600 hover:text-purple-700 hover:underline group"
+                      >
+                        <Play className="w-5 h-5 group-hover:animate-pulse" />
+                        <span className="font-medium">デモ</span>
+                        <ExternalLink className="w-4 h-4 opacity-70 group-hover:opacity-100" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
 
       {/* 削除確認ダイアログ */}
