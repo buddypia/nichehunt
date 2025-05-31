@@ -1,4 +1,4 @@
-import { createStaticClient } from '@/lib/supabase/static';
+import { createClient } from '@/lib/supabase/client';
 
 // 型定義
 export interface MutualFollower {
@@ -28,7 +28,7 @@ export async function getMutualFollowers(
   currentUserId: string,
   targetUserId: string
 ): Promise<MutualFollower[]> {
-  const supabase = createStaticClient();
+  const supabase = createClient();
 
   try {
     // 現在のユーザーのフォロワーを取得
@@ -75,7 +75,7 @@ export async function getSimilarInterests(
   currentUserId: string,
   targetUserId: string
 ): Promise<SimilarInterest[]> {
-  const supabase = createStaticClient();
+  const supabase = createClient();
 
   try {
     // 現在のユーザーが投稿したプロダクトのカテゴリを取得
@@ -181,7 +181,7 @@ export async function getInteractionHistory(
   currentUserId: string,
   targetUserId: string
 ): Promise<InteractionHistory | null> {
-  const supabase = createStaticClient();
+  const supabase = createClient();
 
   try {
     // まず各ユーザーのプロダクトIDを取得
@@ -270,7 +270,7 @@ export async function getSharedCollections(
   currentUserId: string,
   targetUserId: string
 ): Promise<SharedCollection[]> {
-  const supabase = createStaticClient();
+  const supabase = createClient();
 
   try {
     // 現在のユーザーのコレクションに含まれるプロダクトIDを取得

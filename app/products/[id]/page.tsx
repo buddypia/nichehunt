@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ProductDetailClient } from './ProductDetailClient';
 import { fetchProductById } from '@/lib/api/products-detail';
-import { createStaticClient } from '@/lib/supabase/static';
+import { createClient } from '@/lib/supabase/client';
 
 interface ProductDetailPageProps {
   params: Promise<{
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: ProductDetailPageProps): Prom
 }
 
 export async function generateStaticParams() {
-  const supabase = createStaticClient();
+  const supabase = createClient();
   
   try {
     // Supabaseから実際のプロダクトIDを取得

@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase-client';
+import { createClient } from '@/lib/supabase/client';
 
 interface TagWithCount {
   id: number;
@@ -9,6 +9,7 @@ interface TagWithCount {
 
 export async function getPopularTags(limit: number = 6): Promise<string[]> {
   try {
+    const supabase = createClient();
     // まず全てのタグを取得
     const { data: tags, error: tagsError } = await supabase
       .from('tags')
@@ -57,6 +58,7 @@ export async function getPopularTags(limit: number = 6): Promise<string[]> {
 // 全てのタグを取得（検索候補用）
 export async function getAllTags(): Promise<string[]> {
   try {
+    const supabase = createClient();
     const { data, error } = await supabase
       .from('tags')
       .select('name')

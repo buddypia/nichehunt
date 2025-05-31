@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import ProfileDetailClient from './ProfileDetailClient';
-import { createStaticClient } from '@/lib/supabase/static';
+import { createClient } from '@/lib/supabase/client';
 
 interface ProfilePageProps {
   params: Promise<{
@@ -10,7 +10,7 @@ interface ProfilePageProps {
 
 // 静的エクスポート用のパラメータ生成
 export async function generateStaticParams() {
-  const supabase = createStaticClient();
+  const supabase = createClient();
   
   try {
     // プロフィールIDのリストを取得

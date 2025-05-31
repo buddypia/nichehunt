@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Sparkles, Clock, TrendingUp, MessageCircle, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { createClient } from '@/lib/supabase-client';
+import { createClient } from '@/lib/supabase/client';
 import type { Category } from '@/lib/types/database';
 
 interface FilterTopBarProps {

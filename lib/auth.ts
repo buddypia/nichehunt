@@ -1,7 +1,8 @@
-import { supabase } from './supabase-client';
+import { createClient } from '@/lib/supabase/client';
 
 export async function signUp(email: string, password: string, username: string) {
   try {
+    const supabase = createClient();
     // Check if username is already taken
     const { data: existingProfile } = await supabase
       .from('profiles')
@@ -78,6 +79,7 @@ export async function signUp(email: string, password: string, username: string) 
 
 export async function signIn(email: string, password: string) {
   try {
+    const supabase = createClient();
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -99,6 +101,7 @@ export async function signIn(email: string, password: string) {
 
 export async function signOut() {
   try {
+    const supabase = createClient();
     const { error } = await supabase.auth.signOut();
     if (error) {
       throw new Error(error.message || 'ログアウトに失敗しました');
@@ -111,6 +114,7 @@ export async function signOut() {
 
 export async function getCurrentUser() {
   try {
+    const supabase = createClient();
     const { data: { user }, error } = await supabase.auth.getUser();
     
     if (error || !user) {
@@ -136,12 +140,14 @@ export async function getCurrentUser() {
 }
 
 export function onAuthStateChange(callback: (event: string, session: any) => void) {
+  const supabase = createClient();
   return supabase.auth.onAuthStateChange(callback);
 }
 
 // Helper function to check if user is authenticated
 export async function isAuthenticated() {
   try {
+    const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     return !!user;
   } catch {
@@ -152,6 +158,7 @@ export async function isAuthenticated() {
 // Helper function to get session
 export async function getSession() {
   try {
+    const supabase = createClient();
     const { data: { session } } = await supabase.auth.getSession();
     return session;
   } catch {

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase-client'
+import { createClient } from '@/lib/supabase/client';
 import type { ProductWithRelations, ProductWithStats } from '@/lib/types/database'
 
 // ソートタイプの定義

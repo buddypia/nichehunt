@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase-client';
+import { createClient } from '@/lib/supabase/client';
 import type { CommentWithRelations } from '@/lib/types/database';
 
 export async function fetchComments(productId: string): Promise<CommentWithRelations[]> {

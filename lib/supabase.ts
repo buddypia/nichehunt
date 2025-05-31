@@ -1,5 +1,3 @@
-import { createClient } from '@supabase/supabase-js';
-
 // Supabase types based on the schema
 export interface Profile {
   id: string;
@@ -75,9 +73,3 @@ export interface Collection {
   created_at: string;
   updated_at: string;
 }
-
-// Create Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);

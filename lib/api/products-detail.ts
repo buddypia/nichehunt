@@ -1,11 +1,10 @@
-import { createClient } from '@/lib/supabase/server';
-import { createStaticClient } from '@/lib/supabase/static';
+import { createClient } from '@/lib/supabase/client';
 import type { ProductWithRelations } from '@/lib/types/database';
 
 export async function fetchProductById(productId: string, isStatic = false): Promise<ProductWithRelations | null> {
   try {
     // 静的生成時は静的クライアントを使用
-    const supabase = isStatic ? createStaticClient() : await createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from('products_with_stats')
       .select(`

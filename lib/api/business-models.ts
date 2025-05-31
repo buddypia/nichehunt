@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase-client';
+import { createClient } from '@/lib/supabase/client';
 import { BusinessModel } from '@/types/BusinessModel';
 import { ProductWithRelations } from '@/lib/types/database';
 
@@ -58,6 +58,8 @@ export async function fetchBusinessModels(options: FetchBusinessModelsOptions = 
     'comment_count': 'comment_count',
     'launch_date': 'launch_date'
   };
+
+  const supabase = createClient();
 
   let query = supabase
     .from('products_with_stats')
@@ -128,6 +130,7 @@ export async function fetchBusinessModels(options: FetchBusinessModelsOptions = 
 }
 
 export async function fetchBusinessModelById(id: string) {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('products_with_stats')
     .select(`
@@ -182,6 +185,7 @@ export async function fetchBusinessModelById(id: string) {
 }
 
 export async function incrementBusinessModelViews(id: string) {
+  const supabase = createClient();
   // Increment view count for the product
   const { error } = await supabase.rpc('increment_view_count', {
     product_id: parseInt(id)
@@ -218,6 +222,7 @@ export async function fetchFeaturedBusinessModels() {
 }
 
 export async function fetchBusinessModelsByUser(userId: string) {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('products_with_stats')
     .select(`

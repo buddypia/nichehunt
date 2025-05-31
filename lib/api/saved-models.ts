@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase-client';
+import { createClient } from '@/lib/supabase/client';
 import { BusinessModel } from '@/types/BusinessModel';
 import { ProductWithRelations } from '@/lib/types/database';
 

@@ -1,7 +1,8 @@
-import { supabase } from '@/lib/supabase-client';
+import { createClient } from '@/lib/supabase/client';
 import { Category, Tag } from '@/lib/types/database';
 
 export async function fetchCategories() {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('categories')
     .select('*')
@@ -16,6 +17,7 @@ export async function fetchCategories() {
 }
 
 export async function fetchTags() {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('tags')
     .select('*')
@@ -30,6 +32,7 @@ export async function fetchTags() {
 }
 
 export async function fetchCategoryBySlug(slug: string) {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('categories')
     .select('*')
@@ -45,6 +48,7 @@ export async function fetchCategoryBySlug(slug: string) {
 }
 
 export async function fetchTagBySlug(slug: string) {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('tags')
     .select('*')

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/popover"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
-import { createClient } from "@/lib/supabase-client"
+import { createClient } from '@/lib/supabase/client';
 import {
   getUserCollections,
   createCollection,

@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getCurrentUser, signOut } from '@/lib/auth';
-import { supabase } from '@/lib/supabase-client';
+import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
 export default function SettingsClient() {
@@ -58,6 +58,8 @@ export default function SettingsClient() {
       setWebsite(user.website || '');
       setTwitter(user.twitter || '');
       setGithub(user.github || '');
+
+      const supabase = createClient();
       
       // 通知設定の読み込み
       const { data: settings } = await supabase
@@ -85,6 +87,8 @@ export default function SettingsClient() {
   const handleSaveProfile = async () => {
     setIsSaving(true);
     try {
+      const supabase = createClient();
+
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -111,6 +115,8 @@ export default function SettingsClient() {
   const handleSaveNotifications = async () => {
     setIsSaving(true);
     try {
+      const supabase = createClient();
+
       const { error } = await supabase
         .from('user_settings')
         .upsert({
@@ -136,6 +142,8 @@ export default function SettingsClient() {
   const handleSavePrivacy = async () => {
     setIsSaving(true);
     try {
+      const supabase = createClient();
+
       const { error } = await supabase
         .from('user_settings')
         .upsert({

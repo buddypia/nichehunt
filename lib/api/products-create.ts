@@ -1,5 +1,4 @@
-import { createClient } from '@/lib/supabase-client'
-import type { Product, Tag } from '@/lib/types/database'
+import { createClient } from '@/lib/supabase/client';
 
 interface CreateProductInput {
   name: string

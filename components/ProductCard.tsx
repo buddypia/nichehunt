@@ -1,7 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Calendar, MessageCircle, ChevronUp, Users, Tag, Zap, Star, Sparkles, TrendingUp, Heart, Bookmark, Trophy, Medal, Award } from "lucide-react"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
@@ -9,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
-import { createClient } from "@/lib/supabase-client"
+import { createClient } from '@/lib/supabase/client';
 import type { ProductWithRelations } from "@/lib/types/database"
 import { SaveToCollectionPopover } from "@/components/SaveToCollectionPopover"
 
