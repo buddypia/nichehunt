@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Heart, MessageCircle, ExternalLink, Share2, Calendar, Tag, Github, Play, Globe, Trash2, Image as ImageIconLucide } from 'lucide-react'; // Added ImageIconLucide for clarity if needed
+import { useRouter } from 'next/navigation'; // Added useRouter
+import { ArrowLeft, Heart, MessageCircle, ExternalLink, Share2, Calendar, Tag, Github, Play, Globe, Trash2, Image as ImageIconLucide, Edit } from 'lucide-react'; // Edit can be removed if not used elsewhere
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -31,7 +32,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import type { ProductWithRelations, CommentWithRelations } from '@/lib/types/database';
-import { voteProduct } from '@/lib/api/products-client';
+import { voteProduct, deleteProduct } from '@/lib/api/products-client'; // Added deleteProduct
 import { fetchComments, createComment, deleteComment } from '@/lib/api/comments-product';
 import { getCurrentUser } from '@/lib/auth';
 import { toast } from 'sonner';
@@ -186,7 +187,13 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
   const [replyToId, setReplyToId] = useState<number | null>(null);
   const [replyTexts, setReplyTexts] = useState<Record<number, string>>({});
   const [deletingCommentId, setDeletingCommentId] = useState<number | null>(null);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeleteCommentDialog, setShowDeleteCommentDialog] = useState(false); // Renamed for clarity
+
+  // State for Product Deletion
+  const [showDeleteProductDialog, setShowDeleteProductDialog] = useState(false);
+  const [isDeletingProduct, setIsDeletingProduct] = useState(false);
+
+  const router = useRouter(); // For redirecting after delete
 
   // State for Carousel API and slide tracking
   const [carouselApi, setCarouselApi] = useState<CarouselApi>()
@@ -335,12 +342,12 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
     }
   };
 
-  const handleDeleteClick = (commentId: number) => {
+  const handleDeleteCommentClick = (commentId: number) => {
     setDeletingCommentId(commentId);
-    setShowDeleteDialog(true);
+    setShowDeleteCommentDialog(true);
   };
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteCommentConfirm = async () => {
     if (!deletingCommentId) return;
 
     try {
@@ -359,9 +366,36 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
       console.error('Error deleting comment:', error);
       toast.error('コメントの削除に失敗しました');
     } finally {
-      setShowDeleteDialog(false);
+      setShowDeleteCommentDialog(false);
       setDeletingCommentId(null);
     }
+  };
+
+  const handleDeleteProductClick = () => {
+    setShowDeleteProductDialog(true);
+  };
+
+  const handleDeleteProductConfirm = async () => {
+    if (!product || !currentUser || currentUser.id !== product.profile?.id) {
+      toast.error('プロダクトを削除する権限がありません。');
+      setShowDeleteProductDialog(false);
+      return;
+    }
+    setIsDeletingProduct(true);
+    try {
+      const result = await deleteProduct(product.id);
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+      toast.success('プロダクトを削除しました。');
+      router.push('/products'); // Redirect to products list
+    } catch (error: any) {
+      console.error('Error deleting product:', error);
+      toast.error(`プロダクトの削除に失敗しました: ${error.message}`);
+      setIsDeletingProduct(false);
+      setShowDeleteProductDialog(false);
+    }
+    // No finally for setIsDeletingProduct here, as redirection happens on success
   };
 
   const renderCommentWithReplies = (comment: CommentWithRelations, depth: number = 0, parentComment?: CommentWithRelations) => {
@@ -384,7 +418,7 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
             setReplyTexts(prev => ({ ...prev, [comment.id]: '' }));
           }}
           isSubmittingComment={isSubmittingComment}
-          onDelete={handleDeleteClick}
+          onDelete={handleDeleteCommentClick} // Changed to handleDeleteCommentClick
           parentComment={parentComment}
         />
         {comment.replies && comment.replies.map(reply => renderCommentWithReplies(reply, depth + 1, comment))}
@@ -570,7 +604,18 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
                 {/* プロダクト名とタグライン */}
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
-                  <p className="text-xl text-gray-600">{product.tagline}</p>
+                  <p className="text-xl text-gray-600 mb-4">{product.tagline}</p>
+                  {currentUser && product.profile && currentUser.id === product.profile.id && (
+                    <Button 
+                      variant="destructive" 
+                      className="w-full mb-4" 
+                      onClick={handleDeleteProductClick}
+                      disabled={isDeletingProduct}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      {isDeletingProduct ? '削除中...' : 'プロダクトを削除'}
+                    </Button>
+                  )}
                 </div>
 
                 {/* アクションボタン */}
@@ -691,8 +736,8 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
         </div>
       </div>
 
-      {/* 削除確認ダイアログ */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      {/* コメント削除確認ダイアログ */}
+      <AlertDialog open={showDeleteCommentDialog} onOpenChange={setShowDeleteCommentDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>コメントを削除しますか？</AlertDialogTitle>
@@ -705,10 +750,32 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
               キャンセル
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDeleteConfirm}
+              onClick={handleDeleteCommentConfirm}
               className="bg-red-600 hover:bg-red-700"
             >
               削除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* プロダクト削除確認ダイアログ */}
+      <AlertDialog open={showDeleteProductDialog} onOpenChange={setShowDeleteProductDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>プロダクト「{product.name}」を削除しますか？</AlertDialogTitle>
+            <AlertDialogDescription>
+              この操作は取り消すことができません。プロダクトに関連する全てのデータ（コメント、投票など）も削除される可能性があります。本当に削除しますか？
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingProduct}>キャンセル</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteProductConfirm}
+              disabled={isDeletingProduct}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeletingProduct ? '削除中...' : '削除'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

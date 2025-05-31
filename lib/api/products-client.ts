@@ -158,6 +158,104 @@ export async function getUserProducts(userId: string) {
   return enrichProducts((products || []) as unknown as ProductWithStats[])
 }
 
+// プロダクトを更新するためのインターフェース
+export interface UpdateProductData {
+  name?: string;
+  tagline?: string;
+  description?: string;
+  product_url?: string | null;
+  github_url?: string | null;
+  demo_url?: string | null;
+  thumbnail_url?: string | null;
+  category_id?: number | null;
+  // status?: string; // ステータス変更は別のフローを推奨
+  // launch_date?: string; // ローンチ日変更も注意が必要
+  // tags?: { id: number; name: string }[]; // タグの更新は別途処理が必要
+}
+
+// プロダクトを更新
+export async function updateProduct(productId: number, data: UpdateProductData) {
+  const supabase = createClient();
+  const user = await supabase.auth.getUser();
+
+  if (!user.data.user) {
+    return { data: null, error: { message: 'Not authenticated' } };
+  }
+
+  // Ensure only the owner can update (though RLS should enforce this)
+  // For client-side, this check is more for immediate feedback or specific logic
+  const { data: productOwner, error: ownerError } = await supabase
+    .from('products')
+    .select('user_id')
+    .eq('id', productId)
+    .single();
+
+  if (ownerError || !productOwner) {
+    return { data: null, error: { message: ownerError?.message || 'Product not found' } };
+  }
+
+  if (productOwner.user_id !== user.data.user.id) {
+    return { data: null, error: { message: 'You do not have permission to update this product.' } };
+  }
+  
+  // 'updated_at' フィールドを自動的に設定
+  const updatePayload = {
+    ...data,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { data: updatedProduct, error } = await supabase
+    .from('products')
+    .update(updatePayload)
+    .eq('id', productId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating product:', error);
+    return { data: null, error };
+  }
+
+  return { data: updatedProduct, error: null };
+}
+
+// プロダクトを削除
+export async function deleteProduct(productId: number) {
+  const supabase = createClient();
+  const user = await supabase.auth.getUser();
+
+  if (!user.data.user) {
+    return { error: { message: 'Not authenticated' } };
+  }
+
+  // サーバーサイドのRLSが主たるガードだが、クライアントからの呼び出し前に確認
+  const { data: productOwner, error: ownerError } = await supabase
+    .from('products')
+    .select('user_id')
+    .eq('id', productId)
+    .single();
+
+  if (ownerError || !productOwner) {
+    return { error: { message: ownerError?.message || 'Product not found or error checking ownership.' } };
+  }
+
+  if (productOwner.user_id !== user.data.user.id) {
+    return { error: { message: 'You do not have permission to delete this product.' } };
+  }
+
+  const { error } = await supabase
+    .from('products')
+    .delete()
+    .eq('id', productId);
+
+  if (error) {
+    console.error('Error deleting product:', error);
+    return { error };
+  }
+
+  return { error: null };
+}
+
 // プロダクトを投票
 export async function voteProduct(productId: number) {
   const supabase = createClient()
