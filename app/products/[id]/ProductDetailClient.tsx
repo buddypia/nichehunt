@@ -472,17 +472,8 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
 
             {/* 説明セクション */}
             <Card className="shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
-            <CardTitle className="text-2xl font-bold text-gray-900 flex items-center">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              詳細説明
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-8">
+          {/* CardHeader removed for a cleaner look as title was removed */}
+          <CardContent className="p-6 md:p-8"> {/* Adjusted padding for content directly in Card */}
             <div className="prose prose-gray max-w-none">
               <p className="whitespace-pre-wrap text-gray-700 leading-relaxed text-lg">{product.description}</p>
             </div>
@@ -491,20 +482,8 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
 
             {/* コメントセクション */}
             <Card className="shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
-            <CardTitle className="text-2xl font-bold text-gray-900 flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
-                  <MessageCircle className="w-5 h-5 text-white" />
-                </div>
-                ディスカッション
-              </div>
-              <Badge variant="secondary" className="text-lg px-3 py-1">
-                {product.comment_count} コメント
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-8">
+          {/* CardHeader removed to eliminate discussion label and comment count */}
+          <CardContent className="p-6 md:p-8"> {/* Adjusted padding since header is removed */}
             {/* コメント投稿フォーム */}
             {currentUser ? (
               <form onSubmit={(e) => handleCommentSubmit(e)} className="mb-10">
