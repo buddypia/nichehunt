@@ -470,21 +470,19 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
               </div>
             ) : null}
 
-            {/* 説明セクション */}
+            {/* 統合された説明とディスカッションセクション */}
             <Card className="shadow-lg">
-          {/* CardHeader removed for a cleaner look as title was removed */}
-          <CardContent className="p-6 md:p-8"> {/* Adjusted padding for content directly in Card */}
-            <div className="prose prose-gray max-w-none">
-              <p className="whitespace-pre-wrap text-gray-700 leading-relaxed text-lg">{product.description}</p>
-            </div>
-          </CardContent>
-        </Card>
+              <CardContent className="p-6 md:p-8">
+                {/* 説明 */}
+                <div className="prose prose-gray max-w-none mb-8"> {/* Added mb-8 here, removed outer div and h2 */}
+                  <p className="whitespace-pre-wrap text-gray-700 leading-relaxed text-lg">{product.description}</p>
+                </div>
 
-            {/* コメントセクション */}
-            <Card className="shadow-lg">
-          {/* CardHeader removed to eliminate discussion label and comment count */}
-          <CardContent className="p-6 md:p-8"> {/* Adjusted padding since header is removed */}
-            {/* コメント投稿フォーム */}
+                <Separator className="my-8" /> {/* Separator between description and discussion */}
+                
+                {/* ディスカッション */}
+                <div> {/* Outer div for discussion section - h2 removed */}
+                  {/* コメント投稿フォーム */}
             {currentUser ? (
               <form onSubmit={(e) => handleCommentSubmit(e)} className="mb-10">
                 <div className="flex space-x-4">
@@ -534,6 +532,7 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
               </div>
             )}
 
+            {/* The original separator after the form is kept as it separates the form from the comment list. */}
             <Separator className="mb-8" />
 
             {/* コメント一覧 */}
@@ -559,8 +558,9 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
                   ))
               )}
             </div>
-          </CardContent>
-        </Card>
+                </div> {/* Closing div for discussion section */}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar (Right - 1 column on lg) */}
