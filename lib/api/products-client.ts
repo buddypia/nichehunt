@@ -271,36 +271,125 @@ export async function voteProduct(productId: number) {
   return { data, error }
 }
 
-// ヘルパー関数
-async function enrichProducts(products: ProductWithStats[]): Promise<ProductWithRelations[]> {
-  const supabase = createClient()
-  const user = await supabase.auth.getUser()
+// ヘルパー関数 (バッチ処理に最適化)
 
-  // ユーザーの投票状態を一括取得
-  let votedProductIds = new Set<number>()
-  if (user.data.user) {
-    const productIds = products.map(p => p.id)
-    votedProductIds = await checkUserVotesBatch(productIds, user.data.user.id)
+async function getProfilesBatch(userIds: string[]): Promise<Map<string, any>> {
+  if (userIds.length === 0) return new Map();
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .in('id', userIds);
+  if (error) {
+    console.error('Error fetching profiles batch:', error);
+    return new Map();
   }
+  return new Map(data.map(profile => [profile.id, profile]));
+}
 
-  // 各プロダクトの関連情報を並列で取得
-  return Promise.all(products.map(async (product) => {
-    const [profile, category, tags] = await Promise.all([
-      getProfile(product.user_id),
-      getCategory(product.category_id),
-      getProductTags(product.id),
-    ])
+async function getCategoriesBatch(categoryIds: number[]): Promise<Map<number, any>> {
+  if (categoryIds.length === 0) return new Map();
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .in('id', categoryIds);
+  if (error) {
+    console.error('Error fetching categories batch:', error);
+    return new Map();
+  }
+  return new Map(data.map(category => [category.id, category]));
+}
 
+async function getProductTagsBatch(productIds: number[]): Promise<Map<number, any[]>> {
+  if (productIds.length === 0) return new Map();
+  const supabase = createClient();
+
+  // Fetch all product_tag relations for the given product IDs
+  const { data: productTagRelations, error: ptError } = await supabase
+    .from('product_tags')
+    .select('product_id, tag_id')
+    .in('product_id', productIds);
+
+  if (ptError) {
+    console.error('Error fetching product_tags batch:', ptError);
+    return new Map();
+  }
+  if (!productTagRelations || productTagRelations.length === 0) return new Map();
+
+  // Collect all unique tag IDs
+  const tagIds = Array.from(new Set(productTagRelations.map(pt => pt.tag_id)));
+  if (tagIds.length === 0) return new Map();
+
+  // Fetch all tags for these unique tag IDs
+  const { data: tags, error: tagsError } = await supabase
+    .from('tags')
+    .select('*')
+    .in('id', tagIds);
+
+  if (tagsError) {
+    console.error('Error fetching tags batch:', tagsError);
+    return new Map();
+  }
+  if (!tags || tags.length === 0) return new Map();
+
+  const tagsMap = new Map(tags.map(tag => [tag.id, tag]));
+  const productTagsMap = new Map<number, any[]>();
+
+  productTagRelations.forEach(relation => {
+    if (!productTagsMap.has(relation.product_id)) {
+      productTagsMap.set(relation.product_id, []);
+    }
+    const tag = tagsMap.get(relation.tag_id);
+    if (tag) {
+      productTagsMap.get(relation.product_id)!.push(tag);
+    }
+  });
+
+  return productTagsMap;
+}
+
+async function enrichProducts(products: ProductWithStats[]): Promise<ProductWithRelations[]> {
+  if (products.length === 0) return [];
+
+  const supabase = createClient();
+  const user = await supabase.auth.getUser();
+
+  const productIds = products.map(p => p.id);
+  const userIds = Array.from(new Set(products.map(p => p.user_id).filter(id => id)));
+  const categoryIds = Array.from(new Set(products.map(p => p.category_id).filter(id => id !== null))) as number[];
+
+  // Batch fetch all necessary related data
+  const [
+    profilesMap,
+    categoriesMap,
+    productTagsMap,
+    votedProductIdsSet
+  ] = await Promise.all([
+    getProfilesBatch(userIds),
+    getCategoriesBatch(categoryIds),
+    getProductTagsBatch(productIds),
+    user.data.user ? checkUserVotesBatch(productIds, user.data.user.id) : Promise.resolve(new Set<number>())
+  ]);
+
+  // Enrich products
+  return products.map(product => {
+    const profile = profilesMap.get(product.user_id) || null;
+    const category = product.category_id ? categoriesMap.get(product.category_id) : null;
+    const tags = productTagsMap.get(product.id) || [];
+    
     return {
       ...product,
       profile,
       category,
       tags,
-      has_voted: votedProductIds.has(product.id),
-    } as unknown as ProductWithRelations
-  }))
+      has_voted: votedProductIdsSet.has(product.id),
+    } as unknown as ProductWithRelations;
+  });
 }
 
+// Individual getters might still be used by getProduct(id), so keep them for now or refactor getProduct too.
+// For now, we assume getProduct is less performance-critical as it fetches a single item.
 async function getProfile(userId: string) {
   const supabase = createClient()
   const { data } = await supabase
