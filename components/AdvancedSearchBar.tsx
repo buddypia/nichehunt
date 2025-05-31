@@ -2,25 +2,35 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+// import { Button } from '@/components/ui/button'; // Button might not be needed directly if using Select
+// import { Badge } from '@/components/ui/badge'; // Badge might not be needed
 import { 
   Search, 
   X, 
   Sparkles, 
   TrendingUp, 
   Clock,
-  Filter,
-  ChevronDown
+  // Filter, // Filter icon might be used with Select
+  // ChevronDown // ChevronDown is part of Select
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { getPopularTags } from '@/lib/api/popular-tags';
+import { useSearch } from '@/contexts/SearchContext';
+import { fetchCategories } from '@/lib/api/categories-tags';
+import { Category } from '@/lib/types/database';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-interface AdvancedSearchBarProps {
-  value: string;
-  onChange: (value: string) => void;
-}
+// interface AdvancedSearchBarProps {
+//   value: string; // To be removed, will use context
+//   onChange: (value: string) => void; // To be removed, will use context
+// }
 
 // デフォルトの最近の検索（ローカルストレージから取得するまで）
 const defaultRecentSearches = [
@@ -29,26 +39,32 @@ const defaultRecentSearches = [
   'マーケットプレイス'
 ];
 
-export function AdvancedSearchBar({ 
-  value, 
-  onChange
-}: AdvancedSearchBarProps) {
+export function AdvancedSearchBar() { // Props removed
+  const { 
+    searchQuery, 
+    setSearchQuery, 
+    selectedCategory, 
+    setSelectedCategory 
+  } = useSearch();
+
   const [isFocused, setIsFocused] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [localValue, setLocalValue] = useState(value);
+  // const [localValue, setLocalValue] = useState(searchQuery); // Use searchQuery directly
   const [popularSearches, setPopularSearches] = useState<string[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>(defaultRecentSearches);
-  const [isLoading, setIsLoading] = useState(true);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoadingTags, setIsLoadingTags] = useState(true);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    setLocalValue(value);
-  }, [value]);
+  // useEffect(() => { // No longer needed as searchQuery is from context
+  //   setLocalValue(searchQuery);
+  // }, [searchQuery]);
 
   // 人気のタグを取得
   useEffect(() => {
-    async function fetchPopularTags() {
-      setIsLoading(true);
+    async function fetchPopularTagsData() {
+      setIsLoadingTags(true);
       try {
         const tags = await getPopularTags(6);
         setPopularSearches(tags);
@@ -57,11 +73,29 @@ export function AdvancedSearchBar({
         // エラー時はデフォルト値を使用
         setPopularSearches(['AI', 'サブスクリプション', '副業', 'エコビジネス', 'フリーランス', 'オンライン教育']);
       } finally {
-        setIsLoading(false);
+        setIsLoadingTags(false);
       }
     }
 
-    fetchPopularTags();
+    fetchPopularTagsData();
+  }, []);
+
+  // カテゴリーを取得
+  useEffect(() => {
+    async function fetchCategoriesData() {
+      setIsLoadingCategories(true);
+      try {
+        const categoriesData = await fetchCategories();
+        if (categoriesData.data) {
+          setCategories(categoriesData.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    }
+    fetchCategoriesData();
   }, []);
 
   // 最近の検索履歴をローカルストレージから取得
@@ -89,8 +123,7 @@ export function AdvancedSearchBar({
   }, []);
 
   const handleSearch = (searchValue: string) => {
-    setLocalValue(searchValue);
-    onChange(searchValue);
+    setSearchQuery(searchValue); // Use context setter
     setShowSuggestions(false);
 
     // 検索履歴に追加（重複を避ける）
@@ -117,16 +150,15 @@ export function AdvancedSearchBar({
   };
 
   const clearSearch = () => {
-    setLocalValue('');
-    onChange('');
+    setSearchQuery(''); // Use context setter
   };
 
   return (
     <div ref={searchRef} className="relative w-full">
       {/* メインの検索バー */}
       <div className="relative">
-        <div className="relative bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
-          <div className="flex items-center px-3 py-2">
+        <div className="relative flex items-center bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+          <div className="flex items-center px-3 py-2 flex-grow">
             <Search className={cn(
               "w-4 h-4 transition-colors duration-200",
               isFocused ? "text-blue-500" : "text-gray-400"
@@ -135,16 +167,15 @@ export function AdvancedSearchBar({
             <input
               type="text"
               placeholder="ビジネスモデルを検索..."
-              value={localValue}
+              value={searchQuery} // Use searchQuery from context
               onChange={(e) => {
                 const newValue = e.target.value;
-                setLocalValue(newValue);
-                onChange(newValue); // リアルタイムで親コンポーネントに値を伝える
+                setSearchQuery(newValue); // Use context setter
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
-                  handleSearch(localValue);
+                  handleSearch(searchQuery); // Use searchQuery from context
                   setShowSuggestions(false);
                 }
               }}
@@ -152,18 +183,39 @@ export function AdvancedSearchBar({
                 setIsFocused(true);
                 setShowSuggestions(true);
               }}
-              onBlur={() => setIsFocused(false)}
+              onBlur={() => setIsFocused(false)} // Consider not hiding suggestions on blur if select is part of suggestions
               className="flex-1 mx-2 bg-transparent outline-none text-sm text-gray-900 placeholder:text-gray-500"
             />
             
-            {localValue && (
+            {searchQuery && (
               <button
                 onClick={clearSearch}
                 className="p-1 hover:bg-gray-200 rounded transition-colors"
+                aria-label="Clear search"
               >
                 <X className="w-3 h-3 text-gray-400" />
               </button>
             )}
+          </div>
+          {/* Category Selector */}
+          <div className="pr-2">
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-[150px] h-8 text-xs border-0 bg-transparent focus:ring-0 shadow-none">
+                <SelectValue placeholder="カテゴリー" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">すべてのカテゴリー</SelectItem>
+                {isLoadingCategories ? (
+                  <SelectItem value="loading" disabled>読み込み中...</SelectItem>
+                ) : (
+                  categories.map(category => (
+                    <SelectItem key={category.id} value={category.slug}>
+                      {category.name}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
@@ -185,10 +237,10 @@ export function AdvancedSearchBar({
                 <span className="text-xs font-semibold text-gray-700">人気の検索</span>
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {isLoading ? (
+                {isLoadingTags ? (
                   <div className="flex items-center gap-2 text-xs text-gray-500">
                     <div className="w-3 h-3 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
-                    読み込み中...
+                    タグ読み込み中...
                   </div>
                 ) : popularSearches.length > 0 ? (
                   popularSearches.map((term) => (

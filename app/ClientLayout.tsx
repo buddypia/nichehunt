@@ -8,24 +8,24 @@ import { SearchProvider, useSearch } from '@/contexts/SearchContext';
 
 function ClientLayoutContent({ children }: { children: React.ReactNode }) {
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
-  const pathname = usePathname();
-  const { searchQuery, setSearchQuery, selectedCategory, setSelectedCategory } = useSearch();
+  // const pathname = usePathname(); // No longer directly needed here for Header props
+  // const { searchQuery, setSearchQuery, selectedCategory, setSelectedCategory } = useSearch(); // No longer directly needed here for Header props
 
   const handleSubmitClick = () => {
     setIsSubmitModalOpen(true);
   };
 
   // ホームページでのみ検索機能を有効にする
-  const showSearch = pathname === '/' || pathname === '/products';
+  // const showSearch = pathname === '/' || pathname === '/products'; // This logic is now handled within Header for rendering AdvancedSearchBar
 
   return (
     <>
       <Header
         onSubmitClick={handleSubmitClick}
-        searchQuery={showSearch ? searchQuery : undefined}
-        onSearchChange={showSearch ? setSearchQuery : undefined}
-        selectedCategory={showSearch ? selectedCategory : undefined}
-        onCategoryFilter={showSearch ? setSelectedCategory : undefined}
+        // searchQuery={showSearch ? searchQuery : undefined} // Removed
+        // onSearchChange={showSearch ? setSearchQuery : undefined} // Removed
+        // selectedCategory={showSearch ? selectedCategory : undefined} // Removed
+        // onCategoryFilter={showSearch ? setSelectedCategory : undefined} // Removed
       />
       <main>
         {children}

@@ -21,35 +21,38 @@ import { NotificationPopover } from '@/components/NotificationPopover';
 import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
+import { useSearch } from '@/contexts/SearchContext'; // Import useSearch
 
 interface HeaderProps {
   onSubmitClick: () => void;
-  searchQuery?: string;
-  onSearchChange?: (value: string) => void;
+  // searchQuery?: string; // To be removed
+  // onSearchChange?: (value: string) => void; // To be removed
 }
 
 export function Header({ 
   onSubmitClick,
-  searchQuery = '',
-  onSearchChange
+  // searchQuery = '', // To be removed
+  // onSearchChange // To be removed
 }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { searchQuery } = useSearch(); // Get searchQuery from context
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  // 検索実行時の処理
-  const handleSearchChange = (value: string) => {
-    if (onSearchChange) {
-      onSearchChange(value);
-      
-      // プロダクトページ以外で検索が実行された場合、プロダクトページへ遷移
-      if (pathname !== '/products' && value.trim() !== '') {
-        router.push('/products');
+  // Effect to handle navigation when searchQuery changes and user is not on /products
+  useEffect(() => {
+    if (searchQuery && searchQuery.trim() !== '' && pathname !== '/products') {
+      // Check if the search bar is intended to be active on the current page,
+      // This logic might need to be aligned with ClientLayout's `showSearch`
+      const isSearchActivePage = pathname === '/' || pathname === '/products'; // Or get this from a prop/context
+      if (isSearchActivePage) { // Only navigate if search was initiated from an active search page
+         router.push('/products');
       }
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, pathname, router]); // router was missing, pathname is needed
 
   useEffect(() => {
     loadCurrentUser();
@@ -139,12 +142,11 @@ export function Header({
           </div>
 
           {/* 検索バー */}
-          {onSearchChange && (
+          {/* Conditionally render AdvancedSearchBar based on whether search is active for the page */}
+          {/* This logic is similar to ClientLayout's `showSearch` */}
+          {(pathname === '/' || pathname === '/products') && (
             <div className="hidden lg:block flex-1 max-w-xl mx-8">
-              <AdvancedSearchBar 
-                value={searchQuery} 
-                onChange={handleSearchChange}
-              />
+              <AdvancedSearchBar />
             </div>
           )}
 
@@ -227,12 +229,9 @@ export function Header({
               <SheetContent side="right" className="w-80">
                 <div className="flex flex-col space-y-4 mt-8">
                   {/* モバイル検索バー */}
-                  {onSearchChange && (
+                  {(pathname === '/' || pathname === '/products') && (
                     <div className="px-4">
-                      <AdvancedSearchBar 
-                        value={searchQuery} 
-                        onChange={handleSearchChange}
-                      />
+                      <AdvancedSearchBar />
                     </div>
                   )}
 
