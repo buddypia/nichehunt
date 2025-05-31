@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'; // Removed useRef as it's no longer needed for the custom toolbar
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,10 +12,16 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+// Textarea, Tabs, ReactMarkdown, remarkGfm are removed as MDEditor will handle this.
+// Specific lucide icons for the old toolbar (Bold, Italic, etc.) are also removed.
+import MDEditor from '@uiw/react-md-editor'; // Import MDEditor
+import '@uiw/react-md-editor/markdown-editor.css'; // Default theme
+
+
 import { 
   X, 
   Upload, 
-  Link as LinkIcon, 
+  Link as LinkIconLucide, 
   Github,
   Play,
   Image as ImageIcon,
@@ -42,7 +48,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     tagline: '',
-    description: '',
+    description: '', // This will be handled by MDEditor
     product_url: '',
     github_url: '',
     demo_url: '',
@@ -56,6 +62,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
   const [currentTag, setCurrentTag] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // textareaRef and custom markdown helpers are removed
 
   useEffect(() => {
     loadCategories();
@@ -73,7 +80,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
     }
   };
 
-  const MAX_IMAGES = 5; // Maximum number of images allowed
+  const MAX_IMAGES = 5; 
 
   const handleProductImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -83,21 +90,18 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
       
       if (productImageFiles.length + files.length > MAX_IMAGES) {
         toast.error(`画像は最大${MAX_IMAGES}枚までアップロードできます`);
-        // Optionally, only take enough files to reach the limit
-        // files = Array.from(files).slice(0, MAX_IMAGES - productImageFiles.length);
         return;
       }
 
       Array.from(files).forEach(file => {
         if (file.size > 5 * 1024 * 1024) {
           toast.error(`${file.name}の画像サイズは5MB以下にしてください`);
-          return; // Skip this file
+          return; 
         }
         newFiles.push(file);
         const reader = new FileReader();
         reader.onloadend = () => {
           newPreviews.push(reader.result as string);
-          // Update previews once all selected files are read
           if (newPreviews.length === newFiles.length) {
             setProductImageFiles(prevFiles => [...prevFiles, ...newFiles]);
             setProductImagePreviews(prevPreviews => [...prevPreviews, ...newPreviews]);
@@ -115,58 +119,32 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
-    if (!formData.name.trim()) {
-      newErrors.name = 'プロダクト名は必須です';
-    }
-    if (!formData.tagline.trim()) {
-      newErrors.tagline = 'キャッチコピーは必須です';
-    }
-    if (!formData.description.trim()) {
-      newErrors.description = '詳細説明は必須です';
-    }
-    if (!formData.category_id) {
-      newErrors.category_id = 'カテゴリーを選択してください';
-    }
-    
+    if (!formData.name.trim()) newErrors.name = 'プロダクト名は必須です';
+    if (!formData.tagline.trim()) newErrors.tagline = 'キャッチコピーは必須です';
+    if (!formData.description.trim()) newErrors.description = '詳細説明は必須です'; // MDEditor ensures this isn't empty
+    if (!formData.category_id) newErrors.category_id = 'カテゴリーを選択してください';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // 認証チェック
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast.error('投稿するにはログインが必要です');
-      onClose(); // モーダルを閉じる
-      router.push('/auth/signin'); // その後ログインページへ移動
+      onClose(); 
+      router.push('/auth/signin'); 
       return;
     }
-    
-    if (!validateForm()) {
-      return;
-    }
-    
+    if (!validateForm()) return;
     setIsSubmitting(true);
-    
     try {
       const imageUrls: string[] = [];
-      
-      // 画像をアップロード
       for (const file of productImageFiles) {
-        const { url, error: uploadError } = await uploadProductImage(file); // Assuming uploadProductImage uploads one file and returns URL
-        if (uploadError) {
-          throw new Error(`画像 (${file.name}) のアップロードに失敗しました`);
-        }
-        if (url) {
-          imageUrls.push(url);
-        }
+        const { url, error: uploadError } = await uploadProductImage(file);
+        if (uploadError) throw new Error(`画像 (${file.name}) のアップロードに失敗しました`);
+        if (url) imageUrls.push(url);
       }
-      
-      // プロダクトを作成
-      // TODO: createProduct needs to be updated to accept imageUrls and handle product_images table
       const { data: product, error } = await createProduct({
         name: formData.name,
         tagline: formData.tagline,
@@ -174,44 +152,24 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
         product_url: formData.product_url || undefined,
         github_url: formData.github_url || undefined,
         demo_url: formData.demo_url || undefined,
-        // Assuming the first image is the thumbnail, or thumbnail_url is handled differently.
-        // For now, let's pass the first image as thumbnail_url if available,
-        // and all images as a new `image_urls` property.
         thumbnail_url: imageUrls.length > 0 ? imageUrls[0] : undefined,
-        image_urls: imageUrls, // This will require modification in createProduct
+        image_urls: imageUrls,
         category_id: parseInt(formData.category_id),
         tags: formData.tags,
         launch_date: formData.launch_date,
       });
-      
-      if (error) {
-        throw error;
-      }
-      
+      if (error) throw error;
       toast.success('プロダクトを投稿しました！');
-      
-      // フォームをリセット
       setFormData({
-        name: '',
-        tagline: '',
-        description: '',
-        product_url: '',
-        github_url: '',
-        demo_url: '',
-        category_id: '',
-        launch_date: new Date().toISOString().split('T')[0],
-        tags: [],
+        name: '', tagline: '', description: '', product_url: '', github_url: '',
+        demo_url: '', category_id: '', 
+        launch_date: new Date().toISOString().split('T')[0], tags: [],
       });
       setProductImageFiles([]);
       setProductImagePreviews([]);
       setErrors({});
-      
       onClose();
-      
-      // プロダクト詳細ページへリダイレクト
-      if (product) {
-        router.push(`/products/${product.id}`);
-      }
+      if (product) router.push(`/products/${product.id}`);
     } catch (error) {
       console.error('Error submitting product:', error);
       toast.error(error instanceof Error ? error.message : 'プロダクトの投稿に失敗しました');
@@ -222,27 +180,16 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
 
   const addTag = () => {
     if (currentTag.trim()) {
-      // コンマで分割してタグを処理
-      const newTags = currentTag
-        .split(',')
-        .map(tag => tag.trim())
-        .filter(tag => tag && !formData.tags.includes(tag));
-      
+      const newTags = currentTag.split(',').map(tag => tag.trim()).filter(tag => tag && !formData.tags.includes(tag));
       if (newTags.length > 0) {
-        setFormData(prev => ({
-          ...prev,
-          tags: [...prev.tags, ...newTags]
-        }));
+        setFormData(prev => ({ ...prev, tags: [...prev.tags, ...newTags] }));
         setCurrentTag('');
       }
     }
   };
 
   const removeTag = (tagToRemove: string) => {
-    setFormData(prev => ({
-      ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
-    }));
+    setFormData(prev => ({ ...prev, tags: prev.tags.filter(tag => tag !== tagToRemove) }));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -255,19 +202,16 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
   const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setCurrentTag(value);
-    
-    // 最後の文字がコンマの場合、自動的にタグを追加
     if (value.endsWith(',')) {
       const tagValue = value.slice(0, -1).trim();
       if (tagValue && !formData.tags.includes(tagValue)) {
-        setFormData(prev => ({
-          ...prev,
-          tags: [...prev.tags, tagValue]
-        }));
+        setFormData(prev => ({ ...prev, tags: [...prev.tags, tagValue] }));
         setCurrentTag('');
       }
     }
   };
+
+  // Custom Markdown helpers and MarkdownToolbar are removed.
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -332,21 +276,25 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
               )}
             </div>
 
+            {/* Description field with MDEditor */}
             <div>
               <Label htmlFor="description" className="text-sm font-medium text-gray-700">
                 詳細説明 *
               </Label>
-              <textarea
-                id="description"
-                required
-                rows={4}
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                className={`mt-1 w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.description ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="プロダクトの特徴、解決する課題、ターゲットユーザーなどを詳しく説明してください..."
-              />
+              <div className="mt-1" data-color-mode="light"> {/* data-color-mode for MDEditor theme */}
+                <MDEditor
+                  value={formData.description}
+                  onChange={(value) => {
+                    setFormData(prev => ({ ...prev, description: value || '' }));
+                  }}
+                  height={300} // Adjust height as needed
+                  previewOptions={{
+                    components: {
+                      a: ({node, ...props}) => <a {...props} target="_blank" rel="noopener noreferrer" />
+                    }
+                  }}
+                />
+              </div>
               {errors.description && (
                 <p className="mt-1 text-sm text-red-600 flex items-center">
                   <AlertCircle className="w-4 h-4 mr-1" />
@@ -414,7 +362,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
                   id="product_images"
                   type="file"
                   accept="image/*"
-                  multiple // Allow multiple file selection
+                  multiple 
                   onChange={handleProductImagesChange}
                   className="hidden"
                   disabled={productImageFiles.length >= MAX_IMAGES}
@@ -466,7 +414,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
                 プロダクトURL
               </Label>
               <div className="mt-1 relative">
-                <LinkIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <LinkIconLucide className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   id="product_url"
                   type="url"
