@@ -17,16 +17,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { getPopularTags } from '@/lib/api/popular-tags';
 import { useSearch } from '@/contexts/SearchContext';
-import { fetchCategories } from '@/lib/api/categories-tags';
-import { Category } from '@/lib/types/database';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
 // interface AdvancedSearchBarProps {
 //   value: string; // To be removed, will use context
 //   onChange: (value: string) => void; // To be removed, will use context
@@ -42,9 +32,9 @@ const defaultRecentSearches = [
 export function AdvancedSearchBar() { // Props removed
   const { 
     searchQuery, 
-    setSearchQuery, 
-    selectedCategory, 
-    setSelectedCategory 
+    setSearchQuery
+    // selectedCategory, // Removed
+    // setSelectedCategory // Removed
   } = useSearch();
 
   const [isFocused, setIsFocused] = useState(false);
@@ -52,9 +42,9 @@ export function AdvancedSearchBar() { // Props removed
   // const [localValue, setLocalValue] = useState(searchQuery); // Use searchQuery directly
   const [popularSearches, setPopularSearches] = useState<string[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>(defaultRecentSearches);
-  const [categories, setCategories] = useState<Category[]>([]);
+  // const [categories, setCategories] = useState<Category[]>([]); // Removed
   const [isLoadingTags, setIsLoadingTags] = useState(true);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  // const [isLoadingCategories, setIsLoadingCategories] = useState(true); // Removed
   const searchRef = useRef<HTMLDivElement>(null);
 
   // useEffect(() => { // No longer needed as searchQuery is from context
@@ -78,24 +68,6 @@ export function AdvancedSearchBar() { // Props removed
     }
 
     fetchPopularTagsData();
-  }, []);
-
-  // カテゴリーを取得
-  useEffect(() => {
-    async function fetchCategoriesData() {
-      setIsLoadingCategories(true);
-      try {
-        const categoriesData = await fetchCategories();
-        if (categoriesData.data) {
-          setCategories(categoriesData.data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch categories:', error);
-      } finally {
-        setIsLoadingCategories(false);
-      }
-    }
-    fetchCategoriesData();
   }, []);
 
   // 最近の検索履歴をローカルストレージから取得
@@ -197,26 +169,7 @@ export function AdvancedSearchBar() { // Props removed
               </button>
             )}
           </div>
-          {/* Category Selector */}
-          <div className="pr-2">
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-[150px] h-8 text-xs border-0 bg-transparent focus:ring-0 shadow-none">
-                <SelectValue placeholder="カテゴリー" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">すべてのカテゴリー</SelectItem>
-                {isLoadingCategories ? (
-                  <SelectItem value="loading" disabled>読み込み中...</SelectItem>
-                ) : (
-                  categories.map(category => (
-                    <SelectItem key={category.id} value={category.slug}>
-                      {category.name}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Category Selector Removed */}
         </div>
       </div>
 

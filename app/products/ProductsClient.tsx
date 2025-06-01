@@ -10,11 +10,11 @@ import { useSearch } from '@/contexts/SearchContext';
 
 export default function ProductsClient() {
   const [products, setProducts] = useState<ProductWithRelations[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]); // Keep for now, might be used by Tag filter or other parts
   const [tags, setTags] = useState<Tag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTag, setSelectedTag] = useState<string>('all');
-  const { searchQuery, selectedCategory, setSelectedCategory } = useSearch();
+  const { searchQuery } = useSearch(); // Removed selectedCategory, setSelectedCategory
 
   // Fetch categories and tags on mount
   useEffect(() => {
@@ -42,7 +42,7 @@ export default function ProductsClient() {
       try {
         const productsResult = await getProducts({
           search: searchQuery || undefined,
-          categorySlug: selectedCategory !== 'all' ? selectedCategory : undefined,
+          // categorySlug: selectedCategory !== 'all' ? selectedCategory : undefined, // Removed
           tagSlug: selectedTag !== 'all' ? selectedTag : undefined,
           sort: 'popular'
         });
@@ -58,7 +58,7 @@ export default function ProductsClient() {
     };
 
     loadProducts();
-  }, [selectedCategory, selectedTag, searchQuery]);
+  }, [selectedTag, searchQuery]); // Removed selectedCategory from dependencies
 
   // Filter products based on search
   const filteredProducts = useMemo(() => {
@@ -90,45 +90,7 @@ export default function ProductsClient() {
 
         {/* Filters */}
         <div className="mb-8 space-y-8">
-            {/* Category Filter */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl flex items-center justify-center">
-                  <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold text-gray-900">カテゴリー</h3>
-                  <p className="text-xs text-gray-500">興味のあるカテゴリーで絞り込み</p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setSelectedCategory('all')}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    selectedCategory === 'all'
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  すべて
-                </button>
-                {categories.map(category => (
-                  <button
-                    key={category.id}
-                    onClick={() => setSelectedCategory(category.slug)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                      selectedCategory === category.slug
-                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md transform scale-105'
-                        : 'bg-gray-50 text-gray-700 border border-gray-200 hover:border-gray-300 hover:bg-gray-100'
-                    }`}
-                  >
-                    {category.name}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* Category Filter Removed */}
 
             {/* Tag Filter */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
