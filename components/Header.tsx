@@ -13,13 +13,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, User, Settings, LogOut, Bookmark, Bell, Menu, X, Sparkles } from 'lucide-react';
+import { Plus, User, Settings, LogOut, Bookmark, Menu, Sparkles } from 'lucide-react';
 import { getCurrentUser, signOut } from '@/lib/auth';
-import { Badge } from '@/components/ui/badge';
 import { AdvancedSearchBar } from '@/components/AdvancedSearchBar';
 import { NotificationPopover } from '@/components/NotificationPopover';
-import { cn } from '@/lib/utils';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { VisuallyHidden } from '@/components/ui/visually-hidden';
 import { Separator } from '@/components/ui/separator';
 import { useSearch } from '@/contexts/SearchContext'; // Import useSearch
 
@@ -227,6 +226,9 @@ export function Header({
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-80">
+                <VisuallyHidden>
+                  <SheetTitle>Menu</SheetTitle>
+                </VisuallyHidden>
                 <div className="flex flex-col space-y-4 mt-8">
                   {/* モバイル検索バー */}
                   {(pathname === '/' || pathname === '/products') && (
