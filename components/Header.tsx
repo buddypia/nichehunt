@@ -17,7 +17,7 @@ import { Plus, User, Settings, LogOut, Bookmark, Menu, Sparkles } from 'lucide-r
 import { getCurrentUser, signOut } from '@/lib/auth';
 import { AdvancedSearchBar } from '@/components/AdvancedSearchBar';
 import { NotificationPopover } from '@/components/NotificationPopover';
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
 import { Separator } from '@/components/ui/separator';
 import { useSearch } from '@/contexts/SearchContext'; // Import useSearch
@@ -227,7 +227,10 @@ export function Header({
               </SheetTrigger>
               <SheetContent side="right" className="w-80">
                 <VisuallyHidden>
-                  <SheetTitle>Menu</SheetTitle>
+                  <SheetTitle>Product search menu</SheetTitle>
+                  <SheetDescription className="sr-only">
+                    Menu for searching products
+                  </SheetDescription>
                 </VisuallyHidden>
                 <div className="flex flex-col space-y-4 mt-8">
                   {/* モバイル検索バー */}
