@@ -225,7 +225,7 @@ export function Header({
                   <Menu className="w-5 h-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-80">
+              <SheetContent side="right" className="w-80" onOpenAutoFocus={(e) => { e.preventDefault(); }}>
                 <VisuallyHidden>
                   <SheetTitle>Product search menu</SheetTitle>
                   <SheetDescription className="sr-only">
