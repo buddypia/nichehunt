@@ -17,6 +17,7 @@ import { Plus, User, Settings, LogOut, Bookmark, Menu, Sparkles } from 'lucide-r
 import { getCurrentUser, signOut } from '@/lib/auth';
 import { AdvancedSearchBar } from '@/components/AdvancedSearchBar';
 import { NotificationPopover } from '@/components/NotificationPopover';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
 import { Separator } from '@/components/ui/separator';
@@ -150,6 +151,9 @@ export function Header({
           )}
 
           <div className="flex items-center space-x-4">
+            {/* 言語切り替え */}
+            <LanguageSwitcher />
+
             {/* 通知ボタン */}
             {currentUser && (
               <NotificationPopover userId={currentUser.id} />
@@ -275,6 +279,16 @@ export function Header({
                       </div>
                     </>
                   )}
+
+                  <Separator />
+
+                  {/* 言語切り替え（モバイル） */}
+                  <div className="px-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">言語設定</span>
+                      <LanguageSwitcher />
+                    </div>
+                  </div>
 
                   <Separator />
 

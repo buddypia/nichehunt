@@ -6,12 +6,10 @@ export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   let countryCode = 'en'; // デフォルト値（英語）
   
-  // ja.サブドメインの検出（ja.example.com）
+  // ja.サブドメインの検出（ja.example.com または ja.localhost）
   if (hostname.startsWith('ja.')) {
     countryCode = 'jp';
-  }
-  // その他のサブドメインまたはサブドメインなしの場合は英語
-  else {
+  } else {
     countryCode = 'en';
   }
   
