@@ -12,6 +12,7 @@ export async function getProducts({
   limit = 20,
   search,
   tagSlug,
+  countryCode,
 }: {
   categorySlug?: string
   sort?: SortType
@@ -19,6 +20,7 @@ export async function getProducts({
   limit?: number
   search?: string
   tagSlug?: string
+  countryCode?: string
 } = {}) {
   const supabase = createClient()
   const offset = (page - 1) * limit
@@ -27,6 +29,11 @@ export async function getProducts({
     .from('products_with_stats')
     .select('*')
     .eq('status', 'published' as any)
+
+  // 国コードでフィルタ（デフォルトは英語）
+  if (countryCode) {
+    query = query.eq('country_code', countryCode as any)
+  }
 
   // カテゴリでフィルタ
   if (categorySlug) {

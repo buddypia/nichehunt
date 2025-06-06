@@ -12,6 +12,7 @@ export async function getProductsWithRelations({
   limit = 20,
   search,
   tagSlug,
+  countryCode,
 }: {
   categorySlug?: string
   sort?: 'popular' | 'newest' | 'comments' | 'featured'
@@ -19,6 +20,7 @@ export async function getProductsWithRelations({
   limit?: number
   search?: string
   tagSlug?: string
+  countryCode?: string
 } = {}) {
   const supabase = await createClient()
   const offset = (page - 1) * limit
@@ -27,6 +29,11 @@ export async function getProductsWithRelations({
     .from('products_with_stats')
     .select('*')
     .eq('status', 'published' as any)
+
+  // 国コードでフィルタ（デフォルトは英語）
+  if (countryCode) {
+    query = query.eq('country_code', countryCode as any)
+  }
 
   // カテゴリでフィルタ
   if (categorySlug) {
@@ -213,7 +220,7 @@ async function enrichProductsEfficiently(products: ProductWithStats[]): Promise<
 
 
 // トレンドプロダクトを効率的に取得
-export async function getTrendingProductsEfficiently(period: 'today' | 'week' | 'month' = 'today') {
+export async function getTrendingProductsEfficiently(period: 'today' | 'week' | 'month' = 'today', countryCode?: string) {
   const supabase = await createClient()
   
   // 期間でフィルタリング用の日付を計算
@@ -236,11 +243,18 @@ export async function getTrendingProductsEfficiently(period: 'today' | 'week' | 
       break
   }
 
-  const { data: products } = await supabase
+  let query = supabase
     .from('products_with_stats')
     .select('*')
     .eq('status', 'published' as any)
     .gte('launch_date', dateFilter as any)
+
+  // 国コードでフィルタ（デフォルトは英語）
+  if (countryCode) {
+    query = query.eq('country_code', countryCode as any)
+  }
+
+  const { data: products } = await query
     .order('vote_count', { ascending: false })
     .limit(20)
 
@@ -250,7 +264,7 @@ export async function getTrendingProductsEfficiently(period: 'today' | 'week' | 
 }
 
 // すべてのトレンド期間のプロダクトを一括で効率的に取得
-export async function getAllTrendingProductsEfficiently() {
+export async function getAllTrendingProductsEfficiently(countryCode?: string) {
   const supabase = await createClient()
   
   const now = new Date()
@@ -259,12 +273,18 @@ export async function getAllTrendingProductsEfficiently() {
   const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
   // 過去30日間のすべてのプロダクトを一度に取得（制限なし）
-  const { data: products } = await supabase
+  let query = supabase
     .from('products_with_stats')
     .select('*')
     .eq('status', 'published' as any)
     .gte('launch_date', monthAgo.toISOString() as any)
-    .order('vote_count', { ascending: false })
+
+  // 国コードでフィルタ（デフォルトは英語）
+  if (countryCode) {
+    query = query.eq('country_code', countryCode as any)
+  }
+
+  const { data: products } = await query.order('vote_count', { ascending: false })
 
   if (!products) {
     return {

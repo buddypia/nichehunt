@@ -8,7 +8,7 @@ import { ProductWithRelations, Category, Tag } from '@/lib/types/database';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSearch } from '@/contexts/SearchContext';
 
-export default function ProductsClient() {
+export default function ProductsClient({ countryCode }: { countryCode?: string }) {
   const [products, setProducts] = useState<ProductWithRelations[]>([]);
   const [categories, setCategories] = useState<Category[]>([]); // Keep for now, might be used by Tag filter or other parts
   const [tags, setTags] = useState<Tag[]>([]);
@@ -44,7 +44,8 @@ export default function ProductsClient() {
           search: searchQuery || undefined,
           // categorySlug: selectedCategory !== 'all' ? selectedCategory : undefined, // Removed
           tagSlug: selectedTag !== 'all' ? selectedTag : undefined,
-          sort: 'popular'
+          sort: 'popular',
+          countryCode: countryCode
         });
         
         if (!productsResult.error) {
@@ -58,7 +59,7 @@ export default function ProductsClient() {
     };
 
     loadProducts();
-  }, [selectedTag, searchQuery]); // Removed selectedCategory from dependencies
+  }, [selectedTag, searchQuery, countryCode]); // 国コードも依存配列に追加
 
   // Filter products based on search
   const filteredProducts = useMemo(() => {
