@@ -73,19 +73,19 @@ export interface Database {
       tags: {
         Row: {
           id: number
-          name: string
+          name: string | null
           slug: string
           created_at: string
         }
         Insert: {
           id?: number
-          name: string
+          name?: string | null
           slug: string
           created_at?: string
         }
         Update: {
           id?: number
-          name?: string
+          name?: string | null
           slug?: string
           created_at?: string
         }
@@ -108,6 +108,7 @@ export interface Database {
           view_count: number
           created_at: string
           updated_at: string
+          country_code: string
         }
         Insert: {
           id?: number
@@ -126,6 +127,7 @@ export interface Database {
           view_count?: number
           created_at?: string
           updated_at?: string
+          country_code?: string
         }
         Update: {
           id?: number
@@ -144,6 +146,7 @@ export interface Database {
           view_count?: number
           created_at?: string
           updated_at?: string
+          country_code?: string
         }
       }
       product_tags: {
@@ -353,8 +356,11 @@ export interface Database {
           view_count: number
           created_at: string
           updated_at: string
+          country_code: string
           vote_count: number
           comment_count: number
+          has_voted: boolean
+          is_saved: boolean
         }
       }
     }
@@ -398,8 +404,6 @@ export interface ProductWithRelations extends ProductWithStats {
   category?: Category
   tags?: Tag[]
   images?: ProductImage[]
-  has_voted?: boolean
-  is_saved?: boolean
 }
 
 export interface CommentWithRelations extends Comment {
