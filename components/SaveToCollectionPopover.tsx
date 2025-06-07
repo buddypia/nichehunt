@@ -24,6 +24,7 @@ import {
   isProductInCollection,
 } from "@/lib/api/collections"
 import type { Collection } from "@/lib/types/database"
+import { useTypedTranslations } from '@/lib/i18n/useTranslations'
 
 interface SaveToCollectionPopoverProps {
   productId: number
@@ -44,6 +45,7 @@ export function SaveToCollectionPopover({
   const [newCollectionName, setNewCollectionName] = useState("")
   const [isSaving, setIsSaving] = useState(false)
   const router = useRouter()
+  const { t, isClient } = useTypedTranslations()
 
   // ポップオーバーが開かれたときにコレクションとチェック状態を取得
   useEffect(() => {
@@ -51,6 +53,20 @@ export function SaveToCollectionPopover({
       loadCollectionsAndCheckStates()
     }
   }, [isOpen, productId])
+
+  // 翻訳が読み込まれていない場合のフォールバック
+  if (!isClient || !t || !t.collections) {
+    return (
+      <Button
+        variant="outline"
+        size="icon"
+        className="h-8 w-8"
+        disabled
+      >
+        <Bookmark className="w-4 h-4" />
+      </Button>
+    )
+  }
 
   const loadCollectionsAndCheckStates = async () => {
     setLoading(true)
@@ -195,9 +211,9 @@ export function SaveToCollectionPopover({
         sideOffset={10}
       >
         <div className="p-4 pb-2">
-          <h4 className="font-medium text-sm">保存先を選択</h4>
+          <h4 className="font-medium text-sm">{t.collections.selectDestination}</h4>
           <p className="text-xs text-muted-foreground mt-1">
-            複数のコレクションに保存できます
+            {t.collections.selectMultiple}
           </p>
         </div>
 
@@ -213,7 +229,7 @@ export function SaveToCollectionPopover({
               <div className="p-2">
                 {collections.length === 0 && !isCreatingNew ? (
                   <p className="text-sm text-muted-foreground p-4 text-center">
-                    コレクションがありません
+                    {t.collections.noCollectionsMessage}
                   </p>
                 ) : (
                   <div className="space-y-1">
@@ -252,7 +268,7 @@ export function SaveToCollectionPopover({
                 {isCreatingNew && (
                   <div className="mt-2 space-y-2 p-3 border rounded-md bg-accent/20">
                     <Input
-                      placeholder="新しいコレクション名"
+                      placeholder={t.collections.newCollectionName}
                       value={newCollectionName}
                       onChange={(e) => setNewCollectionName(e.target.value)}
                       onKeyDown={(e) => {
@@ -273,7 +289,7 @@ export function SaveToCollectionPopover({
                         {isSaving ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          "作成して保存"
+                          t.collections.createAndSave
                         )}
                       </Button>
                       <Button
@@ -285,7 +301,7 @@ export function SaveToCollectionPopover({
                         }}
                         disabled={isSaving}
                       >
-                        キャンセル
+                        {t.actions.cancel}
                       </Button>
                     </div>
                   </div>
@@ -304,7 +320,7 @@ export function SaveToCollectionPopover({
                 disabled={isCreatingNew || isSaving}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                新しいコレクションを作成
+                {t.collections.createNew}
               </Button>
             </div>
           </>

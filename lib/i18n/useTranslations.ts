@@ -60,8 +60,11 @@ export function useTranslations() {
 export function useTypedTranslations() {
   const { t, language, isClient } = useTranslations();
   
+  // サーバーサイドレンダリングまたは初期化中の場合はフォールバック
+  const safeTranslations = isClient ? (translations[language] || translations.en) : translations.en;
+  
   return {
-    t: translations[language] || translations.en,
+    t: safeTranslations,
     language,
     isClient,
     // レガシーサポート用

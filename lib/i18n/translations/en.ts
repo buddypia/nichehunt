@@ -273,6 +273,14 @@ export const en: TranslationKeys = {
     saveToCollection: 'Save to Collection',
     removeFromCollection: 'Remove from Collection',
     noCollections: 'No collections yet',
+    // SaveToCollectionPopover specific
+    selectDestination: 'Select Destination',
+    selectMultiple: 'Can be saved to multiple collections',
+    noCollectionsMessage: 'No collections available',
+    newCollectionName: 'New Collection Name',
+    createAndSave: 'Create & Save',
+    createNew: 'Create New Collection',
+    loading: 'Loading...',
   },
   actions: {
     submit: 'Submit',
@@ -466,18 +474,28 @@ export const en: TranslationKeys = {
     healthcare: 'Healthcare',
     other: 'Other',
   },
-  notification: {
-    vote: {
-      title: 'Your product received a vote',
-      message: '{voter_name} voted for {product_name}',
-    },
-    comment: {
-      title: 'Your product received a comment',
-      message: '{commenter_name} commented on {product_name}',
-    },
-    reply: {
-      title: 'Your comment received a reply',
-      message: '{commenter_name} replied to your comment',
-    },
+  saved: {
+    title: 'My Collections',
+    description: 'Business model collections to review later',
+    loginRequired: 'Login Required',
+    loginRequiredDescription: 'Please log in to view your collections',
+    loginButton: 'Sign In',
+    newCollection: 'New Collection',
+    emptyCollections: 'No collections available',
+    collectionName: 'Collection Name',
+    collectionDescription: 'Description (optional)',
+    selectCollection: 'Please select a collection',
+    emptyCollection: 'This collection is empty',
+    emptyCollectionDescription: 'Add your favorite business models to this collection',
+    exploreModels: 'Explore Models',
+    deleteConfirm: 'Are you sure you want to delete this collection?',
+    // Dialog
+    createNewCollection: 'Create New Collection',
+    createNewCollectionDescription: 'Create a new collection to organize business models',
+    collectionNameRequired: 'Collection Name',
+    collectionNamePlaceholder: 'e.g., AI-related business',
+    collectionDescriptionLabel: 'Description (optional)',
+    collectionDescriptionPlaceholder: 'Description of this collection',
+    create: 'Create',
   },
 };

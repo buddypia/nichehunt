@@ -273,6 +273,14 @@ export const ja: TranslationKeys = {
     saveToCollection: 'コレクションに保存',
     removeFromCollection: 'コレクションから削除',
     noCollections: 'まだコレクションがありません',
+    // SaveToCollectionPopover specific
+    selectDestination: '保存先を選択',
+    selectMultiple: '複数のコレクションに保存できます',
+    noCollectionsMessage: 'コレクションがありません',
+    newCollectionName: '新しいコレクション名',
+    createAndSave: '作成して保存',
+    createNew: '新しいコレクションを作成',
+    loading: '読み込み中...',
   },
   actions: {
     submit: '送信',
@@ -466,18 +474,28 @@ export const ja: TranslationKeys = {
     healthcare: 'ヘルスケア',
     other: 'その他',
   },
-  notification: {
-    vote: {
-      title: 'あなたのプロダクトが投票されました',
-      message: '{voter_name}さんが{product_name}に投票しました',
-    },
-    comment: {
-      title: 'あなたのプロダクトにコメントがありました',
-      message: '{commenter_name}さんが{product_name}にコメントしました',
-    },
-    reply: {
-      title: 'あなたのコメントに返信がありました',
-      message: '{commenter_name}さんがあなたのコメントに返信しました',
-    },
+  saved: {
+    title: 'マイコレクション',
+    description: '後で見返したいビジネスモデルのコレクション',
+    loginRequired: 'ログインが必要です',
+    loginRequiredDescription: 'マイコレクションを表示するにはログインしてください',
+    loginButton: 'ログイン',
+    newCollection: '新しいコレクション',
+    emptyCollections: 'コレクションがありません',
+    collectionName: 'コレクション名',
+    collectionDescription: '説明（任意）',
+    selectCollection: 'コレクションを選択してください',
+    emptyCollection: 'このコレクションは空です',
+    emptyCollectionDescription: '気に入ったビジネスモデルをコレクションに追加してください',
+    exploreModels: 'モデルを探す',
+    deleteConfirm: 'このコレクションを削除してもよろしいですか？',
+    // Dialog
+    createNewCollection: '新しいコレクションを作成',
+    createNewCollectionDescription: 'ビジネスモデルを整理するための新しいコレクションを作成します',
+    collectionNameRequired: 'コレクション名',
+    collectionNamePlaceholder: '例：AI関連のビジネス',
+    collectionDescriptionLabel: '説明（任意）',
+    collectionDescriptionPlaceholder: 'このコレクションについての説明',
+    create: '作成',
   },
 };

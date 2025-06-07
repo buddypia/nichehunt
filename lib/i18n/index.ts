@@ -287,6 +287,14 @@ export interface TranslationKeys {
     saveToCollection: string;
     removeFromCollection: string;
     noCollections: string;
+    // SaveToCollectionPopover specific
+    selectDestination: string;
+    selectMultiple: string;
+    noCollectionsMessage: string;
+    newCollectionName: string;
+    createAndSave: string;
+    createNew: string;
+    loading: string;
   };
   // 一般的なアクション
   actions: {
