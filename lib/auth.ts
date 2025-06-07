@@ -1,7 +1,26 @@
 import { createClient } from '@/lib/supabase/client';
+import { ja } from '@/lib/i18n/translations/ja';
+import { en } from '@/lib/i18n/translations/en';
+import { SupportedLanguage } from '@/lib/i18n';
+
+// Get translations based on current locale
+function getTranslations(locale: SupportedLanguage = 'ja') {
+  return locale === 'ja' ? ja : en;
+}
+
+// Get current locale from browser or default to 'ja'
+function getCurrentLocale(): SupportedLanguage {
+  if (typeof window !== 'undefined') {
+    const pathname = window.location.pathname;
+    return pathname.startsWith('/ja') ? 'ja' : pathname.includes('/') && !pathname.startsWith('/ja') ? 'en' : 'ja';
+  }
+  return 'ja'; // Default to Japanese
+}
 
 export async function signUp(email: string, password: string, username: string) {
   try {
+    const locale = getCurrentLocale();
+    const t = getTranslations(locale);
     const supabase = createClient();
     // Check if username is already taken
     const { data: existingProfile } = await supabase
@@ -11,7 +30,7 @@ export async function signUp(email: string, password: string, username: string) 
       .single();
 
     if (existingProfile) {
-      throw new Error('このユーザー名は既に使用されています');
+      throw new Error(t.errors.usernameAlreadyExists);
     }
 
     // Sign up the user
@@ -28,13 +47,13 @@ export async function signUp(email: string, password: string, username: string) 
 
     if (authError) {
       if (authError.message.includes('already registered')) {
-        throw new Error('このメールアドレスは既に登録されています');
+        throw new Error(t.errors.emailAlreadyRegistered);
       }
-      throw new Error(authError.message || '登録に失敗しました');
+      throw new Error(authError.message || t.errors.registrationFailed);
     }
 
     if (!authData.user) {
-      throw new Error('ユーザーの作成に失敗しました');
+      throw new Error(t.errors.userCreationFailed);
     }
 
     // Wait a moment for the auth to be properly set
@@ -67,7 +86,7 @@ export async function signUp(email: string, password: string, username: string) 
         console.log('Profile will be created after email confirmation');
         return authData;
       }
-      throw new Error('プロフィールの作成に失敗しました: ' + profileError.message);
+      throw new Error(t.errors.profileCreationFailed + ': ' + profileError.message);
     }
 
     return authData;
@@ -79,6 +98,8 @@ export async function signUp(email: string, password: string, username: string) 
 
 export async function signIn(email: string, password: string) {
   try {
+    const locale = getCurrentLocale();
+    const t = getTranslations(locale);
     const supabase = createClient();
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -87,9 +108,9 @@ export async function signIn(email: string, password: string) {
 
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
-        throw new Error('メールアドレスまたはパスワードが正しくありません');
+        throw new Error(t.errors.invalidCredentials);
       }
-      throw new Error(error.message || 'ログインに失敗しました');
+      throw new Error(error.message || t.errors.loginFailed);
     }
 
     return data;
@@ -101,10 +122,12 @@ export async function signIn(email: string, password: string) {
 
 export async function signOut() {
   try {
+    const locale = getCurrentLocale();
+    const t = getTranslations(locale);
     const supabase = createClient();
     const { error } = await supabase.auth.signOut();
     if (error) {
-      throw new Error(error.message || 'ログアウトに失敗しました');
+      throw new Error(error.message || t.errors.logoutFailed);
     }
   } catch (error: any) {
     console.error('Sign out error:', error);

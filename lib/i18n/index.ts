@@ -283,6 +283,15 @@ export interface TranslationKeys {
     required: string;
     invalidEmail: string;
     passwordTooShort: string;
+    // 認証関連エラー
+    usernameAlreadyExists: string;
+    emailAlreadyRegistered: string;
+    registrationFailed: string;
+    userCreationFailed: string;
+    profileCreationFailed: string;
+    invalidCredentials: string;
+    loginFailed: string;
+    logoutFailed: string;
   };
   // 成功メッセージ
   success: {
@@ -430,6 +439,22 @@ export interface TranslationKeys {
       description: string;
       exploreButton: string;
     };
+  };
+  // カテゴリ
+  categories: {
+    subscription: string;
+    marketplace: string;
+    education: string;
+    ai: string;
+    workspace: string;
+    rental: string;
+    health: string;
+    food: string;
+    fintech: string;
+    sustainability: string;
+    entertainment: string;
+    healthcare: string;
+    other: string;
   };
 }
 

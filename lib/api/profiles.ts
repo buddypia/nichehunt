@@ -1,4 +1,21 @@
 import { createClient } from '@/lib/supabase/client';
+import { ja } from '@/lib/i18n/translations/ja';
+import { en } from '@/lib/i18n/translations/en';
+import { SupportedLanguage } from '@/lib/i18n';
+
+// Get translations based on current locale
+function getTranslations(locale: SupportedLanguage = 'ja') {
+  return locale === 'ja' ? ja : en;
+}
+
+// Get current locale from browser or default to 'ja'
+function getCurrentLocale(): SupportedLanguage {
+  if (typeof window !== 'undefined') {
+    const pathname = window.location.pathname;
+    return pathname.startsWith('/ja') ? 'ja' : pathname.includes('/') && !pathname.startsWith('/ja') ? 'en' : 'ja';
+  }
+  return 'ja'; // Default to Japanese
+}
 
 export interface Profile {
   id: string;
@@ -164,11 +181,14 @@ export async function getUserProducts(userId: string): Promise<ProfileProduct[]>
       return [];
     }
 
+    const locale = getCurrentLocale();
+    const t = getTranslations(locale);
+    
     return data.map(product => ({
       id: product.id,
       title: product.name,
       description: product.tagline,
-      category: product.category?.name || 'その他',
+      category: product.category?.name || t.categories.other,
       tags: product.tags?.map((t: any) => t.tag?.name) || [],
       votes: product.votes?.length || 0,
       comments: product.comments?.length || 0,
@@ -208,11 +228,14 @@ export async function getUserUpvotedProducts(userId: string): Promise<ProfilePro
       return [];
     }
 
+    const locale = getCurrentLocale();
+    const t = getTranslations(locale);
+    
     return data.map((vote: any) => ({
       id: vote.product.id,
       title: vote.product.name,
       description: vote.product.tagline,
-      category: vote.product.category?.name || 'その他',
+      category: vote.product.category?.name || t.categories.other,
       tags: vote.product.tags?.map((t: any) => t.tag?.name) || [],
       votes: vote.product.votes?.length || 0,
       comments: vote.product.comments?.length || 0,

@@ -167,7 +167,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
         category_id: parseInt(formData.category_id),
         tags: formData.tags,
         launch_date: formData.launch_date,
-        locale: getLocaleFromLanguage(language),
+        locale: language,
       });
       if (error) throw error;
       toast.success(t.submit.success);
