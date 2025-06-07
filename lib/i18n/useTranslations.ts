@@ -20,7 +20,7 @@ export function useTranslations() {
     const getCountryCodeFromClient = () => {
       // ブラウザのロケーションから取得を試みる
       const hostname = window.location.hostname;
-      return hostname.startsWith('ja.') ? 'jp' : 'en';
+      return (hostname.startsWith('ja.') || hostname.startsWith('jp.')) ? 'jp' : 'en';
     };
     const countryCode = getCountryCodeFromClient();
     setLanguage(getLanguageFromCountryCode(countryCode));

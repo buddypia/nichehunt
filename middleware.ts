@@ -6,11 +6,16 @@ export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   let countryCode = 'en'; // デフォルト値（英語）
   
-  // ja.サブドメインの検出（ja.example.com または ja.localhost）
-  if (hostname.startsWith('ja.')) {
+  // jp/jaサブドメインの検出（ja.example.com, jp.localhost等）
+  if (hostname.startsWith('ja.') || hostname.startsWith('jp.')) {
     countryCode = 'jp';
   } else {
     countryCode = 'en';
+  }
+  
+  // デバッグ情報（開発環境のみ）
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[Middleware] Host: ${hostname}, Country: ${countryCode}, Path: ${request.nextUrl.pathname}`);
   }
   
   // Supabaseセッション更新
@@ -19,6 +24,10 @@ export async function middleware(request: NextRequest) {
   // レスポンスヘッダーに国コードを追加
   if (response) {
     response.headers.set('x-country-code', countryCode);
+    // デバッグ用にコンソールにも出力
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Middleware] Setting country code header: ${countryCode}`);
+    }
     return response;
   }
   

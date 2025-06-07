@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
+import { getLanguageFromCountryCode } from '@/lib/i18n';
 
 interface CreateProductInput {
   name: string
@@ -12,6 +13,7 @@ interface CreateProductInput {
   tags?: string[]
   launch_date?: string
   image_urls?: string[] // Added for multiple images
+  country_code?: string // Added for localization
 }
 
 export async function createProduct(input: CreateProductInput) {
@@ -22,6 +24,42 @@ export async function createProduct(input: CreateProductInput) {
   if (!user) {
     return { data: null, error: new Error('Not authenticated') }
   }
+
+  // 国コードを取得（入力パラメータまたは自動検出）
+  const countryCode = input.country_code || (() => {
+    if (typeof window === 'undefined') return 'en'
+    
+    // 1. ホスト名から検出（本番環境・開発環境対応）
+    const hostname = window.location.hostname
+    if (hostname.startsWith('ja.') || hostname.startsWith('jp.')) {
+      return 'jp'
+    }
+    
+    // 2. URLパラメータから検出（開発用）
+    const urlParams = new URLSearchParams(window.location.search)
+    const countryParam = urlParams.get('country')
+    if (countryParam === 'jp' || countryParam === 'ja') {
+      return 'jp'
+    }
+    
+    // 3. ローカルストレージから検出（ユーザー選択を記憶）
+    try {
+      const storedCountry = localStorage.getItem('user-country')
+      if (storedCountry === 'jp' || storedCountry === 'ja') {
+        return 'jp'
+      }
+    } catch (e) {
+      // ローカルストレージアクセスエラーは無視
+    }
+    
+    // 4. ブラウザ言語設定から推測
+    const browserLang = navigator.language || navigator.languages?.[0] || 'en'
+    if (browserLang.startsWith('ja')) {
+      return 'jp'
+    }
+    
+    return 'en'
+  })()
 
   // プロダクトを作成
   const { data: product, error: productError } = await supabase
@@ -38,6 +76,7 @@ export async function createProduct(input: CreateProductInput) {
       category_id: input.category_id,
       status: 'published' as const,
       launch_date: input.launch_date || new Date().toISOString(),
+      country_code: countryCode,
     })
     .select()
     .single()

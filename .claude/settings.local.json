@@ -10,7 +10,10 @@
       "Bash(npm run dev:*)",
       "Bash(npx tsc:*)",
       "Bash(cp:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(npm run build:*)",
+      "Bash(timeout 10s npm run dev)",
+      "Bash(true)"
     ],
     "deny": []
   },

@@ -34,6 +34,7 @@ import { fetchCategories } from '@/lib/api/categories-tags';
 import type { Category } from '@/lib/types/database';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
+import { useTypedTranslations } from '@/lib/i18n/useTranslations';
 
 interface SubmitModalProps {
   isOpen: boolean;
@@ -42,8 +43,21 @@ interface SubmitModalProps {
 
 export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
   const router = useRouter();
+  const { t, language } = useTypedTranslations();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+
+  // Helper function to replace placeholders in translations
+  const formatMessage = (template: string, values: Record<string, string | number>) => {
+    return Object.entries(values).reduce((result, [key, value]) => {
+      return result.replace(new RegExp(`{${key}}`, 'g'), String(value));
+    }, template);
+  };
+
+  // Convert language to country code
+  const getCountryCodeFromLanguage = (lang: string): string => {
+    return lang === 'ja' ? 'jp' : 'en';
+  };
   
   const [formData, setFormData] = useState({
     name: '',
@@ -74,7 +88,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
       setCategories(data || []);
     } catch (error) {
       console.error('Error loading categories:', error);
-      toast.error('カテゴリの読み込みに失敗しました');
+      toast.error(t.errors.network);
     } finally {
       setIsLoadingCategories(false);
     }
@@ -89,13 +103,13 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
       const newPreviews: string[] = [];
       
       if (productImageFiles.length + files.length > MAX_IMAGES) {
-        toast.error(`画像は最大${MAX_IMAGES}枚までアップロードできます`);
+        toast.error(formatMessage(t.submit.maxImagesError, { count: MAX_IMAGES }));
         return;
       }
 
       Array.from(files).forEach(file => {
         if (file.size > 5 * 1024 * 1024) {
-          toast.error(`${file.name}の画像サイズは5MB以下にしてください`);
+          toast.error(formatMessage(t.submit.imageSizeError, { name: file.name }));
           return; 
         }
         newFiles.push(file);
@@ -119,10 +133,10 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.name.trim()) newErrors.name = 'プロダクト名は必須です';
-    if (!formData.tagline.trim()) newErrors.tagline = 'キャッチコピーは必須です';
-    if (!formData.description.trim()) newErrors.description = '詳細説明は必須です'; // MDEditor ensures this isn't empty
-    if (!formData.category_id) newErrors.category_id = 'カテゴリーを選択してください';
+    if (!formData.name.trim()) newErrors.name = t.submit.nameRequired;
+    if (!formData.tagline.trim()) newErrors.tagline = t.submit.taglineRequired;
+    if (!formData.description.trim()) newErrors.description = t.submit.descriptionRequired; // MDEditor ensures this isn't empty
+    if (!formData.category_id) newErrors.category_id = t.submit.categoryRequired;
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -132,7 +146,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      toast.error('投稿するにはログインが必要です');
+      toast.error(t.submit.loginRequired);
       onClose(); 
       router.push('/auth/signin'); 
       return;
@@ -143,7 +157,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
       const imageUrls: string[] = [];
       for (const file of productImageFiles) {
         const { url, error: uploadError } = await uploadProductImage(file);
-        if (uploadError) throw new Error(`画像 (${file.name}) のアップロードに失敗しました`);
+        if (uploadError) throw new Error(formatMessage(t.submit.imageUploadError, { name: file.name }));
         if (url) imageUrls.push(url);
       }
       const { data: product, error } = await createProduct({
@@ -158,9 +172,10 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
         category_id: parseInt(formData.category_id),
         tags: formData.tags,
         launch_date: formData.launch_date,
+        country_code: getCountryCodeFromLanguage(language),
       });
       if (error) throw error;
-      toast.success('プロダクトを投稿しました！');
+      toast.success(t.submit.success);
       setFormData({
         name: '', tagline: '', description: '', product_url: '', github_url: '',
         demo_url: '', category_id: '', 
@@ -173,7 +188,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
       if (product) router.push(`/products/${product.id}`);
     } catch (error) {
       console.error('Error submitting product:', error);
-      toast.error(error instanceof Error ? error.message : 'プロダクトの投稿に失敗しました');
+      toast.error(error instanceof Error ? error.message : t.submit.submitError);
     } finally {
       setIsSubmitting(false);
     }
@@ -219,21 +234,21 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-gray-900">
-            新しいプロダクトを投稿
+            {t.submit.title}
           </DialogTitle>
           <DialogDescription className="text-gray-600">
-            あなたのプロダクトやプロジェクトをコミュニティと共有しましょう
+            {t.submit.description}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 基本情報 */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">基本情報</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{t.submit.basicInfo}</h3>
             
             <div>
               <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                プロダクト名 *
+                {t.submit.productName} *
               </Label>
               <input
                 id="name"
@@ -256,7 +271,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
 
             <div>
               <Label htmlFor="tagline" className="text-sm font-medium text-gray-700">
-                キャッチコピー *
+                {t.submit.tagline} *
               </Label>
               <input
                 id="tagline"
@@ -280,7 +295,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
             {/* Description field with MDEditor */}
             <div>
               <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-                詳細説明 *
+                {t.submit.detailedDescription} *
               </Label>
               <div className="mt-1" data-color-mode="light"> {/* data-color-mode for MDEditor theme */}
                 <MDEditor
@@ -307,7 +322,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="category" className="text-sm font-medium text-gray-700">
-                  カテゴリー *
+                  {t.submit.category} *
                 </Label>
                 <select
                   id="category"
@@ -320,7 +335,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
                   disabled={isLoadingCategories}
                 >
                   <option value="">
-                    {isLoadingCategories ? '読み込み中...' : 'カテゴリーを選択'}
+                    {isLoadingCategories ? t.submit.loadingCategories : t.submit.selectCategory}
                   </option>
                   {categories.map((category) => (
                     <option key={category.id} value={category.id}>
@@ -338,7 +353,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
 
               <div>
                 <Label htmlFor="launch_date" className="text-sm font-medium text-gray-700">
-                  ローンチ日
+                  {t.submit.launchDate}
                 </Label>
                 <div className="mt-1 relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -356,7 +371,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
             {/* プロダクト画像 */}
             <div>
               <Label htmlFor="product_images" className="text-sm font-medium text-gray-700">
-                プロダクト画像 (最大{MAX_IMAGES}枚)
+                {t.submit.productImages} ({formatMessage(t.submit.maxImages, { count: MAX_IMAGES })})
               </Label>
               <div className="mt-1">
                 <input
@@ -375,10 +390,10 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
                   }`}
                 >
                   <ImageIcon className="w-4 h-4 mr-2" />
-                  画像を選択
+                  {t.submit.selectImage}
                 </label>
                 <p className="mt-1 text-xs text-gray-500">
-                  各画像 最大5MB。最初の画像がサムネイルとして使用されます。
+                  {t.submit.imageNote}
                 </p>
               </div>
 
@@ -395,7 +410,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
                         type="button"
                         onClick={() => removeProductImage(index)}
                         className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600"
-                        aria-label={`画像を削除 ${index + 1}`}
+                        aria-label={formatMessage(t.submit.removeImage, { index: index + 1 })}
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -408,11 +423,11 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
 
           {/* リンク */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">リンク</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{t.submit.links}</h3>
 
             <div>
               <Label htmlFor="product_url" className="text-sm font-medium text-gray-700">
-                プロダクトURL
+                {t.submit.productUrl}
               </Label>
               <div className="mt-1 relative">
                 <LinkIconLucide className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -430,7 +445,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="github_url" className="text-sm font-medium text-gray-700">
-                  GitHub URL
+                  {t.submit.githubUrl}
                 </Label>
                 <div className="mt-1 relative">
                   <Github className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -447,7 +462,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
 
               <div>
                 <Label htmlFor="demo_url" className="text-sm font-medium text-gray-700">
-                  デモURL
+                  {t.submit.demoUrl}
                 </Label>
                 <div className="mt-1 relative">
                   <Play className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -468,12 +483,12 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
               <Tag className="w-5 h-5" />
-              <span>タグ</span>
+              <span>{t.submit.tags}</span>
             </h3>
 
             <div>
               <Label htmlFor="tags" className="text-sm font-medium text-gray-700">
-                関連タグを追加
+                {t.submit.addTags}
               </Label>
               <div 
                 className="mt-1 flex flex-wrap items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent cursor-text min-h-[42px]"
@@ -505,11 +520,11 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
                   onChange={handleTagInputChange}
                   onKeyPress={handleKeyPress}
                   className="flex-1 min-w-[200px] outline-none bg-transparent"
-                  placeholder={formData.tags.length === 0 ? "タグをコンマ区切りで入力（例: React, TypeScript, Next.js）" : "タグを追加..."}
+                  placeholder={formData.tags.length === 0 ? t.submit.tagPlaceholder : "タグを追加..."}
                 />
               </div>
               <p className="mt-1 text-xs text-gray-500">
-                Enterキーまたはコンマで区切ってタグを追加
+                {t.submit.tagNote}
               </p>
             </div>
           </div>
@@ -517,7 +532,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
           {/* 送信ボタン */}
           <div className="flex justify-end space-x-3 pt-6 border-t">
             <Button type="button" variant="outline" onClick={onClose}>
-              キャンセル
+              {t.submit.cancel}
             </Button>
             <Button 
               type="submit" 
@@ -527,12 +542,12 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
               {isSubmitting ? (
                 <>
                   <Upload className="w-4 h-4 mr-2 animate-spin" />
-                  投稿中...
+                  {t.submit.submitting}
                 </>
               ) : (
                 <>
                   <Upload className="w-4 h-4 mr-2" />
-                  投稿する
+                  {t.submit.submit}
                 </>
               )}
             </Button>

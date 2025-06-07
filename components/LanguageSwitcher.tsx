@@ -43,8 +43,8 @@ export function LanguageSwitcher() {
     if (typeof window !== 'undefined') {
       const hostname = window.location.hostname;
       
-      // ja.サブドメインの検出（ja.example.com または ja.localhost）
-      if (hostname.startsWith('ja.')) {
+      // jp/jaサブドメインの検出（ja.example.com, jp.localhost等）
+      if (hostname.startsWith('ja.') || hostname.startsWith('jp.')) {
         setCurrentLanguage(languages[1]); // 日本語
       } else {
         setCurrentLanguage(languages[0]); // 英語
@@ -66,8 +66,8 @@ export function LanguageSwitcher() {
     
     if (language.subdomain) {
       // サブドメインありの場合（日本語）
-      if (currentHostname.startsWith('ja.')) {
-        // 既にja.サブドメインがある場合はそのまま
+      if (currentHostname.startsWith('ja.') || currentHostname.startsWith('jp.')) {
+        // 既にjp/jaサブドメインがある場合はそのまま
         newHostname = currentHostname;
       } else {
         // サブドメインを追加
@@ -78,6 +78,9 @@ export function LanguageSwitcher() {
       if (currentHostname.startsWith('ja.')) {
         // ja.サブドメインを削除
         newHostname = currentHostname.replace(/^ja\./, '');
+      } else if (currentHostname.startsWith('jp.')) {
+        // jp.サブドメインを削除
+        newHostname = currentHostname.replace(/^jp\./, '');
       } else {
         // 既にサブドメインがない場合はそのまま
         newHostname = currentHostname;

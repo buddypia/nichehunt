@@ -14,9 +14,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getCurrentUser, signOut } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
+import { useTypedTranslations } from '@/lib/i18n/useTranslations';
 
 export default function SettingsClient() {
   const router = useRouter();
+  const { t } = useTypedTranslations();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -78,7 +80,7 @@ export default function SettingsClient() {
       }
     } catch (error) {
       console.error('Error loading user data:', error);
-      toast.error('設定の読み込みに失敗しました');
+      toast.error(t.settings.loadingError);
     } finally {
       setIsLoading(false);
     }
@@ -103,10 +105,10 @@ export default function SettingsClient() {
 
       if (error) throw error;
       
-      toast.success('プロフィールを更新しました');
+      toast.success(t.settings.profileSaveSuccess);
     } catch (error: any) {
       console.error('Error saving profile:', error);
-      toast.error('プロフィールの更新に失敗しました');
+      toast.error(t.settings.profileSaveError);
     } finally {
       setIsSaving(false);
     }
@@ -130,10 +132,10 @@ export default function SettingsClient() {
 
       if (error) throw error;
       
-      toast.success('通知設定を更新しました');
+      toast.success(t.settings.notificationSaveSuccess);
     } catch (error: any) {
       console.error('Error saving notifications:', error);
-      toast.error('通知設定の更新に失敗しました');
+      toast.error(t.settings.notificationSaveError);
     } finally {
       setIsSaving(false);
     }
@@ -155,10 +157,10 @@ export default function SettingsClient() {
 
       if (error) throw error;
       
-      toast.success('プライバシー設定を更新しました');
+      toast.success(t.settings.privacySaveSuccess);
     } catch (error: any) {
       console.error('Error saving privacy:', error);
-      toast.error('プライバシー設定の更新に失敗しました');
+      toast.error(t.settings.privacySaveError);
     } finally {
       setIsSaving(false);
     }
@@ -185,9 +187,9 @@ export default function SettingsClient() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">設定</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t.settings.title}</h1>
           <p className="text-gray-600">
-            アカウント設定とプロフィールを管理
+            {t.settings.description}
           </p>
         </div>
 
@@ -195,24 +197,24 @@ export default function SettingsClient() {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="profile">
               <User className="w-4 h-4 mr-2" />
-              プロフィール
+              {t.settings.profile}
             </TabsTrigger>
             <TabsTrigger value="notifications">
               <Bell className="w-4 h-4 mr-2" />
-              通知
+              {t.settings.notifications}
             </TabsTrigger>
             <TabsTrigger value="privacy">
               <Shield className="w-4 h-4 mr-2" />
-              プライバシー
+              {t.settings.privacy}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>プロフィール情報</CardTitle>
+                <CardTitle>{t.settings.profileInfo}</CardTitle>
                 <CardDescription>
-                  公開プロフィールに表示される情報を編集
+                  {t.settings.profileInfoDescription}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -224,71 +226,71 @@ export default function SettingsClient() {
                     </AvatarFallback>
                   </Avatar>
                   <Button variant="outline">
-                    アバターを変更
+                    {t.settings.changeAvatar}
                   </Button>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="username">ユーザー名</Label>
+                  <Label htmlFor="username">{t.settings.username}</Label>
                   <Input
                     id="username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="ユーザー名を入力"
+                    placeholder={t.settings.usernamePlaceholder}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">メールアドレス</Label>
+                  <Label htmlFor="email">{t.settings.email}</Label>
                   <Input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="メールアドレスを入力"
+                    placeholder={t.settings.emailPlaceholder}
                     disabled
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="bio">自己紹介</Label>
+                  <Label htmlFor="bio">{t.settings.bio}</Label>
                   <Textarea
                     id="bio"
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    placeholder="自己紹介を入力"
+                    placeholder={t.settings.bioPlaceholder}
                     rows={4}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="website">ウェブサイト</Label>
+                  <Label htmlFor="website">{t.settings.website}</Label>
                   <Input
                     id="website"
                     value={website}
                     onChange={(e) => setWebsite(e.target.value)}
-                    placeholder="https://example.com"
+                    placeholder={t.settings.websitePlaceholder}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="twitter">Twitter</Label>
+                    <Label htmlFor="twitter">{t.settings.twitter}</Label>
                     <Input
                       id="twitter"
                       value={twitter}
                       onChange={(e) => setTwitter(e.target.value)}
-                      placeholder="@username"
+                      placeholder={t.settings.twitterPlaceholder}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="github">GitHub</Label>
+                    <Label htmlFor="github">{t.settings.github}</Label>
                     <Input
                       id="github"
                       value={github}
                       onChange={(e) => setGithub(e.target.value)}
-                      placeholder="username"
+                      placeholder={t.settings.githubPlaceholder}
                     />
                   </div>
                 </div>
@@ -303,7 +305,7 @@ export default function SettingsClient() {
                   ) : (
                     <Save className="w-4 h-4 mr-2" />
                   )}
-                  保存
+                  {isSaving ? t.settings.saving : t.settings.save}
                 </Button>
               </CardContent>
             </Card>
@@ -312,17 +314,17 @@ export default function SettingsClient() {
           <TabsContent value="notifications" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>通知設定</CardTitle>
+                <CardTitle>{t.settings.notificationSettings}</CardTitle>
                 <CardDescription>
-                  通知の受け取り方法を設定
+                  {t.settings.notificationSettingsDescription}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>メール通知</Label>
+                    <Label>{t.settings.emailNotifications}</Label>
                     <p className="text-sm text-muted-foreground">
-                      重要な通知をメールで受け取る
+                      {t.settings.emailNotificationsDescription}
                     </p>
                   </div>
                   <Switch
@@ -333,9 +335,9 @@ export default function SettingsClient() {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>投票通知</Label>
+                    <Label>{t.settings.upvoteNotifications}</Label>
                     <p className="text-sm text-muted-foreground">
-                      あなたのモデルが投票された時に通知
+                      {t.settings.upvoteNotificationsDescription}
                     </p>
                   </div>
                   <Switch
@@ -346,9 +348,9 @@ export default function SettingsClient() {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>コメント通知</Label>
+                    <Label>{t.settings.commentNotifications}</Label>
                     <p className="text-sm text-muted-foreground">
-                      コメントが追加された時に通知
+                      {t.settings.commentNotificationsDescription}
                     </p>
                   </div>
                   <Switch
@@ -359,9 +361,9 @@ export default function SettingsClient() {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>フォロー通知</Label>
+                    <Label>{t.settings.followNotifications}</Label>
                     <p className="text-sm text-muted-foreground">
-                      新しいフォロワーがいる時に通知
+                      {t.settings.followNotificationsDescription}
                     </p>
                   </div>
                   <Switch
@@ -380,7 +382,7 @@ export default function SettingsClient() {
                   ) : (
                     <Save className="w-4 h-4 mr-2" />
                   )}
-                  保存
+                  {isSaving ? t.settings.saving : t.settings.save}
                 </Button>
               </CardContent>
             </Card>
@@ -389,17 +391,17 @@ export default function SettingsClient() {
           <TabsContent value="privacy" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>プライバシー設定</CardTitle>
+                <CardTitle>{t.settings.privacySettings}</CardTitle>
                 <CardDescription>
-                  プロフィールの公開範囲を管理
+                  {t.settings.privacySettingsDescription}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>プロフィールを公開</Label>
+                    <Label>{t.settings.profilePublic}</Label>
                     <p className="text-sm text-muted-foreground">
-                      プロフィールをすべてのユーザーに公開
+                      {t.settings.profilePublicDescription}
                     </p>
                   </div>
                   <Switch
@@ -410,9 +412,9 @@ export default function SettingsClient() {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>メールアドレスを表示</Label>
+                    <Label>{t.settings.showEmail}</Label>
                     <p className="text-sm text-muted-foreground">
-                      プロフィールにメールアドレスを表示
+                      {t.settings.showEmailDescription}
                     </p>
                   </div>
                   <Switch
@@ -431,21 +433,21 @@ export default function SettingsClient() {
                   ) : (
                     <Save className="w-4 h-4 mr-2" />
                   )}
-                  保存
+                  {isSaving ? t.settings.saving : t.settings.save}
                 </Button>
               </CardContent>
             </Card>
 
             <Card className="border-red-200">
               <CardHeader>
-                <CardTitle className="text-red-600">アカウント削除</CardTitle>
+                <CardTitle className="text-red-600">{t.settings.deleteAccount}</CardTitle>
                 <CardDescription>
-                  この操作は取り消すことができません
+                  {t.settings.deleteAccountDescription}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="destructive" className="w-full">
-                  アカウントを削除
+                  {t.settings.deleteAccountButton}
                 </Button>
               </CardContent>
             </Card>
@@ -460,7 +462,7 @@ export default function SettingsClient() {
             className="w-full"
           >
             <LogOut className="w-4 h-4 mr-2" />
-            ログアウト
+            {t.settings.signOut}
           </Button>
         </div>
       </main>
