@@ -100,9 +100,8 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
     if (notification.related_product_id) {
       router.push(getLocalizedHref(`/products/${notification.related_product_id}`));
       setIsOpen(false);
-    } else if (notification.related_user_id) {
-      // TODO: related_user_idからslugを取得する必要がある
-      router.push(getLocalizedHref(`/profiles/${notification.related_user_id}`));
+    } else if (notification.related_user_slug) {
+      router.push(getLocalizedHref(`/profiles/${notification.related_user_slug}`));
       setIsOpen(false);
     }
   };

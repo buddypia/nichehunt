@@ -5,7 +5,7 @@ export interface Notification {
   title: string;
   message: string | null;
   related_product_id: number | null;
-  related_user_id: string | null;
+  related_user_slug: string | null;
   is_read: boolean;
   created_at: string;
   data?: {

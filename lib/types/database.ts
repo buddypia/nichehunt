@@ -216,7 +216,7 @@ export type Database = {
           is_read: boolean | null
           message: string | null
           related_product_id: number | null
-          related_user_id: string | null
+          related_user_slug: string | null
           title: string
           type: string
           user_id: string
@@ -227,7 +227,7 @@ export type Database = {
           is_read?: boolean | null
           message?: string | null
           related_product_id?: number | null
-          related_user_id?: string | null
+          related_user_slug?: string | null
           title: string
           type: string
           user_id: string
@@ -238,7 +238,7 @@ export type Database = {
           is_read?: boolean | null
           message?: string | null
           related_product_id?: number | null
-          related_user_id?: string | null
+          related_user_slug?: string | null
           title?: string
           type?: string
           user_id?: string
@@ -256,13 +256,6 @@ export type Database = {
             columns: ["related_product_id"]
             isOneToOne: false
             referencedRelation: "products_with_stats"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notifications_related_user_id_fkey"
-            columns: ["related_user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -356,7 +349,6 @@ export type Database = {
       products: {
         Row: {
           category_id: number | null
-          locale: string
           created_at: string | null
           demo_url: string | null
           description: string
@@ -364,6 +356,7 @@ export type Database = {
           id: number
           is_featured: boolean | null
           launch_date: string | null
+          locale: string
           name: string
           product_url: string | null
           status: string | null
@@ -375,7 +368,6 @@ export type Database = {
         }
         Insert: {
           category_id?: number | null
-          locale: string
           created_at?: string | null
           demo_url?: string | null
           description: string
@@ -383,6 +375,7 @@ export type Database = {
           id?: number
           is_featured?: boolean | null
           launch_date?: string | null
+          locale: string
           name: string
           product_url?: string | null
           status?: string | null
@@ -394,7 +387,6 @@ export type Database = {
         }
         Update: {
           category_id?: number | null
-          locale?: string
           created_at?: string | null
           demo_url?: string | null
           description?: string
@@ -402,6 +394,7 @@ export type Database = {
           id?: number
           is_featured?: boolean | null
           launch_date?: string | null
+          locale?: string
           name?: string
           product_url?: string | null
           status?: string | null
@@ -534,7 +527,6 @@ export type Database = {
         Row: {
           category_id: number | null
           comment_count: number | null
-          locale: string | null
           created_at: string | null
           demo_url: string | null
           description: string | null
@@ -544,6 +536,7 @@ export type Database = {
           is_featured: boolean | null
           is_saved: boolean | null
           launch_date: string | null
+          locale: string | null
           name: string | null
           product_url: string | null
           status: string | null
@@ -698,65 +691,35 @@ export const Constants = {
   },
 } as const
 
-// 拡張型定義
-export type Profile = Database['public']['Tables']['profiles']['Row']
-export type Category = Database['public']['Tables']['categories']['Row']
-export type Tag = Database['public']['Tables']['tags']['Row']
+// Convenience types based on the actual schema
 export type Product = Database['public']['Tables']['products']['Row']
-export type ProductTag = Database['public']['Tables']['product_tags']['Row']
-export type ProductImage = Database['public']['Tables']['product_images']['Row']
-export type Vote = Database['public']['Tables']['votes']['Row']
-export type Comment = Database['public']['Tables']['comments']['Row']
-export type Collection = Database['public']['Tables']['collections']['Row']
-export type CollectionProduct = Database['public']['Tables']['collection_products']['Row']
-export type Follow = Database['public']['Tables']['follows']['Row']
-export type Notification = Database['public']['Tables']['notifications']['Row']
-
-// ビュー型
+export type ProductInsert = Database['public']['Tables']['products']['Insert']
+export type ProductUpdate = Database['public']['Tables']['products']['Update']
 export type ProductWithStats = Database['public']['Views']['products_with_stats']['Row']
 
-// 拡張型（リレーションを含む）
-export interface ProductWithRelations {
-  id: number | null
-  user_id: string | null
-  name: string | null
-  tagline: string | null
-  description: string | null
-  product_url: string | null
-  github_url: string | null
-  demo_url: string | null
-  thumbnail_url: string | null
-  category_id: number | null
-  status: string | null
-  launch_date: string | null
-  is_featured: boolean | null
-  view_count: number | null
-  created_at: string | null
-  updated_at: string | null
-  locale?: string | null
-  vote_count: number | null
-  comment_count: number | null
-  has_voted: boolean | null
-  is_saved?: boolean | null
-  profile?: Profile
-  category?: Category
-  tags?: Tag[]
-  images?: ProductImage[]
+export type Profile = Database['public']['Tables']['profiles']['Row']
+export type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
+export type ProfileUpdate = Database['public']['Tables']['profiles']['Update']
+
+export type Category = Database['public']['Tables']['categories']['Row']
+export type Tag = Database['public']['Tables']['tags']['Row']
+export type Vote = Database['public']['Tables']['votes']['Row']
+export type Comment = Database['public']['Tables']['comments']['Row']
+export type Notification = Database['public']['Tables']['notifications']['Row']
+export type Collection = Database['public']['Tables']['collections']['Row']
+export type ProductImage = Database['public']['Tables']['product_images']['Row']
+
+// 関連データを含むプロダクト型
+export interface ProductWithRelations extends ProductWithStats {
+  profile: Profile | null
+  category: Category | null
+  tags: Tag[]
+  images: ProductImage[]
+  has_voted: boolean
 }
 
+// 関連データを含むコメント型
 export interface CommentWithRelations extends Comment {
-  profile?: Profile
+  profile: Profile | null
   replies?: CommentWithRelations[]
-}
-
-export interface CollectionWithRelations extends Collection {
-  products?: ProductWithRelations[]
-  profile?: Profile
-}
-
-export interface ProfileWithStats extends Profile {
-  product_count?: number
-  follower_count?: number
-  following_count?: number
-  is_following?: boolean
 }

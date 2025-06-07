@@ -111,7 +111,7 @@ erDiagram
         varchar title
         text message
         int related_product_id FK
-        uuid related_user_id FK
+        varchar related_user_slug FK
         boolean is_read
         timestamptz created_at
     }
