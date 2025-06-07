@@ -21,7 +21,8 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
 import { Separator } from '@/components/ui/separator';
-import { useSearch } from '@/contexts/SearchContext'; // Import useSearch
+import { useSearch } from '@/contexts/SearchContext';
+import { useTypedTranslations } from '@/lib/i18n/useTranslations';
 
 interface HeaderProps {
   onSubmitClick: () => void;
@@ -36,7 +37,8 @@ export function Header({
 }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { searchQuery } = useSearch(); // Get searchQuery from context
+  const { searchQuery } = useSearch();
+  const { t } = useTypedTranslations();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -86,9 +88,9 @@ export function Header({
   };
 
   const navItems = [
-    { href: '/', label: 'ホーム' },
-    { href: '/products', label: 'プロダクト' },
-    { href: '/about', label: 'About' },
+    { href: '/', label: t.nav.home },
+    { href: '/products', label: t.nav.products },
+    { href: '/about', label: t.nav.about },
   ];
 
   return (
@@ -118,7 +120,7 @@ export function Header({
                   NicheNext
                 </span>
                 <span className="text-[10px] font-medium text-gray-500 -mt-1 tracking-wider">
-                  DISCOVER NICHES
+                  {t.header.subtitle.toUpperCase()}
                 </span>
               </div>
             </Link>
@@ -165,7 +167,7 @@ export function Header({
               className="hidden md:flex bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
             >
               <Plus className="w-4 h-4 mr-2" />
-              投稿する
+              {t.header.submitProduct}
             </Button>
 
             {/* ユーザーメニュー */}
@@ -195,20 +197,20 @@ export function Header({
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleProfileClick} className="cursor-pointer">
                     <User className="mr-2 h-4 w-4" />
-                    <span>プロフィール</span>
+                    <span>{t.nav.profile}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push('/saved')} className="cursor-pointer">
                     <Bookmark className="mr-2 h-4 w-4" />
-                    <span>マイコレクション</span>
+                    <span>{t.nav.saved}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push('/settings')} className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
-                    <span>設定</span>
+                    <span>{t.nav.settings}</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
                     <LogOut className="mr-2 h-4 w-4" />
-                    <span>ログアウト</span>
+                    <span>{t.nav.signOut}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -218,7 +220,7 @@ export function Header({
                 onClick={() => router.push('/auth/signin')}
                 className="hidden md:block"
               >
-                ログイン
+                {t.nav.signIn}
               </Button>
             )}
 
@@ -267,13 +269,13 @@ export function Header({
                         <Link href="/saved" onClick={() => setIsMobileMenuOpen(false)}>
                           <Button variant="ghost" className="w-full justify-start">
                             <Bookmark className="mr-2 h-4 w-4" />
-                            マイコレクション
+                            {t.nav.saved}
                           </Button>
                         </Link>
                         <Link href="/settings" onClick={() => setIsMobileMenuOpen(false)}>
                           <Button variant="ghost" className="w-full justify-start">
                             <Settings className="mr-2 h-4 w-4" />
-                            設定
+                            {t.nav.settings}
                           </Button>
                         </Link>
                       </div>
@@ -285,7 +287,7 @@ export function Header({
                   {/* 言語切り替え（モバイル） */}
                   <div className="px-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">言語設定</span>
+                      <span className="text-sm font-medium text-gray-700">{t.nav.home === 'Home' ? 'Language' : '言語設定'}</span>
                       <LanguageSwitcher />
                     </div>
                   </div>
@@ -302,7 +304,7 @@ export function Header({
                       className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
                     >
                       <Plus className="w-4 h-4 mr-2" />
-                      投稿する
+                      {t.header.submitProduct}
                     </Button>
                   </div>
                   
@@ -317,7 +319,7 @@ export function Header({
                         }}
                       >
                         <LogOut className="mr-2 h-4 w-4" />
-                        ログアウト
+                        {t.nav.signOut}
                       </Button>
                     </div>
                   ) : (
@@ -330,7 +332,7 @@ export function Header({
                           setIsMobileMenuOpen(false);
                         }}
                       >
-                        ログイン
+                        {t.nav.signIn}
                       </Button>
                     </div>
                   )}

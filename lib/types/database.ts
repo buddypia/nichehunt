@@ -713,7 +713,28 @@ export type Notification = Database['public']['Tables']['notifications']['Row']
 export type ProductWithStats = Database['public']['Views']['products_with_stats']['Row']
 
 // 拡張型（リレーションを含む）
-export interface ProductWithRelations extends ProductWithStats {
+export interface ProductWithRelations {
+  id: number | null
+  user_id: string | null
+  name: string | null
+  tagline: string | null
+  description: string | null
+  product_url: string | null
+  github_url: string | null
+  demo_url: string | null
+  thumbnail_url: string | null
+  category_id: number | null
+  status: string | null
+  launch_date: string | null
+  is_featured: boolean | null
+  view_count: number | null
+  created_at: string | null
+  updated_at: string | null
+  country_code?: string | null
+  vote_count: number | null
+  comment_count: number | null
+  has_voted: boolean | null
+  is_saved?: boolean | null
   profile?: Profile
   category?: Category
   tags?: Tag[]

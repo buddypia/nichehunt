@@ -4,12 +4,15 @@ import { motion } from "framer-motion"
 import { Sparkles, TrendingUp, Users, Rocket, Star, ArrowRight, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { useTypedTranslations } from '@/lib/i18n/useTranslations'
 
 interface HeroProps {
   onSubmitClick?: () => void;
 }
 
 export function Hero({ onSubmitClick }: HeroProps) {
+  const { t } = useTypedTranslations();
+  
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
       {/* 背景パターン */}
@@ -45,10 +48,10 @@ export function Hero({ onSubmitClick }: HeroProps) {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-5xl md:text-7xl font-bold mb-6 tracking-tight"
           >
-            <span className="block">次世代の</span>
+            <span className="block">{t.hero.title1}</span>
             <span className="relative inline-block">
               <span className="relative z-10 bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 bg-clip-text text-transparent">
-                ニッチビジネス
+                {t.hero.title2}
               </span>
               <motion.div
                 initial={{ width: 0 }}
@@ -57,7 +60,7 @@ export function Hero({ onSubmitClick }: HeroProps) {
                 className="absolute bottom-2 left-0 h-4 bg-gradient-to-r from-yellow-400/30 to-pink-400/30 -z-10 blur-sm"
               />
             </span>
-            <span className="block">を発見しよう</span>
+            <span className="block">{t.hero.title3}</span>
           </motion.h1>
 
           {/* サブタイトル */}
@@ -67,9 +70,12 @@ export function Hero({ onSubmitClick }: HeroProps) {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="text-xl md:text-2xl text-purple-100 mb-12 max-w-3xl mx-auto leading-relaxed"
           >
-            革新的なアイデアと実証済みのビジネスモデルを共有し、
-            <br className="hidden md:block" />
-            次の成功への道筋を見つけましょう
+            {t.hero.subtitle.split('\n').map((line, index) => (
+              <span key={index}>
+                {line}
+                {index === 0 && <br className="hidden md:block" />}
+              </span>
+            ))}
           </motion.p>
 
           {/* CTA ボタン */}
@@ -82,7 +88,7 @@ export function Hero({ onSubmitClick }: HeroProps) {
             <Link href="/products" className="w-full sm:w-auto">
               <Button size="lg" className="group bg-white text-purple-900 hover:bg-gray-100 px-8 w-full">
                 <Rocket className="w-5 h-5 mr-2" />
-                プロダクトを探す
+                {t.hero.exploreProducts}
                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
@@ -92,7 +98,7 @@ export function Hero({ onSubmitClick }: HeroProps) {
               onClick={onSubmitClick}
             >
               <Zap className="w-5 h-5 mr-2" />
-              アイデアを投稿
+              {t.hero.submitIdea}
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </motion.div>
