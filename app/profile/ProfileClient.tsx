@@ -266,10 +266,7 @@ export default function ProfileClient() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         {/* プロフィールヘッダー */}
         <Card className="mb-8 overflow-hidden">
-          {/* 背景グラデーション */}
-          <div className="h-32 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
-          
-          <CardContent className="p-8 -mt-16">
+          <CardContent className="p-8">
             <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-6">
               <div className="flex flex-col md:flex-row items-center md:items-end space-y-4 md:space-y-0 md:space-x-6 mb-4 md:mb-0">
                 <Avatar className="w-32 h-32 border-4 border-white shadow-xl">
