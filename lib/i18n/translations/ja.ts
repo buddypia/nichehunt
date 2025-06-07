@@ -110,6 +110,10 @@ export const ja: TranslationKeys = {
     newComment: 'があなたのプロダクトにコメントしました',
     newVote: 'があなたのプロダクトに投票しました',
     productFeatured: 'あなたのプロダクトがおすすめに選ばれました',
+    // Dynamic notification messages
+    voteNotificationTitle: 'あなたのプロダクトが投票されました',
+    commentNotificationTitle: 'あなたのプロダクトにコメントがありました',
+    replyNotificationTitle: 'あなたのコメントに返信がありました',
   },
   collections: {
     title: 'コレクション',

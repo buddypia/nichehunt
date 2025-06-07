@@ -110,6 +110,10 @@ export const en: TranslationKeys = {
     newComment: 'commented on your product',
     newVote: 'voted for your product',
     productFeatured: 'Your product was featured',
+    // Dynamic notification messages
+    voteNotificationTitle: 'Your product received a vote',
+    commentNotificationTitle: 'New comment on your product',
+    replyNotificationTitle: 'Reply to your comment',
   },
   collections: {
     title: 'Collections',

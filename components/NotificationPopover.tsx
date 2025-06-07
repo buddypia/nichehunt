@@ -117,25 +117,28 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
   const getLocalizedNotificationText = (notification: Notification) => {
     const { type, title, message } = notification;
     
-    // If we're in English locale, try to translate from Japanese to English
-    if (currentLocale === 'en') {
-      // Translate common notification patterns
-      if (title === 'あなたのプロダクトが投票されました') {
-        return {
-          title: 'Your product received a vote',
-          message: message.replace(/さんが/, ' voted for ').replace(/に投票しました/, '')
-        };
-      } else if (title === 'あなたのプロダクトにコメントがありました') {
-        return {
-          title: 'New comment on your product',
-          message: message.replace(/さんが/, ' commented on ').replace(/にコメントしました/, '')
-        };
-      } else if (title === 'あなたのコメントに返信がありました') {
-        return {
-          title: 'Reply to your comment',
-          message: message.replace(/さんがあなたのコメントに返信しました/, ' replied to your comment')
-        };
-      }
+    // Use translation keys based on the original Japanese titles
+    if (title === 'あなたのプロダクトが投票されました') {
+      return {
+        title: t.notifications.voteNotificationTitle,
+        message: currentLocale === 'en' 
+          ? message.replace(/さんが/, ' voted for ').replace(/に投票しました/, '')
+          : message
+      };
+    } else if (title === 'あなたのプロダクトにコメントがありました') {
+      return {
+        title: t.notifications.commentNotificationTitle,
+        message: currentLocale === 'en'
+          ? message.replace(/さんが/, ' commented on ').replace(/にコメントしました/, '')
+          : message
+      };
+    } else if (title === 'あなたのコメントに返信がありました') {
+      return {
+        title: t.notifications.replyNotificationTitle,
+        message: currentLocale === 'en'
+          ? message.replace(/さんがあなたのコメントに返信しました/, ' replied to your comment')
+          : message
+      };
     }
     
     // Return original text if no translation is needed or available
