@@ -37,26 +37,26 @@ export async function getProducts({
 
   // カテゴリでフィルタ
   if (categorySlug) {
-    const { data: category } = await supabase
+    const { data: category, error: categoryError } = await supabase
       .from('categories')
       .select('id')
       .eq('slug', categorySlug as any)
-      .single()
+      .maybeSingle()
     
-    if (category && 'id' in category) {
+    if (!categoryError && category && 'id' in category) {
       query = query.eq('category_id', category.id as any)
     }
   }
 
   // タグでフィルタ
   if (tagSlug) {
-    const { data: tag } = await supabase
+    const { data: tag, error: tagError } = await supabase
       .from('tags')
       .select('id')
       .eq('slug', tagSlug as any)
-      .single()
+      .maybeSingle()
     
-    if (tag && 'id' in tag) {
+    if (!tagError && tag && 'id' in tag) {
       const { data: productIds } = await supabase
         .from('product_tags')
         .select('product_id')
@@ -119,10 +119,15 @@ export async function getProduct(id: string) {
     .from('products_with_stats')
     .select('*')
     .eq('id', id as any)
-    .single()
+    .maybeSingle()
 
-  if (error || !product || !('id' in product)) {
+  if (error) {
     console.error('Error fetching product:', error)
+    return null
+  }
+
+  if (!product || !('id' in product)) {
+    console.error('Product not found:', id)
     return null
   }
 
@@ -195,10 +200,14 @@ export async function updateProduct(productId: number, data: UpdateProductData) 
     .from('products')
     .select('user_id')
     .eq('id', productId)
-    .single();
+    .maybeSingle();
 
-  if (ownerError || !productOwner) {
-    return { data: null, error: { message: ownerError?.message || 'Product not found' } };
+  if (ownerError) {
+    return { data: null, error: { message: ownerError.message || 'Error checking product ownership' } };
+  }
+
+  if (!productOwner) {
+    return { data: null, error: { message: 'Product not found' } };
   }
 
   if (productOwner.user_id !== user.data.user.id) {
@@ -240,10 +249,14 @@ export async function deleteProduct(productId: number) {
     .from('products')
     .select('user_id')
     .eq('id', productId)
-    .single();
+    .maybeSingle();
 
-  if (ownerError || !productOwner) {
-    return { error: { message: ownerError?.message || 'Product not found or error checking ownership.' } };
+  if (ownerError) {
+    return { error: { message: ownerError.message || 'Error checking product ownership.' } };
+  }
+
+  if (!productOwner) {
+    return { error: { message: 'Product not found.' } };
   }
 
   if (productOwner.user_id !== user.data.user.id) {
@@ -414,22 +427,34 @@ async function enrichProducts(products: ProductWithStats[]): Promise<ProductWith
 // For now, we assume getProduct is less performance-critical as it fetches a single item.
 async function getProfile(userId: string) {
   const supabase = createClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', userId as any)
-    .single()
+    .maybeSingle()
+  
+  if (error) {
+    console.error('Error fetching profile:', error)
+    return null
+  }
+  
   return data
 }
 
 async function getCategory(categoryId: number | null) {
   if (!categoryId) return null
   const supabase = createClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('categories')
     .select('*')
     .eq('id', categoryId as any)
-    .single()
+    .maybeSingle()
+  
+  if (error) {
+    console.error('Error fetching category:', error)
+    return null
+  }
+  
   return data
 }
 
@@ -462,12 +487,18 @@ async function getProductImages(productId: number) {
 
 async function checkUserVote(productId: number, userId: string) {
   const supabase = createClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('votes')
     .select('user_id')
     .eq('product_id', productId as any)
     .eq('user_id', userId as any)
-    .single()
+    .maybeSingle()
+  
+  if (error) {
+    console.error('Error checking user vote:', error)
+    return false
+  }
+  
   return !!data
 }
 
