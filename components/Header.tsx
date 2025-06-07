@@ -13,7 +13,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, User, Settings, LogOut, Bookmark, Menu, Sparkles } from 'lucide-react';
+import { Plus, User, Settings, LogOut, Bookmark, Menu } from 'lucide-react';
+import Image from 'next/image';
 import { getCurrentUser, signOut } from '@/lib/auth';
 import { AdvancedSearchBar } from '@/components/AdvancedSearchBar';
 import { NotificationPopover } from '@/components/NotificationPopover';
@@ -99,20 +100,14 @@ export function Header({
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center space-x-8">
             <Link href="/" className="flex items-center space-x-3 group">
-              <div className="relative">
-                {/* グロー効果 */}
-                <div className="absolute inset-0 w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl blur-md opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
-                
-                {/* メインアイコンコンテナ */}
-                <div className="relative w-10 h-10 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 rounded-xl shadow-lg transform group-hover:scale-105 transition-all duration-300">
-                  {/* 内側のグラデーション */}
-                  <div className="absolute inset-[2px] bg-gradient-to-br from-white/20 to-transparent rounded-[10px]" />
-                  
-                  {/* アイコン */}
-                  <div className="relative w-full h-full flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-white" />
-                  </div>
-                </div>
+              <div className="w-10 h-10 flex items-center justify-center">
+                <Image 
+                  src="/logo.png"
+                  alt="NicheNext Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
               </div>
               
               <div className="flex flex-col">

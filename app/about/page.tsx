@@ -1,7 +1,8 @@
 'use client';
 
-import { Trophy, Target, Users, Lightbulb, ArrowRight } from 'lucide-react';
+import { Target, Users, Lightbulb, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function AboutPage() {
   return (
@@ -10,8 +11,14 @@ export default function AboutPage() {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center space-x-2 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <Trophy className="w-10 h-10 text-white" />
+            <div className="w-16 h-16 flex items-center justify-center">
+              <Image 
+                src="/logo.png"
+                alt="NicheNext Logo"
+                width={64}
+                height={64}
+                className="object-contain"
+              />
             </div>
             <span className="font-bold text-4xl text-gray-900">NicheNext</span>
           </div>
