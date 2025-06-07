@@ -9,6 +9,7 @@ export interface Profile {
   location?: string;
   website?: string;
   twitter?: string;
+  slug: string;
   github?: string;
   linkedin?: string;
   skills?: string[];
@@ -37,7 +38,7 @@ export interface ProfileProduct {
   images: string[];
 }
 
-// プロフィール情報を取得
+// プロフィール情報を取得（ID基準）
 export async function getProfile(userId: string): Promise<Profile | null> {
   try {
     const supabase = createClient();
@@ -58,6 +59,31 @@ export async function getProfile(userId: string): Promise<Profile | null> {
     };
   } catch (error) {
     console.error('Error in getProfile:', error);
+    return null;
+  }
+}
+
+// プロフィール情報を取得（slug基準）
+export async function getProfileBySlug(slug: string): Promise<Profile | null> {
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('slug', slug)
+      .single();
+
+    if (error) {
+      console.error('Error fetching profile by slug:', error);
+      return null;
+    }
+
+    return {
+      ...data,
+      skills: [] // profile_skillsテーブルが存在しないため、空配列を返す
+    };
+  } catch (error) {
+    console.error('Error in getProfileBySlug:', error);
     return null;
   }
 }

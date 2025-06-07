@@ -32,6 +32,7 @@ import {
 import { getCurrentUser } from '@/lib/auth';
 import { 
   getProfile, 
+  getProfileBySlug,
   getProfileStats, 
   getUserProducts,
   getUserUpvotedProducts,
@@ -53,10 +54,10 @@ import {
 } from '@/lib/api/profile-relations';
 
 interface ProfileDetailClientProps {
-  userId: string;
+  userSlug: string;
 }
 
-export default function ProfileDetailClient({ userId }: ProfileDetailClientProps) {
+export default function ProfileDetailClient({ userSlug }: ProfileDetailClientProps) {
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -82,16 +83,16 @@ export default function ProfileDetailClient({ userId }: ProfileDetailClientProps
   useEffect(() => {
     loadProfileData();
     loadCurrentUser();
-  }, [userId]);
+  }, [userSlug]);
 
   const loadCurrentUser = async () => {
     const user = await getCurrentUser();
     setCurrentUser(user);
-    if (user && user.id === userId) {
+    if (user && profile && user.id === profile.id) {
       setIsOwnProfile(true);
-    } else if (user && userId) {
+    } else if (user && profile) {
       // フォロー状態をチェック
-      const following = await checkFollowStatus(user.id, userId);
+      const following = await checkFollowStatus(user.id, profile.id);
       setIsFollowing(following);
       // 関連情報を取得
       loadRelatedContent(user.id);
@@ -102,7 +103,7 @@ export default function ProfileDetailClient({ userId }: ProfileDetailClientProps
     setIsLoading(true);
     try {
       // プロフィール情報を取得
-      const profileData = await getProfile(userId);
+      const profileData = await getProfileBySlug(userSlug);
       if (!profileData) {
         setProfile(null);
         return;
@@ -110,15 +111,15 @@ export default function ProfileDetailClient({ userId }: ProfileDetailClientProps
       setProfile(profileData);
 
       // 統計情報を取得
-      const statsData = await getProfileStats(userId);
+      const statsData = await getProfileStats(profileData.id);
       setStats(statsData);
 
       // ユーザーの投稿したプロダクトを取得
-      const products = await getUserProducts(userId);
+      const products = await getUserProducts(profileData.id);
       setUserProducts(products);
 
       // アップボートしたプロダクトを取得
-      const upvoted = await getUserUpvotedProducts(userId);
+      const upvoted = await getUserUpvotedProducts(profileData.id);
       setUpvotedProducts(upvoted);
 
     } catch (error) {
@@ -129,21 +130,23 @@ export default function ProfileDetailClient({ userId }: ProfileDetailClientProps
   };
 
   const loadRelatedContent = async (currentUserId: string) => {
+    if (!profile) return;
+    
     try {
       // 共通のフォロワーを取得
-      const mutual = await getMutualFollowers(currentUserId, userId);
+      const mutual = await getMutualFollowers(currentUserId, profile.id);
       setMutualFollowers(mutual);
 
       // 似た興味を持つカテゴリを取得
-      const interests = await getSimilarInterests(currentUserId, userId);
+      const interests = await getSimilarInterests(currentUserId, profile.id);
       setSimilarInterests(interests);
 
       // インタラクション履歴を取得
-      const history = await getInteractionHistory(currentUserId, userId);
+      const history = await getInteractionHistory(currentUserId, profile.id);
       setInteractionHistory(history);
 
       // 共有コレクションを取得
-      const collections = await getSharedCollections(currentUserId, userId);
+      const collections = await getSharedCollections(currentUserId, profile.id);
       setSharedCollections(collections);
     } catch (error) {
       console.error('Error loading related content:', error);
@@ -151,14 +154,14 @@ export default function ProfileDetailClient({ userId }: ProfileDetailClientProps
   };
 
   const handleFollowToggle = async () => {
-    if (!currentUser) {
+    if (!currentUser || !profile) {
       router.push('/auth/signin');
       return;
     }
 
     setIsFollowLoading(true);
     try {
-      const success = await toggleFollow(currentUser.id, userId);
+      const success = await toggleFollow(currentUser.id, profile.id);
       if (success) {
         setIsFollowing(!isFollowing);
         setStats(prev => ({
@@ -366,7 +369,7 @@ export default function ProfileDetailClient({ userId }: ProfileDetailClientProps
                           <Avatar
                             key={follower.id}
                             className="w-8 h-8 border-2 border-white cursor-pointer"
-                            onClick={() => router.push(`/profiles/${follower.id}`)}
+                            onClick={() => router.push(`/profiles/${follower.slug}`)}
                           >
                             <AvatarImage src={follower.avatar_url} alt={follower.username} />
                             <AvatarFallback className="text-xs">

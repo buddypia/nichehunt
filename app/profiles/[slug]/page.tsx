@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/client';
 
 interface ProfilePageProps {
   params: Promise<{
-    id: string;
+    slug: string;
   }>;
 }
 
@@ -13,10 +13,10 @@ export async function generateStaticParams() {
   const supabase = createClient();
   
   try {
-    // プロフィールIDのリストを取得
+    // プロフィールslugのリストを取得
     const { data: profiles, error } = await supabase
       .from('profiles')
-      .select('id')
+      .select('slug')
       .limit(100); // 必要に応じて調整
     
     if (error) {
@@ -24,9 +24,9 @@ export async function generateStaticParams() {
       return [];
     }
     
-    // idパラメータの配列を返す
+    // slugパラメータの配列を返す
     return (profiles || []).map((profile) => ({
-      id: profile.id,
+      slug: profile.slug,
     }));
   } catch (error) {
     console.error('Error in generateStaticParams:', error);
@@ -35,7 +35,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
-  const { id } = await params;
+  const { slug } = await params;
   return {
     title: `プロフィール - NicheNext`,
     description: 'ユーザープロフィールの詳細ページ',
@@ -43,6 +43,6 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
 }
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
-  const { id } = await params;
-  return <ProfileDetailClient userId={id} />;
+  const { slug } = await params;
+  return <ProfileDetailClient userSlug={slug} />;
 }

@@ -84,9 +84,7 @@ export function Header({
   };
 
   const handleProfileClick = () => {
-    if (currentUser?.id) {
-      router.push(getLocalizedHref(`/profile?id=${currentUser.id}`));
-    }
+    router.push(getLocalizedHref(`/profiles/${currentUser.slug}`));
   };
 
   const navItems = [

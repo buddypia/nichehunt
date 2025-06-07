@@ -461,6 +461,7 @@ export default function ProfileClient() {
                       bio: profile.bio || null,
                       website_url: profile.website || null, // Use profile.website
                       twitter_handle: profile.twitter || null, // Use profile.twitter
+                      slug: profile.slug,
                       created_at: profile.created_at,
                       updated_at: profile.updated_at || profile.created_at,
                     },
@@ -501,6 +502,7 @@ export default function ProfileClient() {
                     bio: null,
                     website_url: null,
                     twitter_handle: null,
+                    slug: 'unknown-author',
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString(),
                   };

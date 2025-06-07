@@ -75,21 +75,21 @@ const CommentItem: React.FC<CommentItemProps> = ({
   return (
     <div className={`${depth > 0 ? 'ml-8 mt-4' : ''}`}>
       <div className="flex space-x-3">
-        <Link href={`/profile?id=${comment.profile?.id}`}>
+        <Link href={`/profiles/${comment.profile?.slug}`}>
           <Avatar className="h-8 w-8">
             <AvatarImage src={comment.profile?.avatar_url || ''} />
-            <AvatarFallback>{comment.profile?.username?.charAt(0) || 'U'}</AvatarFallback>
+            <AvatarFallback>{comment.profile.username?.charAt(0) || 'U'}</AvatarFallback>
           </Avatar>
         </Link>
         <div className="flex-1">
           <div className="flex items-center space-x-2">
-            <Link href={`/profile?id=${comment.profile?.id}`} className="font-medium hover:underline">
-              {comment.profile?.username}
+            <Link href={`/profiles/${comment.profile.slug}`} className="font-medium hover:underline">
+              {comment.profile.slug}
             </Link>
             {parentComment && (
               <div className="flex items-center space-x-1">
                 <span className="text-gray-400">→</span>
-                <Link href={`/profile?id=${parentComment.profile?.id}`} className="text-sm text-blue-600 hover:underline">
+                <Link href={`/profiles/${parentComment.profile.slug}`} className="text-sm text-blue-600 hover:underline">
                   @{parentComment.profile?.username}
                 </Link>
               </div>
@@ -136,7 +136,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                   <textarea
                     value={replyText}
                     onChange={(e) => onReplyTextChange(e.target.value)}
-                    placeholder={`@${comment.profile?.username} への返信を入力...`}
+                    placeholder={`@${comment.profile.username} への返信を入力...`}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm transition-all duration-200"
                     rows={3}
                     autoFocus
@@ -652,7 +652,7 @@ export function ProductDetailClient({ initialProduct }: ProductDetailClientProps
 
                 {/* メタ情報 */}
                 <div className="space-y-3 text-sm text-gray-600">
-                  <Link href={`/profile?id=${product.profile?.id}`} className="flex items-center space-x-2 hover:text-gray-900 group">
+                  <Link href={`/profiles/${product.profile.slug}`} className="flex items-center space-x-2 hover:text-gray-900 group">
                     <Avatar className="h-8 w-8 group-hover:ring-2 group-hover:ring-blue-500 transition-all">
                       <AvatarImage src={product.profile?.avatar_url || ''} />
                       <AvatarFallback>{product.profile?.username?.charAt(0) || 'U'}</AvatarFallback>

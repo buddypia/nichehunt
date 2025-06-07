@@ -93,6 +93,7 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
       router.push(`/products/${notification.related_product_id}`);
       setIsOpen(false);
     } else if (notification.related_user_id) {
+      // TODO: related_user_idからslugを取得する必要がある
       router.push(`/profiles/${notification.related_user_id}`);
       setIsOpen(false);
     }

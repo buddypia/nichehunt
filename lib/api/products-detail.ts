@@ -14,7 +14,8 @@ export async function fetchProductById(productId: string, isStatic = false): Pro
           username,
           display_name,
           avatar_url,
-          bio
+          bio,
+          slug
         ),
         category:categories (
           id,

@@ -435,6 +435,7 @@ export type Database = {
           created_at: string | null
           display_name: string | null
           id: string
+          slug: string
           twitter_handle: string | null
           updated_at: string | null
           username: string
@@ -446,6 +447,7 @@ export type Database = {
           created_at?: string | null
           display_name?: string | null
           id: string
+          slug: string
           twitter_handle?: string | null
           updated_at?: string | null
           username: string
@@ -457,6 +459,7 @@ export type Database = {
           created_at?: string | null
           display_name?: string | null
           id?: string
+          slug?: string
           twitter_handle?: string | null
           updated_at?: string | null
           username?: string
