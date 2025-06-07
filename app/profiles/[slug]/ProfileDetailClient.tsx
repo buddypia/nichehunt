@@ -53,13 +53,14 @@ import {
   type SharedCollection
 } from '@/lib/api/profile-relations';
 import { useTypedTranslations } from '@/lib/i18n/useTranslations';
+import { formatDate } from '@/lib/utils';
 
 interface ProfileDetailClientProps {
   userSlug: string;
 }
 
 export default function ProfileDetailClient({ userSlug }: ProfileDetailClientProps) {
-  const { t } = useTypedTranslations();
+  const { t, language } = useTypedTranslations();
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -178,13 +179,6 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: 'long'
-    });
-  };
 
   if (isLoading) {
     return (
@@ -279,7 +273,7 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
                     )}
                     <div className="flex items-center justify-center">
                       <Calendar className="w-4 h-4 mr-1" />
-                      {t.profile.joinedSince.replace('{date}', formatDate(profile.created_at))}
+                      {t.profile.joinedSince.replace('{date}', formatDate(profile.created_at, language, { year: 'numeric', month: 'long' }))}
                     </div>
                   </div>
                 </div>

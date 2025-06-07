@@ -7,10 +7,11 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { cn } from "@/lib/utils"
+import { cn, formatDate } from "@/lib/utils"
 import { createClient } from '@/lib/supabase/client';
 import type { ProductWithRelations } from "@/lib/types/database"
 import { SaveToCollectionPopover } from "@/components/SaveToCollectionPopover"
+import { useTypedTranslations } from "@/lib/i18n/useTranslations"
 
 interface ProductCardProps {
   product: ProductWithRelations
@@ -25,6 +26,7 @@ export function ProductCard({ product, onVote, className, rank }: ProductCardPro
   const [voteCount, setVoteCount] = useState(product.vote_count || 0)
   const [isSaved, setIsSaved] = useState(product.is_saved || false)
   const router = useRouter()
+  const { language } = useTypedTranslations()
 
   const handleVote = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -195,7 +197,7 @@ export function ProductCard({ product, onVote, className, rank }: ProductCardPro
             <div className="flex items-center justify-center p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50">
               <Calendar className="w-4 h-4 mr-1 text-primary/60" />
               <span className="text-xs font-medium">
-                {new Date(product.launch_date).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
+                {formatDate(product.launch_date, language, { month: 'short', day: 'numeric' })}
               </span>
             </div>
             <div className="flex items-center justify-center p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50">

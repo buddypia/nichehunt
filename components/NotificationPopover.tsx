@@ -14,8 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { getLocalizedNotificationsClient, markNotificationAsReadClient, markAllNotificationsAsReadClient, getUnreadNotificationCountClient } from '@/lib/api/notifications-client';
 import { SupportedLanguage } from '@/lib/i18n';
 import { Notification } from '@/lib/types/notification';
-import { formatDistanceToNow } from 'date-fns';
-import { ja, enUS } from 'date-fns/locale';
+import { formatRelativeTime } from '@/lib/utils';
 import { useRouter, usePathname } from 'next/navigation';
 import { useTypedTranslations, useLocalizedNavigation } from '@/lib/i18n/useTranslations';
 
@@ -35,7 +34,6 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
   
   // Determine current locale from pathname
   const currentLocale = pathname?.startsWith('/ja') ? 'ja' : 'en';
-  const dateLocale = currentLocale === 'ja' ? ja : enUS;
 
   useEffect(() => {
     if (userId && userId !== 'undefined') {
@@ -229,10 +227,7 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
                           {localizedText.message}
                         </p>
                         <p className="text-xs text-gray-400 mt-1">
-                          {formatDistanceToNow(new Date(notification.created_at), {
-                            addSuffix: true,
-                            locale: dateLocale,
-                          })}
+                          {formatRelativeTime(notification.created_at, currentLocale)}
                         </p>
                       </div>
                       {!notification.is_read && (
