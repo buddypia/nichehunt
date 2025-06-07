@@ -42,6 +42,7 @@ import {
 } from '@/lib/api/profiles';
 import { ProductCard } from '@/components/ProductCard';
 import type { ProductWithRelations } from "@/lib/types/database";
+import { useTypedTranslations } from '@/lib/i18n/useTranslations';
 
 interface Achievement {
   id: string;
@@ -53,6 +54,7 @@ interface Achievement {
 }
 
 export default function ProfileClient() {
+  const { t } = useTypedTranslations();
   const router = useRouter();
   const searchParams = useSearchParams();
   const userId = searchParams.get('id');
@@ -162,48 +164,48 @@ export default function ProfileClient() {
   const achievements: Achievement[] = [
     {
       id: '1',
-      title: 'トップコントリビューター',
-      description: '10個以上のプロダクトを投稿',
+      title: t.profile.achievements.topContributor.title,
+      description: t.profile.achievements.topContributor.description,
       icon: Trophy,
       color: 'from-yellow-400 to-yellow-600',
       earned: stats.totalProducts >= 10
     },
     {
       id: '2',
-      title: '人気クリエイター',
-      description: '合計1000以上の投票を獲得',
+      title: t.profile.achievements.popularCreator.title,
+      description: t.profile.achievements.popularCreator.description,
       icon: Star,
       color: 'from-blue-400 to-blue-600',
       earned: stats.totalVotes >= 1000
     },
     {
       id: '3',
-      title: 'アクティブコメンター',
-      description: '50以上のコメントを投稿',
+      title: t.profile.achievements.activeCommenter.title,
+      description: t.profile.achievements.activeCommenter.description,
       icon: MessageCircle,
       color: 'from-purple-400 to-purple-600',
       earned: stats.totalComments >= 50
     },
     {
       id: '4',
-      title: 'コミュニティリーダー',
-      description: '100人以上のフォロワーを獲得',
+      title: t.profile.achievements.communityLeader.title,
+      description: t.profile.achievements.communityLeader.description,
       icon: Users,
       color: 'from-green-400 to-green-600',
       earned: stats.followers >= 100
     },
     {
       id: '5',
-      title: 'アーリーアダプター',
-      description: 'サービス開始初期からの参加',
+      title: t.profile.achievements.earlyAdopter.title,
+      description: t.profile.achievements.earlyAdopter.description,
       icon: Award,
       color: 'from-indigo-400 to-indigo-600',
       earned: profile ? new Date(profile.created_at) < new Date('2024-06-01') : false
     },
     {
       id: '6',
-      title: 'テックイノベーター',
-      description: 'テクノロジー系プロダクトを5個以上投稿',
+      title: t.profile.achievements.techInnovator.title,
+      description: t.profile.achievements.techInnovator.description,
       icon: Zap,
       color: 'from-orange-400 to-orange-600',
       earned: false // 実装が必要
@@ -215,7 +217,7 @@ export default function ProfileClient() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4 py-16 text-center">
           <Loader2 className="animate-spin h-12 w-12 mx-auto text-blue-600" />
-          <p className="mt-4 text-gray-600">プロフィールを読み込み中...</p>
+          <p className="mt-4 text-gray-600">{t.profile.loading}</p>
         </div>
       </div>
     );
@@ -225,10 +227,10 @@ export default function ProfileClient() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">ユーザーIDが指定されていません</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">{t.profile.userIdMissing}</h1>
           <Button onClick={() => router.push('/')}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            ホームに戻る
+            {t.profile.backHome}
           </Button>
         </div>
       </div>
@@ -239,10 +241,10 @@ export default function ProfileClient() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">プロフィールが見つかりません</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">{t.profile.profileNotFound}</h1>
           <Button onClick={() => router.push('/')}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            ホームに戻る
+            {t.profile.backHome}
           </Button>
         </div>
       </div>
@@ -259,7 +261,7 @@ export default function ProfileClient() {
           className="mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          戻る
+          {t.profile.back}
         </Button>
       </div>
 
@@ -289,7 +291,7 @@ export default function ProfileClient() {
                     )}
                     <div className="flex items-center">
                       <Calendar className="w-4 h-4 mr-1" />
-                      {formatDate(profile.created_at)}から参加
+                      {t.profile.joinedSince.replace('{date}', formatDate(profile.created_at))}
                     </div>
                   </div>
                   {/* スキルタグ */}
@@ -310,7 +312,7 @@ export default function ProfileClient() {
                   <>
                     <Button variant="outline" onClick={() => router.push('/settings')}>
                       <Edit className="w-4 h-4 mr-2" />
-                      プロフィール編集
+                      {t.profile.editProfile}
                     </Button>
                     <Button variant="outline" size="icon" onClick={() => router.push('/settings')}>
                       <Settings className="w-4 h-4" />
@@ -326,7 +328,7 @@ export default function ProfileClient() {
                       {isFollowLoading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
-                        isFollowing ? 'フォロー中' : 'フォロー'
+                        isFollowing ? t.profile.following : t.profile.follow
                       )}
                     </Button>
                     <Button variant="outline" size="icon">
@@ -347,7 +349,7 @@ export default function ProfileClient() {
                   className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
                 >
                   <LinkIcon className="w-4 h-4 mr-1" />
-                  ウェブサイト
+                  {t.profile.website}
                 </a>
               )}
               {profile.twitter && (
@@ -390,31 +392,31 @@ export default function ProfileClient() {
               <Card className="text-center">
                 <CardContent className="p-4">
                   <div className="text-3xl font-bold text-gray-900">{stats.totalProducts}</div>
-                  <div className="text-sm text-gray-600">投稿</div>
+                  <div className="text-sm text-gray-600">{t.profile.stats.posts}</div>
                 </CardContent>
               </Card>
               <Card className="text-center">
                 <CardContent className="p-4">
                   <div className="text-3xl font-bold text-gray-900">{stats.totalVotes}</div>
-                  <div className="text-sm text-gray-600">獲得投票</div>
+                  <div className="text-sm text-gray-600">{t.profile.stats.votes}</div>
                 </CardContent>
               </Card>
               <Card className="text-center">
                 <CardContent className="p-4">
                   <div className="text-3xl font-bold text-gray-900">{stats.totalComments}</div>
-                  <div className="text-sm text-gray-600">コメント</div>
+                  <div className="text-sm text-gray-600">{t.profile.stats.comments}</div>
                 </CardContent>
               </Card>
               <Card className="text-center">
                 <CardContent className="p-4">
                   <div className="text-3xl font-bold text-gray-900">{stats.followers}</div>
-                  <div className="text-sm text-gray-600">フォロワー</div>
+                  <div className="text-sm text-gray-600">{t.profile.stats.followers}</div>
                 </CardContent>
               </Card>
               <Card className="text-center">
                 <CardContent className="p-4">
                   <div className="text-3xl font-bold text-gray-900">{stats.following}</div>
-                  <div className="text-sm text-gray-600">フォロー中</div>
+                  <div className="text-sm text-gray-600">{t.profile.stats.following}</div>
                 </CardContent>
               </Card>
             </div>
@@ -424,9 +426,9 @@ export default function ProfileClient() {
         {/* タブコンテンツ */}
         <Tabs defaultValue="products" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="products">投稿したプロダクト</TabsTrigger>
-            <TabsTrigger value="upvoted">アップボート</TabsTrigger>
-            <TabsTrigger value="achievements">実績</TabsTrigger>
+            <TabsTrigger value="products">{t.profile.tabs.products}</TabsTrigger>
+            <TabsTrigger value="upvoted">{t.profile.tabs.upvoted}</TabsTrigger>
+            <TabsTrigger value="achievements">{t.profile.tabs.achievements}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="products" className="mt-6">
@@ -466,6 +468,8 @@ export default function ProfileClient() {
                       updated_at: profile.updated_at || profile.created_at,
                     },
                     tags: product.tags ? product.tags.map((tag, index) => ({ id: index, name: tag, slug: tag.toLowerCase(), created_at: new Date().toISOString() })) : [],
+                    images: [],
+                    locale: 'ja',
                     has_voted: false,
                     is_saved: false,
                   };
@@ -475,10 +479,10 @@ export default function ProfileClient() {
                 <Card>
                   <CardContent className="p-12 text-center">
                     <Briefcase className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p className="text-gray-600">まだプロダクトを投稿していません</p>
+                    <p className="text-gray-600">{t.profile.emptyStates.noProducts}</p>
                     {isOwnProfile && (
                       <Button className="mt-4" onClick={() => router.push('/')}>
-                        最初のプロダクトを投稿する
+                        {t.profile.emptyStates.submitFirstProduct}
                       </Button>
                     )}
                   </CardContent>
@@ -529,6 +533,8 @@ export default function ProfileClient() {
                     user_id: 'unknown-author-id', // Placeholder user_id for the product's author
                     profile: placeholderAuthorProfile, // Use the placeholder author profile
                     tags: product.tags ? product.tags.map((tag, index) => ({ id: index, name: tag, slug: tag.toLowerCase(), created_at: new Date().toISOString() })) : [],
+                    images: [],
+                    locale: 'ja',
                     has_voted: true, // User has upvoted this product
                     is_saved: false,
                   };
@@ -538,7 +544,7 @@ export default function ProfileClient() {
                 <Card>
                   <CardContent className="p-12 text-center">
                     <Heart className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p className="text-gray-600">アップボートしたプロダクトはまだありません</p>
+                    <p className="text-gray-600">{t.profile.emptyStates.noUpvoted}</p>
                   </CardContent>
                 </Card>
               )}
@@ -561,7 +567,7 @@ export default function ProfileClient() {
                         <h3 className="font-bold text-lg">{achievement.title}</h3>
                         <p className="text-sm text-gray-600">{achievement.description}</p>
                         {achievement.earned && (
-                          <Badge className="mt-2" variant="default">獲得済み</Badge>
+                          <Badge className="mt-2" variant="default">{t.profile.achievements.earned}</Badge>
                         )}
                       </div>
                     </div>

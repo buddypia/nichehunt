@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
+import { useTypedTranslations } from '@/lib/i18n/useTranslations';
 
 interface SearchBarProps {
   value?: string;
@@ -11,7 +12,8 @@ interface SearchBarProps {
   placeholder?: string;
 }
 
-export function SearchBar({ value: controlledValue, onChange, onSearch, placeholder = "プロダクトを検索..." }: SearchBarProps) {
+export function SearchBar({ value: controlledValue, onChange, onSearch, placeholder }: SearchBarProps) {
+  const { t } = useTypedTranslations();
   const [internalValue, setInternalValue] = useState('');
   const isControlled = controlledValue !== undefined;
   const value = isControlled ? controlledValue : internalValue;
@@ -29,7 +31,7 @@ export function SearchBar({ value: controlledValue, onChange, onSearch, placehol
       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
       <Input
         type="text"
-        placeholder={placeholder}
+        placeholder={placeholder || t.search.placeholder}
         value={value}
         onChange={(e) => handleChange(e.target.value)}
         className="pl-10 bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500"

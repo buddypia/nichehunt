@@ -17,25 +17,27 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { getPopularTags } from '@/lib/api/popular-tags';
 import { useSearch } from '@/contexts/SearchContext';
+import { useTypedTranslations } from '@/lib/i18n/useTranslations';
 // interface AdvancedSearchBarProps {
 //   value: string; // To be removed, will use context
 //   onChange: (value: string) => void; // To be removed, will use context
 // }
 
-// デフォルトの最近の検索（ローカルストレージから取得するまで）
-const defaultRecentSearches = [
-  'AIチャットボット',
-  'レンタルサービス',
-  'マーケットプレイス'
-];
-
 export function AdvancedSearchBar() { // Props removed
+  const { t } = useTypedTranslations();
   const { 
     searchQuery, 
     setSearchQuery
     // selectedCategory, // Removed
     // setSelectedCategory // Removed
   } = useSearch();
+
+  // デフォルトの最近の検索（ローカルストレージから取得するまで）
+  const defaultRecentSearches = [
+    'AIチャットボット',
+    'レンタルサービス',
+    'マーケットプレイス'
+  ];
 
   const [isFocused, setIsFocused] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -138,7 +140,7 @@ export function AdvancedSearchBar() { // Props removed
             
             <input
               type="text"
-              placeholder="ビジネスモデルを検索..."
+              placeholder={t.search.advancedPlaceholder}
               value={searchQuery} // Use searchQuery from context
               onChange={(e) => {
                 const newValue = e.target.value;
@@ -163,7 +165,7 @@ export function AdvancedSearchBar() { // Props removed
               <button
                 onClick={clearSearch}
                 className="p-1 hover:bg-gray-200 rounded transition-colors"
-                aria-label="Clear search"
+                aria-label={t.search.clearSearch}
               >
                 <X className="w-3 h-3 text-gray-400" />
               </button>
@@ -187,13 +189,13 @@ export function AdvancedSearchBar() { // Props removed
             <div className="p-3 border-b border-gray-100">
               <div className="flex items-center gap-2 mb-2">
                 <TrendingUp className="w-3 h-3 text-orange-500" />
-                <span className="text-xs font-semibold text-gray-700">人気の検索</span>
+                <span className="text-xs font-semibold text-gray-700">{t.search.popularSearches}</span>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {isLoadingTags ? (
                   <div className="flex items-center gap-2 text-xs text-gray-500">
                     <div className="w-3 h-3 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
-                    タグ読み込み中...
+                    {t.search.loading}
                   </div>
                 ) : popularSearches.length > 0 ? (
                   popularSearches.map((term) => (
@@ -207,7 +209,7 @@ export function AdvancedSearchBar() { // Props removed
                     </button>
                   ))
                 ) : (
-                  <span className="text-xs text-gray-500">タグがありません</span>
+                  <span className="text-xs text-gray-500">{t.search.noTags}</span>
                 )}
               </div>
             </div>
@@ -217,7 +219,7 @@ export function AdvancedSearchBar() { // Props removed
               <div className="p-3">
                 <div className="flex items-center gap-2 mb-2">
                   <Clock className="w-3 h-3 text-gray-500" />
-                  <span className="text-xs font-semibold text-gray-700">最近の検索</span>
+                  <span className="text-xs font-semibold text-gray-700">{t.search.recentSearches}</span>
                 </div>
                 <div className="space-y-1">
                   {recentSearches.map((term) => (

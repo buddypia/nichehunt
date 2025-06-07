@@ -6,6 +6,7 @@ import { ProductCard } from "@/components/ProductCard"
 import { TrendingUp, Clock, Award } from "lucide-react"
 import type { ProductWithRelations } from "@/lib/types/database"
 import { SubmitModal } from "@/components/SubmitModal"
+import { useTypedTranslations } from "@/lib/i18n/useTranslations"
 
 interface HomeClientProps {
   trendingToday: ProductWithRelations[]
@@ -24,6 +25,7 @@ export function HomeClient({
   trendingWeekTotal,
   trendingMonthTotal
 }: HomeClientProps) {
+  const { t } = useTypedTranslations()
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
 
   const handleVote = (productId: number) => {
@@ -49,8 +51,8 @@ export function HomeClient({
                 <Clock className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">今日のトレンド</h2>
-                <p className="text-gray-600">{trendingTodayTotal}件のビジネスモデルが話題になっています</p>
+                <h2 className="text-2xl font-bold text-gray-900">{t.trending.today}</h2>
+                <p className="text-gray-600">{t.trending.description.replace('{count}', trendingTodayTotal.toString())}</p>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -74,8 +76,8 @@ export function HomeClient({
                 <TrendingUp className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">今週のトレンド</h2>
-                <p className="text-gray-600">{trendingWeekTotal}件のビジネスモデルが話題になっています</p>
+                <h2 className="text-2xl font-bold text-gray-900">{t.trending.week}</h2>
+                <p className="text-gray-600">{t.trending.description.replace('{count}', trendingWeekTotal.toString())}</p>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -99,8 +101,8 @@ export function HomeClient({
                 <Award className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">今月のトレンド</h2>
-                <p className="text-gray-600">{trendingMonthTotal}件のビジネスモデルが話題になっています</p>
+                <h2 className="text-2xl font-bold text-gray-900">{t.trending.month}</h2>
+                <p className="text-gray-600">{t.trending.description.replace('{count}', trendingMonthTotal.toString())}</p>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

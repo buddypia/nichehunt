@@ -20,6 +20,77 @@ export const ja: TranslationKeys = {
     submitProduct: '投稿する',
     notifications: '通知',
   },
+  search: {
+    placeholder: 'プロダクトを検索...',
+    advancedPlaceholder: 'ビジネスモデルを検索...',
+    popularSearches: '人気の検索',
+    recentSearches: '最近の検索',
+    loading: 'タグ読み込み中...',
+    noTags: 'タグがありません',
+    clearSearch: '検索をクリア',
+  },
+  trending: {
+    today: '今日のトレンド',
+    week: '今週のトレンド',
+    month: '今月のトレンド',
+    description: '{count}件のビジネスモデルが話題になっています',
+  },
+  profile: {
+    loading: 'プロフィールを読み込み中...',
+    userIdMissing: 'ユーザーIDが指定されていません',
+    profileNotFound: 'プロフィールが見つかりません',
+    backHome: 'ホームに戻る',
+    back: '戻る',
+    editProfile: 'プロフィール編集',
+    following: 'フォロー中',
+    follow: 'フォロー',
+    joinedSince: '{date}から参加',
+    website: 'ウェブサイト',
+    stats: {
+      posts: '投稿',
+      votes: '獲得投票',
+      comments: 'コメント',
+      followers: 'フォロワー',
+      following: 'フォロー中',
+    },
+    tabs: {
+      products: '投稿したプロダクト',
+      upvoted: 'アップボート',
+      achievements: '実績',
+    },
+    emptyStates: {
+      noProducts: 'まだプロダクトを投稿していません',
+      submitFirstProduct: '最初のプロダクトを投稿する',
+      noUpvoted: 'アップボートしたプロダクトはまだありません',
+    },
+    achievements: {
+      topContributor: {
+        title: 'トップコントリビューター',
+        description: '10個以上のプロダクトを投稿',
+      },
+      popularCreator: {
+        title: '人気クリエイター',
+        description: '合計1000以上の投票を獲得',
+      },
+      activeCommenter: {
+        title: 'アクティブコメンター',
+        description: '50以上のコメントを投稿',
+      },
+      communityLeader: {
+        title: 'コミュニティリーダー',
+        description: '100人以上のフォロワーを獲得',
+      },
+      earlyAdopter: {
+        title: 'アーリーアダプター',
+        description: 'サービス開始初期からの参加',
+      },
+      techInnovator: {
+        title: 'テックイノベーター',
+        description: 'テクノロジー系プロダクトを5個以上投稿',
+      },
+      earned: '獲得済み',
+    },
+  },
   hero: {
     title1: '次世代の',
     title2: 'ニッチビジネス',

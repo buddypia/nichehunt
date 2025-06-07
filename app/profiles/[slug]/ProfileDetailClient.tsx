@@ -52,12 +52,14 @@ import {
   type InteractionHistory,
   type SharedCollection
 } from '@/lib/api/profile-relations';
+import { useTypedTranslations } from '@/lib/i18n/useTranslations';
 
 interface ProfileDetailClientProps {
   userSlug: string;
 }
 
 export default function ProfileDetailClient({ userSlug }: ProfileDetailClientProps) {
+  const { t } = useTypedTranslations();
   const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -206,10 +208,10 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">プロフィールが見つかりません</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">{t.profile.profileNotFound}</h1>
           <Button onClick={() => router.push('/')}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            ホームに戻る
+            {t.profile.backHome}
           </Button>
         </div>
       </div>
@@ -369,7 +371,7 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
                           <Avatar
                             key={follower.id}
                             className="w-8 h-8 border-2 border-white cursor-pointer"
-                            onClick={() => router.push(`/profiles/${follower.slug}`)}
+                            onClick={() => router.push(`/profiles/${follower.username}`)}
                           >
                             <AvatarImage src={follower.avatar_url} alt={follower.username} />
                             <AvatarFallback className="text-xs">
@@ -472,6 +474,7 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
                             avatar_url: profile.avatar_url,
                             website_url: profile.website,
                             twitter_handle: profile.twitter,
+                            slug: profile.slug,
                             created_at: profile.created_at,
                             updated_at: profile.created_at
                           },
@@ -497,6 +500,8 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
                             display_order: index,
                             created_at: product.created_at
                           })),
+                          is_saved: false,
+                          locale: 'ja',
                           has_voted: false
                         }}
                       />
@@ -560,6 +565,8 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
                             display_order: index,
                             created_at: product.created_at
                           })),
+                          is_saved: false,
+                          locale: 'ja',
                           has_voted: true
                         }}
                       />

@@ -22,6 +22,80 @@ export interface TranslationKeys {
     submitProduct: string;
     notifications: string;
   };
+  // 検索機能
+  search: {
+    placeholder: string;
+    advancedPlaceholder: string;
+    popularSearches: string;
+    recentSearches: string;
+    loading: string;
+    noTags: string;
+    clearSearch: string;
+  };
+  // トレンド機能
+  trending: {
+    today: string;
+    week: string;
+    month: string;
+    description: string;
+  };
+  // プロフィール機能
+  profile: {
+    loading: string;
+    userIdMissing: string;
+    profileNotFound: string;
+    backHome: string;
+    back: string;
+    editProfile: string;
+    following: string;
+    follow: string;
+    joinedSince: string;
+    website: string;
+    stats: {
+      posts: string;
+      votes: string;
+      comments: string;
+      followers: string;
+      following: string;
+    };
+    tabs: {
+      products: string;
+      upvoted: string;
+      achievements: string;
+    };
+    emptyStates: {
+      noProducts: string;
+      submitFirstProduct: string;
+      noUpvoted: string;
+    };
+    achievements: {
+      topContributor: {
+        title: string;
+        description: string;
+      };
+      popularCreator: {
+        title: string;
+        description: string;
+      };
+      activeCommenter: {
+        title: string;
+        description: string;
+      };
+      communityLeader: {
+        title: string;
+        description: string;
+      };
+      earlyAdopter: {
+        title: string;
+        description: string;
+      };
+      techInnovator: {
+        title: string;
+        description: string;
+      };
+      earned: string;
+    };
+  };
   // ヒーローセクション
   hero: {
     title1: string;

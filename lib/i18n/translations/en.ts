@@ -20,6 +20,77 @@ export const en: TranslationKeys = {
     submitProduct: 'Submit',
     notifications: 'Notifications',
   },
+  search: {
+    placeholder: 'Search products...',
+    advancedPlaceholder: 'Search business models...',
+    popularSearches: 'Popular Searches',
+    recentSearches: 'Recent Searches',
+    loading: 'Loading tags...',
+    noTags: 'No tags available',
+    clearSearch: 'Clear search',
+  },
+  trending: {
+    today: 'Trending Today',
+    week: 'Trending This Week',
+    month: 'Trending This Month',
+    description: '{count} business models are trending',
+  },
+  profile: {
+    loading: 'Loading profile...',
+    userIdMissing: 'User ID is not specified',
+    profileNotFound: 'Profile not found',
+    backHome: 'Back to Home',
+    back: 'Back',
+    editProfile: 'Edit Profile',
+    following: 'Following',
+    follow: 'Follow',
+    joinedSince: 'Joined since {date}',
+    website: 'Website',
+    stats: {
+      posts: 'Posts',
+      votes: 'Votes Received',
+      comments: 'Comments',
+      followers: 'Followers',
+      following: 'Following',
+    },
+    tabs: {
+      products: 'Posted Products',
+      upvoted: 'Upvoted',
+      achievements: 'Achievements',
+    },
+    emptyStates: {
+      noProducts: 'No products posted yet',
+      submitFirstProduct: 'Post your first product',
+      noUpvoted: 'No upvoted products yet',
+    },
+    achievements: {
+      topContributor: {
+        title: 'Top Contributor',
+        description: 'Posted 10 or more products',
+      },
+      popularCreator: {
+        title: 'Popular Creator',
+        description: 'Received 1000+ total votes',
+      },
+      activeCommenter: {
+        title: 'Active Commenter',
+        description: 'Posted 50+ comments',
+      },
+      communityLeader: {
+        title: 'Community Leader',
+        description: 'Gained 100+ followers',
+      },
+      earlyAdopter: {
+        title: 'Early Adopter',
+        description: 'Joined during early service period',
+      },
+      techInnovator: {
+        title: 'Tech Innovator',
+        description: 'Posted 5+ technology products',
+      },
+      earned: 'Earned',
+    },
+  },
   hero: {
     title1: 'Next Generation',
     title2: 'Niche Business',

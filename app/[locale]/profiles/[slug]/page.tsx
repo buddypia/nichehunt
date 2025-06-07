@@ -10,5 +10,5 @@ interface LocaleProfileDetailPageProps {
 export default async function LocaleProfileDetailPage({ params }: LocaleProfileDetailPageProps) {
   const { slug } = await params;
   
-  return <ProfileDetailClient params={{ slug }} />;
+  return <ProfileDetailClient userSlug={slug} />;
 }
