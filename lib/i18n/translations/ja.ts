@@ -466,4 +466,18 @@ export const ja: TranslationKeys = {
     healthcare: 'ヘルスケア',
     other: 'その他',
   },
+  notification: {
+    vote: {
+      title: 'あなたのプロダクトが投票されました',
+      message: '{voter_name}さんが{product_name}に投票しました',
+    },
+    comment: {
+      title: 'あなたのプロダクトにコメントがありました',
+      message: '{commenter_name}さんが{product_name}にコメントしました',
+    },
+    reply: {
+      title: 'あなたのコメントに返信がありました',
+      message: '{commenter_name}さんがあなたのコメントに返信しました',
+    },
+  },
 };

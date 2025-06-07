@@ -214,10 +214,12 @@ export type Database = {
           created_at: string | null
           id: number
           is_read: boolean | null
-          message: string | null
+          locale: string | null
+          message_key: string | null
+          params: Json | null
           related_product_id: number | null
           related_user_slug: string | null
-          title: string
+          title_key: string | null
           type: string
           user_id: string
         }
@@ -225,10 +227,12 @@ export type Database = {
           created_at?: string | null
           id?: number
           is_read?: boolean | null
-          message?: string | null
+          locale?: string | null
+          message_key?: string | null
+          params?: Json | null
           related_product_id?: number | null
           related_user_slug?: string | null
-          title: string
+          title_key?: string | null
           type: string
           user_id: string
         }
@@ -236,10 +240,12 @@ export type Database = {
           created_at?: string | null
           id?: number
           is_read?: boolean | null
-          message?: string | null
+          locale?: string | null
+          message_key?: string | null
+          params?: Json | null
           related_product_id?: number | null
           related_user_slug?: string | null
-          title?: string
+          title_key?: string | null
           type?: string
           user_id?: string
         }

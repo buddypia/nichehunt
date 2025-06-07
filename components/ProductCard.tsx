@@ -39,9 +39,9 @@ export function ProductCard({ product, onVote, className, rank }: ProductCardPro
       const supabase = createClient()
       
       // 認証チェック
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
       
-      if (!user) {
+      if (authError || !user) {
         router.push('/auth/signin')
         return
       }
@@ -49,7 +49,14 @@ export function ProductCard({ product, onVote, className, rank }: ProductCardPro
       const { data, error } = await supabase
         .rpc('toggle_vote', { p_product_id: product.id })
       
-      if (error) throw error
+      if (error) {
+        // 認証関連のエラーの場合はサインインページにリダイレクト
+        if (error.message.includes('authenticated')) {
+          router.push('/auth/signin')
+          return
+        }
+        throw error
+      }
 
       const voted = data as boolean
       setHasVoted(voted)
@@ -60,6 +67,16 @@ export function ProductCard({ product, onVote, className, rank }: ProductCardPro
       }
     } catch (error) {
       console.error('Failed to vote:', error)
+      // エラーの内容に応じて適切な処理を行う
+      if (error instanceof Error) {
+        if (error.message.includes('authenticated')) {
+          // 認証エラーの場合はサインインページへ
+          router.push('/auth/signin')
+        } else {
+          // その他のエラーはコンソールに記録（将来的にはtoastなどで表示）
+          console.error('Vote operation failed:', error.message)
+        }
+      }
     } finally {
       setIsVoting(false)
     }

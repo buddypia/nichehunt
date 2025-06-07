@@ -466,4 +466,18 @@ export const en: TranslationKeys = {
     healthcare: 'Healthcare',
     other: 'Other',
   },
+  notification: {
+    vote: {
+      title: 'Your product received a vote',
+      message: '{voter_name} voted for {product_name}',
+    },
+    comment: {
+      title: 'Your product received a comment',
+      message: '{commenter_name} commented on {product_name}',
+    },
+    reply: {
+      title: 'Your comment received a reply',
+      message: '{commenter_name} replied to your comment',
+    },
+  },
 };

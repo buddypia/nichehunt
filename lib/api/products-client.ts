@@ -266,16 +266,31 @@ export async function deleteProduct(productId: number) {
 // プロダクトを投票
 export async function voteProduct(productId: number) {
   const supabase = createClient()
-  const user = await supabase.auth.getUser()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-  if (!user.data.user) {
-    return { error: 'Not authenticated' }
+  if (authError || !user) {
+    return { 
+      data: null, 
+      error: { message: 'User must be authenticated to vote' } 
+    }
   }
 
   const { data, error } = await supabase
     .rpc('toggle_vote', { p_product_id: productId })
 
-  return { data, error }
+  if (error) {
+    console.error('Vote operation failed:', error)
+    return { 
+      data: null, 
+      error: { 
+        message: error.message.includes('authenticated') 
+          ? 'User must be authenticated to vote' 
+          : error.message 
+      } 
+    }
+  }
+
+  return { data, error: null }
 }
 
 // ヘルパー関数 (バッチ処理に最適化)

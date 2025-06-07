@@ -487,6 +487,21 @@ export interface TranslationKeys {
     healthcare: string;
     other: string;
   };
+  // 通知
+  notification: {
+    vote: {
+      title: string;
+      message: string;
+    };
+    comment: {
+      title: string;
+      message: string;
+    };
+    reply: {
+      title: string;
+      message: string;
+    };
+  };
 }
 
 // URLパスから言語を取得
