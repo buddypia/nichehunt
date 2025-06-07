@@ -156,4 +156,40 @@ export const ja: TranslationKeys = {
     created: '正常に作成されました',
     submitted: '正常に送信されました',
   },
+  about: {
+    title: 'ニッチ市場のビジネスアイデアを\n発見・共有するプラットフォーム',
+    description: 'NicheNextは、革新的なニッチビジネスモデルを発見し、\nアイデアを共有し、次世代の起業家をインスパイアする場所です。',
+    mission: {
+      title: 'ミッション',
+      description: '隠れたニッチ市場の可能性を発見し、\n革新的なビジネスアイデアを世界中の起業家と共有する',
+    },
+    community: {
+      title: 'コミュニティ',
+      description: '起業家、イノベーター、ビジネスに情熱を持つ人々が集まり、\nアイデアを交換し、お互いを高め合う',
+    },
+    innovation: {
+      title: 'イノベーション',
+      description: '従来の果にとらわれない新しいビジネスモデルを探求し、\n未来のビジネストレンドを創造する',
+    },
+    howItWorks: {
+      title: '使い方',
+      step1: {
+        title: '発見する',
+        description: 'カテゴリーやトレンドから興味のあるニッチビジネスモデルを探索',
+      },
+      step2: {
+        title: '共有する',
+        description: 'あなたのユニークなビジネスアイデアを投稿してコミュニティと共有',
+      },
+      step3: {
+        title: 'つながる',
+        description: 'コメントやフォローで他の起業家とつながり、アイデアを発展させる',
+      },
+    },
+    cta: {
+      title: '今すぐ始めよう',
+      description: 'あなたのニッチビジネスアイデアが、次の大きなトレンドになるかもしれません',
+      exploreButton: 'ビジネスモデルを探す',
+    },
+  },
 };

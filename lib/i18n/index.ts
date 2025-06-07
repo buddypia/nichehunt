@@ -169,9 +169,51 @@ export interface TranslationKeys {
     created: string;
     submitted: string;
   };
+  // Aboutページ
+  about: {
+    title: string;
+    description: string;
+    mission: {
+      title: string;
+      description: string;
+    };
+    community: {
+      title: string;
+      description: string;
+    };
+    innovation: {
+      title: string;
+      description: string;
+    };
+    howItWorks: {
+      title: string;
+      step1: {
+        title: string;
+        description: string;
+      };
+      step2: {
+        title: string;
+        description: string;
+      };
+      step3: {
+        title: string;
+        description: string;
+      };
+    };
+    cta: {
+      title: string;
+      description: string;
+      exploreButton: string;
+    };
+  };
 }
 
-// デフォルト言語設定
+// country_codeから言語を取得
+export function getLanguageFromCountryCode(countryCode: string): SupportedLanguage {
+  return countryCode === 'jp' ? 'ja' : 'en';
+}
+
+// デフォルト言語設定（レガシーサポート）
 export function getLanguageFromDomain(): SupportedLanguage {
   if (typeof window === 'undefined') return 'en';
   

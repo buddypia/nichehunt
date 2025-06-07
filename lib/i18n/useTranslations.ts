@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { SupportedLanguage, TranslationKeys, getLanguageFromDomain } from './index';
+import { SupportedLanguage, TranslationKeys, getLanguageFromCountryCode } from './index';
 import { en } from './translations/en';
 import { ja } from './translations/ja';
 
@@ -16,7 +16,14 @@ export function useTranslations() {
 
   useEffect(() => {
     setIsClient(true);
-    setLanguage(getLanguageFromDomain());
+    // クライアントサイドでcountry_codeを取得
+    const getCountryCodeFromClient = () => {
+      // ブラウザのロケーションから取得を試みる
+      const hostname = window.location.hostname;
+      return hostname.startsWith('ja.') ? 'jp' : 'en';
+    };
+    const countryCode = getCountryCodeFromClient();
+    setLanguage(getLanguageFromCountryCode(countryCode));
   }, []);
 
   const t = (key: string): string => {

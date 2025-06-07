@@ -156,4 +156,40 @@ export const en: TranslationKeys = {
     created: 'Created successfully',
     submitted: 'Submitted successfully',
   },
+  about: {
+    title: 'Discover & Share\nNiche Business Ideas',
+    description: 'NicheNext is a place to discover innovative niche business models,\nshare ideas, and inspire the next generation of entrepreneurs.',
+    mission: {
+      title: 'Mission',
+      description: 'Discover hidden niche market possibilities and\nshare innovative business ideas with entrepreneurs worldwide',
+    },
+    community: {
+      title: 'Community',
+      description: 'Entrepreneurs, innovators, and business enthusiasts gather\nto exchange ideas and elevate each other',
+    },
+    innovation: {
+      title: 'Innovation',
+      description: 'Explore new business models beyond conventional frameworks\nand create future business trends',
+    },
+    howItWorks: {
+      title: 'How it Works',
+      step1: {
+        title: 'Discover',
+        description: 'Explore interesting niche business models from categories and trends',
+      },
+      step2: {
+        title: 'Share',
+        description: 'Post your unique business ideas and share them with the community',
+      },
+      step3: {
+        title: 'Connect',
+        description: 'Connect with other entrepreneurs through comments and follows, develop ideas',
+      },
+    },
+    cta: {
+      title: 'Get Started Now',
+      description: 'Your niche business idea might become the next big trend',
+      exploreButton: 'Explore Business Models',
+    },
+  },
 };
