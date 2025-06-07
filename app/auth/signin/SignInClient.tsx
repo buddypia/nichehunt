@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -54,8 +55,14 @@ export default function SignInClient() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center space-x-2">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <Trophy className="w-8 h-8 text-white" />
+            <div className="w-12 h-12 flex items-center justify-center">
+              <Image 
+                src="/logo.png"
+                alt="NicheNext Logo"
+                width={48}
+                height={48}
+                className="object-contain"
+              />
             </div>
             <span className="font-bold text-3xl text-gray-900">{t.header.title}</span>
           </Link>
