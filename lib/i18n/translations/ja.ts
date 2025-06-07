@@ -159,6 +159,19 @@ export const ja: TranslationKeys = {
     share: '共有',
     report: '報告',
   },
+  // プロダクト一覧ページ
+  products: {
+    pageTitle: 'プロダクト',
+    pageDescription: '実際に立ち上げられたプロダクトやサービスを探索',
+    allProducts: 'すべてのプロダクト',
+    searchResults: '「{query}」の検索結果',
+    resultsCount: '{count}件のプロダクトが見つかりました',
+    tagsTitle: 'タグ',
+    tagsDescription: 'トピックやテーマで探す',
+    allTags: 'すべて',
+    noProductsTitle: '該当するプロダクトが見つかりません',
+    noProductsDescription: '検索条件を変更するか、新しいプロダクトを投稿してみてください',
+  },
   filter: {
     all: 'すべて',
     category: 'カテゴリ',

@@ -7,6 +7,7 @@ import { fetchCategories, fetchTags } from '@/lib/api/categories-tags';
 import { ProductWithRelations, Category, Tag } from '@/lib/types/database';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSearch } from '@/contexts/SearchContext';
+import { useTypedTranslations } from '@/lib/i18n/useTranslations';
 
 export default function ProductsClient({ locale }: { locale?: string }) {
   const [products, setProducts] = useState<ProductWithRelations[]>([]);
@@ -15,6 +16,7 @@ export default function ProductsClient({ locale }: { locale?: string }) {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTag, setSelectedTag] = useState<string>('all');
   const { searchQuery } = useSearch(); // Removed selectedCategory, setSelectedCategory
+  const { t, isClient } = useTypedTranslations();
 
   // Fetch categories and tags on mount
   useEffect(() => {
@@ -59,7 +61,7 @@ export default function ProductsClient({ locale }: { locale?: string }) {
     };
 
     loadProducts();
-  }, [selectedTag, searchQuery, locale]); // 言語設定も依存配列に追加
+  }, [selectedTag, searchQuery, locale]);
 
   // Filter products based on search
   const filteredProducts = useMemo(() => {
@@ -74,19 +76,35 @@ export default function ProductsClient({ locale }: { locale?: string }) {
   }, [products, searchQuery]);
 
   const getViewTitle = () => {
+    if (!isClient || !t?.products) return '';
+    
     if (searchQuery) {
-      return `「${searchQuery}」の検索結果`;
+      return t.products.searchResults.replace('{query}', searchQuery);
     }
-    return 'すべてのプロダクト';
+    return t.products.allProducts;
   };
+
+  // 翻訳が読み込まれていない場合のフォールバック
+  if (!isClient || !t?.products) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
+          <div className="text-center py-12">
+            <div className="text-gray-400 text-6xl mb-4">⏳</div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">プロダクト</h1>
-          <p className="text-gray-600">実際に立ち上げられたプロダクトやサービスを探索</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t.products.pageTitle}</h1>
+          <p className="text-gray-600">{t.products.pageDescription}</p>
         </div>
 
         {/* Filters */}
@@ -102,8 +120,8 @@ export default function ProductsClient({ locale }: { locale?: string }) {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-base font-semibold text-gray-900">タグ</h3>
-                  <p className="text-xs text-gray-500">トピックやテーマで探す</p>
+                  <h3 className="text-base font-semibold text-gray-900">{t.products.tagsTitle}</h3>
+                  <p className="text-xs text-gray-500">{t.products.tagsDescription}</p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -115,7 +133,7 @@ export default function ProductsClient({ locale }: { locale?: string }) {
                       : 'bg-blue-50 text-blue-700 border border-blue-200 hover:border-blue-300'
                   }`}
                 >
-                  すべて
+                  {t.products.allTags}
                 </button>
                 {tags.map(tag => (
                   <button
@@ -140,7 +158,7 @@ export default function ProductsClient({ locale }: { locale?: string }) {
             {getViewTitle()}
           </h2>
           <p className="text-gray-600">
-            {filteredProducts.length}件のプロダクトが見つかりました
+            {t.products.resultsCount.replace('{count}', filteredProducts.length.toString())}
           </p>
         </div>
 
@@ -180,10 +198,10 @@ export default function ProductsClient({ locale }: { locale?: string }) {
               <div className="text-center py-12">
                 <div className="text-gray-400 text-6xl mb-4">📦</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  該当するプロダクトが見つかりません
+                  {t.products.noProductsTitle}
                 </h3>
                 <p className="text-gray-600">
-                  検索条件を変更するか、新しいプロダクトを投稿してみてください
+                  {t.products.noProductsDescription}
                 </p>
               </div>
             )}

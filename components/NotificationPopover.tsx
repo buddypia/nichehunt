@@ -113,34 +113,12 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
 
   // Function to localize notification text
   const getLocalizedNotificationText = (notification: Notification) => {
-    const { type, title, message } = notification;
-    
-    // Use translation keys based on the original Japanese titles
-    if (title === 'あなたのプロダクトが投票されました') {
-      return {
-        title: t.notifications.voteNotificationTitle,
-        message: currentLocale === 'en' 
-          ? message.replace(/さんが/, ' voted for ').replace(/に投票しました/, '')
-          : message
-      };
-    } else if (title === 'あなたのプロダクトにコメントがありました') {
-      return {
-        title: t.notifications.commentNotificationTitle,
-        message: currentLocale === 'en'
-          ? message.replace(/さんが/, ' commented on ').replace(/にコメントしました/, '')
-          : message
-      };
-    } else if (title === 'あなたのコメントに返信がありました') {
-      return {
-        title: t.notifications.replyNotificationTitle,
-        message: currentLocale === 'en'
-          ? message.replace(/さんがあなたのコメントに返信しました/, ' replied to your comment')
-          : message
-      };
-    }
-    
-    // Return original text if no translation is needed or available
-    return { title, message };
+    // getLocalizedNotificationsClient already handles title_key/message_key translation
+    // Just return the already localized title and message
+    return {
+      title: notification.title,
+      message: notification.message || ''
+    };
   };
 
   const getIcon = (type: Notification['type']) => {

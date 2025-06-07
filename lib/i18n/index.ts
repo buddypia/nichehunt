@@ -167,6 +167,19 @@ export interface TranslationKeys {
     share: string;
     report: string;
   };
+  // プロダクト一覧ページ
+  products: {
+    pageTitle: string;
+    pageDescription: string;
+    allProducts: string;
+    searchResults: string;
+    resultsCount: string;
+    tagsTitle: string;
+    tagsDescription: string;
+    allTags: string;
+    noProductsTitle: string;
+    noProductsDescription: string;
+  };
   // フィルター・ソート
   filter: {
     all: string;

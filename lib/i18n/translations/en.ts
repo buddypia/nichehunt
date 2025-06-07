@@ -159,6 +159,19 @@ export const en: TranslationKeys = {
     share: 'Share',
     report: 'Report',
   },
+  // プロダクト一覧ページ
+  products: {
+    pageTitle: 'Products',
+    pageDescription: 'Explore launched products and services',
+    allProducts: 'All Products',
+    searchResults: 'Search results for "{query}"',
+    resultsCount: '{count} products found',
+    tagsTitle: 'Tags',
+    tagsDescription: 'Search by topics and themes',
+    allTags: 'All',
+    noProductsTitle: 'No matching products found',
+    noProductsDescription: 'Try changing your search criteria or submit a new product',
+  },
   filter: {
     all: 'All',
     category: 'Category',
