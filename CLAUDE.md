@@ -295,11 +295,11 @@ erDiagram
     collections ||--o{ collection_products : "contains"
     
     comments ||--o{ comments : "has_replies"
+```
 
 ## 重要な技術的詳細
 - 実行ログをJSONとして`.claude-execution-output.json`に出力
 - データベース更新・新規・削除作成は必ず以下の箇条書きを作成・更新する
   - `CLAUDE.md`の`データベースER図`を更新する
-  - `./schema_er_diagram.md`を更新する
   - `./supabase/complete_schema_backup_yyyymmdd.md`の作成・更新する
 - データベースの参照する指示は必ずSupabase MCPを利用する
