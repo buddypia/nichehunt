@@ -1,4 +1,4 @@
-import SignInClient from '../../../auth/signin/SignInClient';
+import SignInClient from './SignInClient';
 
 export default function LocaleSignInPage() {
   return <SignInClient />;

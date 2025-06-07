@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,10 +11,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Trophy, Mail, Lock, AlertCircle } from 'lucide-react';
 import { signIn } from '@/lib/auth';
 import { useTypedTranslations } from '@/lib/i18n/useTranslations';
+import { SupportedLanguage, getLocalizedPath } from '@/lib/i18n';
 
 export default function SignInClient() {
   const router = useRouter();
-  const { t, language } = useTypedTranslations();
+  const params = useParams();
+  const locale = params?.locale as SupportedLanguage || 'ja';
+  const { t } = useTypedTranslations();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,7 +43,7 @@ export default function SignInClient() {
 
     try {
       await signIn(email, password);
-      router.push('/');
+      router.push(getLocalizedPath('/', locale));
       router.refresh();
     } catch (error: any) {
       setError(error.message || t.errors.loginFailed);
@@ -49,11 +52,15 @@ export default function SignInClient() {
     }
   };
 
+  const signUpPath = getLocalizedPath('/auth/signup', locale);
+  const homePath = getLocalizedPath('/', locale);
+  const forgotPasswordPath = getLocalizedPath('/auth/forgot-password', locale);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2">
+          <Link href={homePath} className="inline-flex items-center space-x-2">
             <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
               <Trophy className="w-8 h-8 text-white" />
             </div>
@@ -113,8 +120,8 @@ export default function SignInClient() {
               </div>
 
               <div className="flex items-center justify-between">
-                <Link href="/auth/forgot-password" className="text-sm text-blue-600 hover:text-blue-800">
-                  {language === 'ja' ? 'パスワードを忘れた方' : 'Forgot Password?'}
+                <Link href={forgotPasswordPath} className="text-sm text-blue-600 hover:text-blue-800">
+                  {locale === 'ja' ? 'パスワードを忘れた方' : 'Forgot Password?'}
                 </Link>
               </div>
             </CardContent>
@@ -130,7 +137,7 @@ export default function SignInClient() {
               
               <div className="text-center text-sm text-gray-600">
                 {t.auth.noAccount}{' '}
-                <Link href="/auth/signup" className="text-blue-600 hover:text-blue-800 font-medium">
+                <Link href={signUpPath} className="text-blue-600 hover:text-blue-800 font-medium">
                   {t.auth.signUpLink}
                 </Link>
               </div>

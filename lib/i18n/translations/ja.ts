@@ -13,6 +13,36 @@ export const ja: TranslationKeys = {
     signUp: '新規登録',
     signOut: 'ログアウト',
   },
+  auth: {
+    // サインアップ
+    signUpTitle: '新規登録',
+    signUpDescription: 'アカウントを作成して、ビジネスアイデアの投稿を始めましょう',
+    signUpButton: '登録する',
+    signUpLoading: '登録中...',
+    alreadyHaveAccount: 'すでにアカウントをお持ちの方は',
+    signInLink: 'ログイン',
+    // サインイン
+    signInTitle: 'ログイン',
+    signInDescription: 'アカウントにログインして、ビジネスアイデアを投稿・発見しましょう',
+    signInButton: 'ログイン',
+    signInLoading: 'ログイン中...',
+    noAccount: 'アカウントをお持ちでない方は',
+    signUpLink: '新規登録',
+    // フォームフィールド
+    username: 'ユーザー名',
+    usernamePlaceholder: 'johndoe',
+    displayName: '表示名',
+    displayNamePlaceholder: 'John Doe',
+    email: 'メールアドレス',
+    emailPlaceholder: 'you@example.com',
+    password: 'パスワード',
+    passwordPlaceholder: '••••••••',
+    confirmPassword: 'パスワード（確認）',
+    // エラーメッセージ
+    passwordMismatch: 'パスワードが一致しません',
+    passwordTooShort: 'パスワードは6文字以上で入力してください',
+    fieldRequired: 'この項目は必須です',
+  },
   header: {
     title: 'NicheNext',
     subtitle: 'ニッチなビジネスアイデアを発見',

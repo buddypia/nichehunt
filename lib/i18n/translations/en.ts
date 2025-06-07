@@ -13,6 +13,36 @@ export const en: TranslationKeys = {
     signUp: 'Sign Up',
     signOut: 'Sign Out',
   },
+  auth: {
+    // サインアップ
+    signUpTitle: 'Sign Up',
+    signUpDescription: 'Create an account to start posting business ideas',
+    signUpButton: 'Sign Up',
+    signUpLoading: 'Signing up...',
+    alreadyHaveAccount: 'Already have an account?',
+    signInLink: 'Sign In',
+    // サインイン
+    signInTitle: 'Sign In',
+    signInDescription: 'Sign in to your account to start posting and discovering business ideas',
+    signInButton: 'Sign In',
+    signInLoading: 'Signing in...',
+    noAccount: "Don't have an account?",
+    signUpLink: 'Sign Up',
+    // フォームフィールド
+    username: 'Username',
+    usernamePlaceholder: 'johndoe',
+    displayName: 'Display Name',
+    displayNamePlaceholder: 'John Doe',
+    email: 'Email Address',
+    emailPlaceholder: 'you@example.com',
+    password: 'Password',
+    passwordPlaceholder: '••••••••',
+    confirmPassword: 'Confirm Password',
+    // エラーメッセージ
+    passwordMismatch: 'Passwords do not match',
+    passwordTooShort: 'Password must be at least 6 characters',
+    fieldRequired: 'This field is required',
+  },
   header: {
     title: 'NicheNext',
     subtitle: 'Discover Niche Business Ideas',

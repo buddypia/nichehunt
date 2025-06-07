@@ -14,6 +14,37 @@ export interface TranslationKeys {
     signUp: string;
     signOut: string;
   };
+  // 認証機能
+  auth: {
+    // サインアップ
+    signUpTitle: string;
+    signUpDescription: string;
+    signUpButton: string;
+    signUpLoading: string;
+    alreadyHaveAccount: string;
+    signInLink: string;
+    // サインイン
+    signInTitle: string;
+    signInDescription: string;
+    signInButton: string;
+    signInLoading: string;
+    noAccount: string;
+    signUpLink: string;
+    // フォームフィールド
+    username: string;
+    usernamePlaceholder: string;
+    displayName: string;
+    displayNamePlaceholder: string;
+    email: string;
+    emailPlaceholder: string;
+    password: string;
+    passwordPlaceholder: string;
+    confirmPassword: string;
+    // エラーメッセージ
+    passwordMismatch: string;
+    passwordTooShort: string;
+    fieldRequired: string;
+  };
   // ヘッダー
   header: {
     title: string;

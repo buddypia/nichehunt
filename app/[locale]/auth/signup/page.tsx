@@ -1,4 +1,4 @@
-import SignUpClient from '../../../auth/signup/SignUpClient';
+import SignUpClient from './SignUpClient';
 
 export default function LocaleSignUpPage() {
   return <SignUpClient />;

@@ -8,12 +8,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Trophy, Mail, Lock, User, AlertCircle } from 'lucide-react';
+import { Trophy, Mail, Lock, User, AlertCircle, UserCircle } from 'lucide-react';
 import { signUp } from '@/lib/auth';
+import { useTypedTranslations } from '@/lib/i18n/useTranslations';
 
 export default function SignUpClient() {
   const router = useRouter();
+  const { t, language } = useTypedTranslations();
+  
   const [username, setUsername] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -24,24 +28,40 @@ export default function SignUpClient() {
     e.preventDefault();
     setError('');
 
+    // Validation
+    if (!username.trim()) {
+      setError(t.auth.fieldRequired);
+      return;
+    }
+    
+    if (!displayName.trim()) {
+      setError(t.auth.fieldRequired);
+      return;
+    }
+    
+    if (!email.trim()) {
+      setError(t.auth.fieldRequired);
+      return;
+    }
+
     if (password !== confirmPassword) {
-      setError('パスワードが一致しません');
+      setError(t.auth.passwordMismatch);
       return;
     }
 
     if (password.length < 6) {
-      setError('パスワードは6文字以上で入力してください');
+      setError(t.auth.passwordTooShort);
       return;
     }
 
     setIsLoading(true);
 
     try {
-      await signUp(email, password, username);
+      await signUp(email, password, username.trim(), displayName.trim());
       router.push('/');
       router.refresh();
     } catch (error: any) {
-      setError(error.message || '登録に失敗しました');
+      setError(error.message || t.errors.registrationFailed);
     } finally {
       setIsLoading(false);
     }
@@ -55,16 +75,16 @@ export default function SignUpClient() {
             <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
               <Trophy className="w-8 h-8 text-white" />
             </div>
-            <span className="font-bold text-3xl text-gray-900">NicheNext</span>
+            <span className="font-bold text-3xl text-gray-900">{t.header.title}</span>
           </Link>
-          <p className="mt-2 text-gray-600">ニッチなビジネスアイデアを発見・共有</p>
+          <p className="mt-2 text-gray-600">{t.header.subtitle}</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>新規登録</CardTitle>
+            <CardTitle>{t.auth.signUpTitle}</CardTitle>
             <CardDescription>
-              アカウントを作成して、ビジネスアイデアの投稿を始めましょう
+              {t.auth.signUpDescription}
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
@@ -77,13 +97,13 @@ export default function SignUpClient() {
               )}
               
               <div className="space-y-2">
-                <Label htmlFor="username">ユーザー名</Label>
+                <Label htmlFor="username">{t.auth.username}</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="username"
                     type="text"
-                    placeholder="johndoe"
+                    placeholder={t.auth.usernamePlaceholder}
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className="pl-10"
@@ -94,13 +114,30 @@ export default function SignUpClient() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="email">メールアドレス</Label>
+                <Label htmlFor="displayName">{t.auth.displayName}</Label>
+                <div className="relative">
+                  <UserCircle className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="displayName"
+                    type="text"
+                    placeholder={t.auth.displayNamePlaceholder}
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    className="pl-10"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="email">{t.auth.email}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder={t.auth.emailPlaceholder}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
@@ -111,13 +148,13 @@ export default function SignUpClient() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password">パスワード</Label>
+                <Label htmlFor="password">{t.auth.password}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="password"
                     type="password"
-                    placeholder="••••••••"
+                    placeholder={t.auth.passwordPlaceholder}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10"
@@ -128,13 +165,13 @@ export default function SignUpClient() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">パスワード（確認）</Label>
+                <Label htmlFor="confirmPassword">{t.auth.confirmPassword}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="confirmPassword"
                     type="password"
-                    placeholder="••••••••"
+                    placeholder={t.auth.passwordPlaceholder}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="pl-10"
@@ -151,13 +188,13 @@ export default function SignUpClient() {
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
                 disabled={isLoading}
               >
-                {isLoading ? '登録中...' : '登録する'}
+                {isLoading ? t.auth.signUpLoading : t.auth.signUpButton}
               </Button>
               
               <div className="text-center text-sm text-gray-600">
-                すでにアカウントをお持ちの方は{' '}
+                {t.auth.alreadyHaveAccount}{' '}
                 <Link href="/auth/signin" className="text-blue-600 hover:text-blue-800 font-medium">
-                  ログイン
+                  {t.auth.signInLink}
                 </Link>
               </div>
             </CardFooter>

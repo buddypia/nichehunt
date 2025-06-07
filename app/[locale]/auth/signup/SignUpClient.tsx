@@ -1,23 +1,29 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Trophy, Mail, Lock, AlertCircle } from 'lucide-react';
-import { signIn } from '@/lib/auth';
+import { Trophy, Mail, Lock, User, AlertCircle, UserCircle } from 'lucide-react';
+import { signUp } from '@/lib/auth';
 import { useTypedTranslations } from '@/lib/i18n/useTranslations';
+import { SupportedLanguage, getLocalizedPath } from '@/lib/i18n';
 
-export default function SignInClient() {
+export default function SignUpClient() {
   const router = useRouter();
-  const { t, language } = useTypedTranslations();
+  const params = useParams();
+  const locale = params?.locale as SupportedLanguage || 'ja';
+  const { t } = useTypedTranslations();
   
+  const [username, setUsername] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -26,34 +32,52 @@ export default function SignInClient() {
     setError('');
 
     // Validation
-    if (!email.trim()) {
+    if (!username.trim()) {
       setError(t.auth.fieldRequired);
       return;
     }
     
-    if (!password.trim()) {
+    if (!displayName.trim()) {
       setError(t.auth.fieldRequired);
+      return;
+    }
+    
+    if (!email.trim()) {
+      setError(t.auth.fieldRequired);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError(t.auth.passwordMismatch);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError(t.auth.passwordTooShort);
       return;
     }
 
     setIsLoading(true);
 
     try {
-      await signIn(email, password);
-      router.push('/');
+      await signUp(email, password, username.trim(), displayName.trim());
+      router.push(getLocalizedPath('/', locale));
       router.refresh();
     } catch (error: any) {
-      setError(error.message || t.errors.loginFailed);
+      setError(error.message || t.errors.registrationFailed);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const signInPath = getLocalizedPath('/auth/signin', locale);
+  const homePath = getLocalizedPath('/', locale);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2">
+          <Link href={homePath} className="inline-flex items-center space-x-2">
             <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
               <Trophy className="w-8 h-8 text-white" />
             </div>
@@ -64,9 +88,9 @@ export default function SignInClient() {
 
         <Card>
           <CardHeader>
-            <CardTitle>{t.auth.signInTitle}</CardTitle>
+            <CardTitle>{t.auth.signUpTitle}</CardTitle>
             <CardDescription>
-              {t.auth.signInDescription}
+              {t.auth.signUpDescription}
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
@@ -77,6 +101,40 @@ export default function SignInClient() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="username">{t.auth.username}</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder={t.auth.usernamePlaceholder}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="pl-10"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="displayName">{t.auth.displayName}</Label>
+                <div className="relative">
+                  <UserCircle className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="displayName"
+                    type="text"
+                    placeholder={t.auth.displayNamePlaceholder}
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    className="pl-10"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
               
               <div className="space-y-2">
                 <Label htmlFor="email">{t.auth.email}</Label>
@@ -111,11 +169,22 @@ export default function SignInClient() {
                   />
                 </div>
               </div>
-
-              <div className="flex items-center justify-between">
-                <Link href="/auth/forgot-password" className="text-sm text-blue-600 hover:text-blue-800">
-                  {language === 'ja' ? 'パスワードを忘れた方' : 'Forgot Password?'}
-                </Link>
+              
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">{t.auth.confirmPassword}</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder={t.auth.passwordPlaceholder}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="pl-10"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
               </div>
             </CardContent>
             
@@ -125,13 +194,13 @@ export default function SignInClient() {
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
                 disabled={isLoading}
               >
-                {isLoading ? t.auth.signInLoading : t.auth.signInButton}
+                {isLoading ? t.auth.signUpLoading : t.auth.signUpButton}
               </Button>
               
               <div className="text-center text-sm text-gray-600">
-                {t.auth.noAccount}{' '}
-                <Link href="/auth/signup" className="text-blue-600 hover:text-blue-800 font-medium">
-                  {t.auth.signUpLink}
+                {t.auth.alreadyHaveAccount}{' '}
+                <Link href={signInPath} className="text-blue-600 hover:text-blue-800 font-medium">
+                  {t.auth.signInLink}
                 </Link>
               </div>
             </CardFooter>

@@ -17,7 +17,7 @@ function getCurrentLocale(): SupportedLanguage {
   return 'ja'; // Default to Japanese
 }
 
-export async function signUp(email: string, password: string, username: string) {
+export async function signUp(email: string, password: string, username: string, displayName: string) {
   try {
     const locale = getCurrentLocale();
     const t = getTranslations(locale);
@@ -65,7 +65,8 @@ export async function signUp(email: string, password: string, username: string) 
       .insert({
         id: authData.user.id,
         username: username,
-        display_name: username
+        display_name: displayName,
+        slug: username,
       });
 
     if (profileError) {
