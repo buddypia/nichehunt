@@ -51,6 +51,17 @@ export interface TranslationKeys {
     follow: string;
     joinedSince: string;
     website: string;
+    twitter: string;
+    github: string;
+    statistics: string;
+    relationshipWithYou: string;
+    mutualFollowers: string;
+    mutualInterests: string;
+    interactions: string;
+    mutualVotes: string;
+    mutualComments: string;
+    recentActivity: string;
+    activityComingSoon: string;
     stats: {
       posts: string;
       votes: string;
@@ -61,7 +72,7 @@ export interface TranslationKeys {
     tabs: {
       products: string;
       upvoted: string;
-      achievements: string;
+      activity: string;
     };
     emptyStates: {
       noProducts: string;

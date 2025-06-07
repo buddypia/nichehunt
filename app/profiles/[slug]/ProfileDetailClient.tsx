@@ -228,7 +228,7 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
           className="mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          戻る
+          {t.profile.back}
         </Button>
       </div>
 
@@ -260,11 +260,11 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
                       {isFollowLoading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : isFollowing ? (
-                        <>フォロー中</>
+                        <>{t.profile.following}</>
                       ) : (
                         <>
                           <UserPlus className="w-4 h-4 mr-2" />
-                          フォロー
+                          {t.profile.follow}
                         </>
                       )}
                     </Button>
@@ -279,7 +279,7 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
                     )}
                     <div className="flex items-center justify-center">
                       <Calendar className="w-4 h-4 mr-1" />
-                      {formatDate(profile.created_at)}から参加
+                      {t.profile.joinedSince.replace('{date}', formatDate(profile.created_at))}
                     </div>
                   </div>
                 </div>
@@ -294,7 +294,7 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
                       className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
                     >
                       <LinkIcon className="w-4 h-4 mr-2" />
-                      ウェブサイト
+                      {t.profile.website}
                     </a>
                   )}
                   {profile.twitter && (
@@ -305,7 +305,7 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
                       className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
                     >
                       <Twitter className="w-4 h-4 mr-2" />
-                      Twitter
+                      {t.profile.twitter}
                     </a>
                   )}
                   {profile.github && (
@@ -316,7 +316,7 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
                       className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
                     >
                       <Github className="w-4 h-4 mr-2" />
-                      GitHub
+                      {t.profile.github}
                     </a>
                   )}
                 </div>
@@ -326,27 +326,27 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
             {/* 統計情報 */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">統計</CardTitle>
+                <CardTitle className="text-lg">{t.profile.statistics}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">投稿</span>
+                  <span className="text-gray-600">{t.profile.stats.posts}</span>
                   <span className="font-semibold">{stats.totalProducts}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">獲得投票</span>
+                  <span className="text-gray-600">{t.profile.stats.votes}</span>
                   <span className="font-semibold">{stats.totalVotes}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">コメント</span>
+                  <span className="text-gray-600">{t.profile.stats.comments}</span>
                   <span className="font-semibold">{stats.totalComments}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">フォロワー</span>
+                  <span className="text-gray-600">{t.profile.stats.followers}</span>
                   <span className="font-semibold">{stats.followers}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">フォロー中</span>
+                  <span className="text-gray-600">{t.profile.stats.following}</span>
                   <span className="font-semibold">{stats.following}</span>
                 </div>
               </CardContent>
@@ -356,7 +356,7 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
             {currentUser && !isOwnProfile && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">あなたとの関係</CardTitle>
+                  <CardTitle className="text-lg">{t.profile.relationshipWithYou}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* 共通のフォロワー */}
@@ -364,7 +364,7 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
                     <div>
                       <h4 className="text-sm font-medium text-gray-700 mb-2">
                         <Users className="w-4 h-4 inline mr-1" />
-                        共通のフォロワー ({mutualFollowers.length}人)
+                        {t.profile.mutualFollowers.replace('{count}', mutualFollowers.length.toString())}
                       </h4>
                       <div className="flex -space-x-2">
                         {mutualFollowers.slice(0, 5).map((follower) => (
@@ -393,7 +393,7 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
                     <div>
                       <h4 className="text-sm font-medium text-gray-700 mb-2">
                         <Heart className="w-4 h-4 inline mr-1" />
-                        共通の興味
+                        {t.profile.mutualInterests}
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {similarInterests.map((interest) => (
@@ -410,11 +410,11 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
                     <div>
                       <h4 className="text-sm font-medium text-gray-700 mb-2">
                         <MessageCircle className="w-4 h-4 inline mr-1" />
-                        インタラクション
+                        {t.profile.interactions}
                       </h4>
                       <div className="space-y-1 text-xs text-gray-600">
-                        <div>相互アップボート: {interactionHistory.mutualVotes}回</div>
-                        <div>相互コメント: {interactionHistory.mutualComments}回</div>
+                        <div>{t.profile.mutualVotes}: {interactionHistory.mutualVotes}回</div>
+                        <div>{t.profile.mutualComments}: {interactionHistory.mutualComments}回</div>
                       </div>
                     </div>
                   )}
@@ -429,15 +429,15 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="products">
                   <Briefcase className="w-4 h-4 mr-2" />
-                  プロダクト
+                  {t.profile.tabs.products}
                 </TabsTrigger>
                 <TabsTrigger value="upvoted">
                   <Heart className="w-4 h-4 mr-2" />
-                  アップボート
+                  {t.profile.tabs.upvoted}
                 </TabsTrigger>
                 <TabsTrigger value="activity">
                   <TrendingUp className="w-4 h-4 mr-2" />
-                  アクティビティ
+                  {t.profile.tabs.activity}
                 </TabsTrigger>
               </TabsList>
               
@@ -510,7 +510,7 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
                     <Card>
                       <CardContent className="p-12 text-center">
                         <Briefcase className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                        <p className="text-gray-600">まだプロダクトを投稿していません</p>
+                        <p className="text-gray-600">{t.profile.emptyStates.noProducts}</p>
                       </CardContent>
                     </Card>
                   )}
@@ -575,7 +575,7 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
                     <Card>
                       <CardContent className="p-12 text-center">
                         <Heart className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                        <p className="text-gray-600">アップボートしたプロダクトはまだありません</p>
+                        <p className="text-gray-600">{t.profile.emptyStates.noUpvoted}</p>
                       </CardContent>
                     </Card>
                   )}
@@ -585,13 +585,13 @@ export default function ProfileDetailClient({ userSlug }: ProfileDetailClientPro
               <TabsContent value="activity" className="mt-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>最近のアクティビティ</CardTitle>
+                    <CardTitle>{t.profile.recentActivity}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       {/* アクティビティタイムライン */}
                       <div className="text-center text-gray-500 py-8">
-                        アクティビティ機能は現在開発中です
+                        {t.profile.activityComingSoon}
                       </div>
                     </div>
                   </CardContent>
