@@ -64,7 +64,9 @@ NicheNextは、ニッチなビジネスアイデアを発見するためのProdu
 1. クライアントコンポーネントでデータをフェッチしない - 常にサーバーから渡す
 2. Edgeランタイムを使用しない - このアプリはNode.jsランタイムを使用
 3. auth.getUser()がnullを返す場合を常に処理する
-4. N+1クエリを避けるため、プロダクトリストにはproducts_with_statsビューを使用
+4. N+1クエリを避けるため、プロダクトリストには`products_with_stats`ビューを使用
+5. 地域対応のため`country_code`フィールドでプロダクトをフィルタリング
+6. RLS（Row Level Security）によってデータアクセスをセキュア化
 
 ## 技術スタック
 
@@ -84,26 +86,31 @@ NicheNextは、ニッチなビジネスアイデアを発見するためのProdu
 
 ## データベース構造
 
-12のテーブルで構成される包括的なデータモデル：
+13のテーブルとビューで構成される包括的なデータモデル：
 
 ### 1. ユーザー管理
-- `profiles` - ユーザープロファイル
-- `follows` - フォロー関係
+- `profiles` - ユーザープロファイル（UUID、ユーザー名、表示名、バイオ、アバター等）
+- `follows` - フォロー関係（フォロワー-フォロイング関係）
 
 ### 2. プロダクト機能
-- `products` - ビジネスアイデア情報
-- `categories` - カテゴリ分類
-- `tags` - タグ管理
-- `product_tags` - プロダクトタグ関連
-- `product_images` - 画像ギャラリー
+- `products` - ビジネスアイデア情報（国コード含む地域対応）
+- `categories` - カテゴリ分類（アイコン付き）
+- `tags` - タグ管理（名前とスラッグ）
+- `product_tags` - プロダクトタグ関連付け
+- `product_images` - 画像ギャラリー（表示順序対応）
 
 ### 3. エンゲージメント
-- `votes` - アップボート機能
-- `comments` - ネスト可能なコメント
-- `collections` - キュレーション機能
+- `votes` - アップボート機能（ユーザー-プロダクト）
+- `comments` - ネスト可能なコメント（編集履歴付き）
+- `collections` - キュレーション機能（公開・非公開設定）
+- `collection_products` - コレクション内プロダクト管理
 
 ### 4. システム機能
-- `notifications` - リアルタイム通知
+- `notifications` - リアルタイム通知（関連プロダクト・ユーザー含む）
+
+### 5. ビューとファンクション
+- `products_with_stats` - プロダクト統計情報含むビュー（投票数、コメント数、保存済み状態等）
+- `toggle_vote` - 投票切り替えファンクション
 
 ## 主要機能
 
@@ -124,6 +131,7 @@ NicheNextは、ニッチなビジネスアイデアを発見するためのProdu
 - トレンディング
 - ランキング
 - 詳細検索
+- 地域別フィルタリング（country_code）
 
 ### 4. 通知システム
 - リアルタイム通知
@@ -287,3 +295,11 @@ erDiagram
     collections ||--o{ collection_products : "contains"
     
     comments ||--o{ comments : "has_replies"
+
+## 重要な技術的詳細
+- 実行ログをJSONとして`.claude-execution-output.json`に出力
+- データベース更新・新規・削除作成は必ず以下の箇条書きを作成・更新する
+  - `CLAUDE.md`の`データベースER図`を更新する
+  - `./schema_er_diagram.md`を更新する
+  - `./supabase/complete_schema_backup_yyyymmdd.md`の作成・更新する
+- データベースの参照する指示は必ずSupabase MCPを利用する
