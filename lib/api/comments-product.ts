@@ -11,7 +11,9 @@ export async function fetchComments(productId: string): Promise<CommentWithRelat
       profile:profiles!comments_user_id_fkey (
         id,
         username,
-        avatar_url
+        avatar_url,
+        display_name,
+        slug
       )
     `)
     .eq('product_id', parseInt(productId))
