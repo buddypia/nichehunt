@@ -49,8 +49,8 @@ export function Header({
   useEffect(() => {
     if (searchQuery && searchQuery.trim() !== '' && pathname !== '/products') {
       // Check if the search bar is intended to be active on the current page,
-      // This logic might need to be aligned with ClientLayout's `showSearch`
-      const isSearchActivePage = pathname === '/' || pathname === '/products'; // Or get this from a prop/context
+      // Show search bar on most pages except auth and edit pages
+      const isSearchActivePage = !pathname.includes('/auth/') && !pathname.includes('/edit');
       if (isSearchActivePage) { // Only navigate if search was initiated from an active search page
          router.push(getLocalizedHref('/products'));
       }
@@ -139,8 +139,8 @@ export function Header({
 
           {/* 検索バー */}
           {/* Conditionally render AdvancedSearchBar based on whether search is active for the page */}
-          {/* This logic is similar to ClientLayout's `showSearch` */}
-          {(pathname === '/' || pathname === '/products') && (
+          {/* Show search bar on most pages except auth and edit pages */}
+          {!pathname.includes('/auth/') && !pathname.includes('/edit') && (
             <div className="hidden lg:block flex-1 max-w-xl mx-8">
               <AdvancedSearchBar />
             </div>
@@ -234,7 +234,7 @@ export function Header({
                 </VisuallyHidden>
                 <div className="flex flex-col space-y-4 mt-8">
                   {/* モバイル検索バー */}
-                  {(pathname === '/' || pathname === '/products') && (
+                  {!pathname.includes('/auth/') && !pathname.includes('/edit') && (
                     <div className="px-4">
                       <AdvancedSearchBar />
                     </div>
