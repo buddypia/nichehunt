@@ -11,7 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { getNotificationsClient, markNotificationAsReadClient, markAllNotificationsAsReadClient, getUnreadNotificationCountClient } from '@/lib/api/notifications-client';
+import { getLocalizedNotificationsClient, markNotificationAsReadClient, markAllNotificationsAsReadClient, getUnreadNotificationCountClient } from '@/lib/api/notifications-client';
+import { SupportedLanguage } from '@/lib/i18n';
 import { Notification } from '@/lib/types/notification';
 import { formatDistanceToNow } from 'date-fns';
 import { ja, enUS } from 'date-fns/locale';
@@ -63,10 +64,10 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
     
     setIsLoading(true);
     try {
-      const data = await getNotificationsClient(userId);
+      const data = await getLocalizedNotificationsClient(userId, currentLocale as SupportedLanguage);
       setNotifications(data);
     } catch (error) {
-      console.error('ailed to load notifications:', error);
+      console.error('Failed to load notifications:', error);
     } finally {
       setIsLoading(false);
     }
@@ -147,7 +148,6 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
   const getIcon = (type: Notification['type']) => {
     switch (type) {
       case 'vote':
-      case 'upvote':
         return <Heart className="w-4 h-4 text-red-500" />;
       case 'comment':
         return <MessageCircle className="w-4 h-4 text-blue-500" />;
@@ -159,6 +159,10 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
         return <AtSign className="w-4 h-4 text-purple-500" />;
       case 'system':
         return <Info className="w-4 h-4 text-gray-500" />;
+      case 'collection':
+        return <Heart className="w-4 h-4 text-purple-500" />;
+      case 'featured':
+        return <Heart className="w-4 h-4 text-yellow-500" />;
       default:
         return <Bell className="w-4 h-4" />;
     }

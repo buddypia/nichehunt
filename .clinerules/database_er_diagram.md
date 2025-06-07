@@ -108,8 +108,6 @@ erDiagram
         int id PK
         uuid user_id FK
         varchar type
-        varchar title
-        text message
         int related_product_id FK
         varchar related_user_slug FK
         boolean is_read

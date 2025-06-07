@@ -119,6 +119,44 @@ export interface TranslationKeys {
     newComment: string;
     newVote: string;
     productFeatured: string;
+    // Dynamic notification messages
+    voteNotificationTitle: string;
+    commentNotificationTitle: string;
+    replyNotificationTitle: string;
+    types: {
+      vote: {
+        title: string;
+        message: string;
+      };
+      comment: {
+        title: string;
+        message: string;
+      };
+      reply: {
+        title: string;
+        message: string;
+      };
+      follow: {
+        title: string;
+        message: string;
+      };
+      collection: {
+        title: string;
+        message: string;
+      };
+      featured: {
+        title: string;
+        message: string;
+      };
+      system: {
+        title: string;
+        message: string;
+      };
+      default: {
+        title: string;
+        message: string;
+      };
+    };
   };
   // コレクション
   collections: {

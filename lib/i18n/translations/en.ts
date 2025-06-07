@@ -114,6 +114,40 @@ export const en: TranslationKeys = {
     voteNotificationTitle: 'Your product received a vote',
     commentNotificationTitle: 'New comment on your product',
     replyNotificationTitle: 'Reply to your comment',
+    types: {
+      vote: {
+        title: 'New Vote',
+        message: 'Your product received a vote!'
+      },
+      comment: {
+        title: 'New Comment',
+        message: 'A new comment was posted on your product.'
+      },
+      reply: {
+        title: 'Reply Received',
+        message: 'Someone replied to your comment'
+      },
+      follow: {
+        title: 'New Follower',
+        message: 'A new user started following you!'
+      },
+      collection: {
+        title: 'Added to Collection',
+        message: 'Your product was added to a collection'
+      },
+      featured: {
+        title: 'Product Featured',
+        message: 'Your product was selected as today\'s featured product!'
+      },
+      system: {
+        title: 'System Notification',
+        message: 'A notification from the system'
+      },
+      default: {
+        title: 'Notification',
+        message: 'You have a new notification'
+      }
+    }
   },
   collections: {
     title: 'Collections',

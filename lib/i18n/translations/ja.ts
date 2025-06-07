@@ -114,6 +114,40 @@ export const ja: TranslationKeys = {
     voteNotificationTitle: 'あなたのプロダクトが投票されました',
     commentNotificationTitle: 'あなたのプロダクトにコメントがありました',
     replyNotificationTitle: 'あなたのコメントに返信がありました',
+    types: {
+      vote: {
+        title: '新しい投票',
+        message: 'あなたのプロダクトが投票されました！'
+      },
+      comment: {
+        title: '新しいコメント',
+        message: 'あなたのプロダクトに新しいコメントが投稿されました。'
+      },
+      reply: {
+        title: '返信がありました',
+        message: 'あなたのコメントに返信がつきました'
+      },
+      follow: {
+        title: '新しいフォロワー',
+        message: '新しいユーザーがあなたをフォローしました！'
+      },
+      collection: {
+        title: 'コレクションに追加されました',
+        message: 'あなたのプロダクトがコレクションに追加されました'
+      },
+      featured: {
+        title: 'プロダクトがフィーチャーされました',
+        message: 'あなたのプロダクトが本日のフィーチャープロダクトに選ばれました！'
+      },
+      system: {
+        title: 'システム通知',
+        message: 'システムからのお知らせです'
+      },
+      default: {
+        title: '通知',
+        message: '新しい通知があります'
+      }
+    }
   },
   collections: {
     title: 'コレクション',
