@@ -53,11 +53,6 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
       return result.replace(new RegExp(`{${key}}`, 'g'), String(value));
     }, template);
   };
-
-  // Convert language to country code
-  const getCountryCodeFromLanguage = (lang: string): string => {
-    return lang === 'ja' ? 'jp' : 'en';
-  };
   
   const [formData, setFormData] = useState({
     name: '',
@@ -172,7 +167,7 @@ export function SubmitModal({ isOpen, onClose }: SubmitModalProps) {
         category_id: parseInt(formData.category_id),
         tags: formData.tags,
         launch_date: formData.launch_date,
-        country_code: getCountryCodeFromLanguage(language),
+        locale: getLocaleFromLanguage(language),
       });
       if (error) throw error;
       toast.success(t.submit.success);

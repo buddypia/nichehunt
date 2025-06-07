@@ -1,9 +1,9 @@
 import ProductsClient from './ProductsClient';
-import { getCountryCode } from '@/lib/utils/country-code';
+import { getLocale } from '@/lib/utils/locale';
 
 export default async function ProductsPage() {
-  // 国コードを取得
-  const countryCode = await getCountryCode();
+  // 言語設定を取得
+  const locale = await getLocale();
   
-  return <ProductsClient countryCode={countryCode} />;
+  return <ProductsClient locale={locale} />;
 }

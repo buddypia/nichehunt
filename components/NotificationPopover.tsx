@@ -14,8 +14,9 @@ import { Separator } from '@/components/ui/separator';
 import { getNotificationsClient, markNotificationAsReadClient, markAllNotificationsAsReadClient, getUnreadNotificationCountClient } from '@/lib/api/notifications-client';
 import { Notification } from '@/lib/types/notification';
 import { formatDistanceToNow } from 'date-fns';
-import { ja } from 'date-fns/locale';
-import { useRouter } from 'next/navigation';
+import { ja, enUS } from 'date-fns/locale';
+import { useRouter, usePathname } from 'next/navigation';
+import { useTypedTranslations, useLocalizedNavigation } from '@/lib/i18n/useTranslations';
 
 interface NotificationPopoverProps {
   userId: string;
@@ -23,10 +24,17 @@ interface NotificationPopoverProps {
 
 export function NotificationPopover({ userId }: NotificationPopoverProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const { t } = useTypedTranslations();
+  const { getLocalizedHref } = useLocalizedNavigation();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Determine current locale from pathname
+  const currentLocale = pathname?.startsWith('/ja') ? 'ja' : 'en';
+  const dateLocale = currentLocale === 'ja' ? ja : enUS;
 
   useEffect(() => {
     if (userId && userId !== 'undefined') {
@@ -90,11 +98,11 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
 
     // ナビゲーション
     if (notification.related_product_id) {
-      router.push(`/products/${notification.related_product_id}`);
+      router.push(getLocalizedHref(`/products/${notification.related_product_id}`));
       setIsOpen(false);
     } else if (notification.related_user_id) {
       // TODO: related_user_idからslugを取得する必要がある
-      router.push(`/profiles/${notification.related_user_id}`);
+      router.push(getLocalizedHref(`/profiles/${notification.related_user_id}`));
       setIsOpen(false);
     }
   };
@@ -105,9 +113,39 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
     setUnreadCount(0);
   };
 
+  // Function to localize notification text
+  const getLocalizedNotificationText = (notification: Notification) => {
+    const { type, title, message } = notification;
+    
+    // If we're in English locale, try to translate from Japanese to English
+    if (currentLocale === 'en') {
+      // Translate common notification patterns
+      if (title === 'あなたのプロダクトが投票されました') {
+        return {
+          title: 'Your product received a vote',
+          message: message.replace(/さんが/, ' voted for ').replace(/に投票しました/, '')
+        };
+      } else if (title === 'あなたのプロダクトにコメントがありました') {
+        return {
+          title: 'New comment on your product',
+          message: message.replace(/さんが/, ' commented on ').replace(/にコメントしました/, '')
+        };
+      } else if (title === 'あなたのコメントに返信がありました') {
+        return {
+          title: 'Reply to your comment',
+          message: message.replace(/さんがあなたのコメントに返信しました/, ' replied to your comment')
+        };
+      }
+    }
+    
+    // Return original text if no translation is needed or available
+    return { title, message };
+  };
+
   const getIcon = (type: Notification['type']) => {
     switch (type) {
       case 'vote':
+      case 'upvote':
         return <Heart className="w-4 h-4 text-red-500" />;
       case 'comment':
         return <MessageCircle className="w-4 h-4 text-blue-500" />;
@@ -138,7 +176,7 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
         <div className="flex items-center justify-between p-4">
-          <h4 className="font-semibold">通知</h4>
+          <h4 className="font-semibold">{t.notifications.title}</h4>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
@@ -147,7 +185,7 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
               className="text-xs"
             >
               <CheckCheck className="w-3 h-3 mr-1" />
-              すべて既読
+              {t.notifications.markAllRead}
             </Button>
           )}
         </div>
@@ -155,48 +193,51 @@ export function NotificationPopover({ userId }: NotificationPopoverProps) {
         <ScrollArea className="h-[400px]">
           {isLoading ? (
             <div className="p-4 text-center text-muted-foreground">
-              読み込み中...
+              {t.actions.loading}
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
-              通知はありません
+              {t.notifications.noNotifications}
             </div>
           ) : (
             <div className="divide-y">
-              {notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-                    !notification.is_read ? 'bg-blue-50/50' : ''
-                  }`}
-                  onClick={() => handleNotificationClick(notification)}
-                >
-                  <div className="flex gap-3">
-                    <div className="flex-shrink-0 mt-1">
-                      {getIcon(notification.type)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900">
-                        {notification.title}
-                      </p>
-                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {formatDistanceToNow(new Date(notification.created_at), {
-                          addSuffix: true,
-                          locale: ja,
-                        })}
-                      </p>
-                    </div>
-                    {!notification.is_read && (
-                      <div className="flex-shrink-0">
-                        <div className="w-2 h-2 bg-blue-600 rounded-full" />
+              {notifications.map((notification) => {
+                const localizedText = getLocalizedNotificationText(notification);
+                return (
+                  <div
+                    key={notification.id}
+                    className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
+                      !notification.is_read ? 'bg-blue-50/50' : ''
+                    }`}
+                    onClick={() => handleNotificationClick(notification)}
+                  >
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 mt-1">
+                        {getIcon(notification.type)}
                       </div>
-                    )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900">
+                          {localizedText.title}
+                        </p>
+                        <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                          {localizedText.message}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {formatDistanceToNow(new Date(notification.created_at), {
+                            addSuffix: true,
+                            locale: dateLocale,
+                          })}
+                        </p>
+                      </div>
+                      {!notification.is_read && (
+                        <div className="flex-shrink-0">
+                          <div className="w-2 h-2 bg-blue-600 rounded-full" />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </ScrollArea>

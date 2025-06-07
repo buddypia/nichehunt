@@ -356,7 +356,7 @@ export type Database = {
       products: {
         Row: {
           category_id: number | null
-          country_code: string
+          locale: string
           created_at: string | null
           demo_url: string | null
           description: string
@@ -375,7 +375,7 @@ export type Database = {
         }
         Insert: {
           category_id?: number | null
-          country_code: string
+          locale: string
           created_at?: string | null
           demo_url?: string | null
           description: string
@@ -394,7 +394,7 @@ export type Database = {
         }
         Update: {
           category_id?: number | null
-          country_code?: string
+          locale?: string
           created_at?: string | null
           demo_url?: string | null
           description?: string
@@ -534,7 +534,7 @@ export type Database = {
         Row: {
           category_id: number | null
           comment_count: number | null
-          country_code: string | null
+          locale: string | null
           created_at: string | null
           demo_url: string | null
           description: string | null
@@ -733,7 +733,7 @@ export interface ProductWithRelations {
   view_count: number | null
   created_at: string | null
   updated_at: string | null
-  country_code?: string | null
+  locale?: string | null
   vote_count: number | null
   comment_count: number | null
   has_voted: boolean | null

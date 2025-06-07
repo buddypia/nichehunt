@@ -12,7 +12,7 @@ export async function getProductsWithRelations({
   limit = 20,
   search,
   tagSlug,
-  countryCode,
+  locale,
 }: {
   categorySlug?: string
   sort?: 'popular' | 'newest' | 'comments' | 'featured'
@@ -20,7 +20,7 @@ export async function getProductsWithRelations({
   limit?: number
   search?: string
   tagSlug?: string
-  countryCode?: string
+  locale?: string
 } = {}) {
   const supabase = await createClient()
   const offset = (page - 1) * limit
@@ -30,9 +30,9 @@ export async function getProductsWithRelations({
     .select('*')
     .eq('status', 'published' as any)
 
-  // 国コードでフィルタ（デフォルトは英語）
-  if (countryCode) {
-    query = query.eq('country_code', countryCode as any)
+  // 言語でフィルタ（デフォルトは英語）
+  if (locale) {
+    query = query.eq('locale', locale as any)
   }
 
   // カテゴリでフィルタ
@@ -220,7 +220,7 @@ async function enrichProductsEfficiently(products: ProductWithStats[]): Promise<
 
 
 // トレンドプロダクトを効率的に取得
-export async function getTrendingProductsEfficiently(period: 'today' | 'week' | 'month' = 'today', countryCode?: string) {
+export async function getTrendingProductsEfficiently(period: 'today' | 'week' | 'month' = 'today', locale?: string) {
   const supabase = await createClient()
   
   // 期間でフィルタリング用の日付を計算
@@ -249,9 +249,9 @@ export async function getTrendingProductsEfficiently(period: 'today' | 'week' | 
     .eq('status', 'published' as any)
     .gte('launch_date', dateFilter as any)
 
-  // 国コードでフィルタ（デフォルトは英語）
-  if (countryCode) {
-    query = query.eq('country_code', countryCode as any)
+  // 言語設定でフィルタ（デフォルトは英語）
+  if (locale) {
+    query = query.eq('locale', locale as any)
   }
 
   const { data: products } = await query
@@ -264,7 +264,7 @@ export async function getTrendingProductsEfficiently(period: 'today' | 'week' | 
 }
 
 // すべてのトレンド期間のプロダクトを一括で効率的に取得
-export async function getAllTrendingProductsEfficiently(countryCode?: string) {
+export async function getAllTrendingProductsEfficiently(locale?: string) {
   const supabase = await createClient()
   
   const now = new Date()
@@ -279,9 +279,9 @@ export async function getAllTrendingProductsEfficiently(countryCode?: string) {
     .eq('status', 'published' as any)
     .gte('launch_date', monthAgo.toISOString() as any)
 
-  // 国コードでフィルタ（デフォルトは英語）
-  if (countryCode) {
-    query = query.eq('country_code', countryCode as any)
+  // 言語でフィルタ（デフォルトは英語）
+  if (locale) {
+    query = query.eq('locale', locale as any)
   }
 
   const { data: products } = await query.order('vote_count', { ascending: false })

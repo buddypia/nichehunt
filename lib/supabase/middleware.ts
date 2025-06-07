@@ -39,15 +39,29 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (
-    request.nextUrl.pathname !== "/" &&
-    !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    !request.nextUrl.pathname.startsWith("/products") &&
-    !request.nextUrl.pathname.startsWith("/about") &&
-    !request.nextUrl.pathname.startsWith("/community")
-  ) {
+  // パブリックパスの定義（認証不要）
+  const publicPaths = [
+    "/",
+    "/login",
+    "/auth",
+    "/products",
+    "/about", 
+    "/community",
+    "/ja",
+    "/ja/products",
+    "/ja/about",
+    "/ja/community",
+    "/en",
+    "/en/products", 
+    "/en/about",
+    "/en/community"
+  ];
+  
+  const isPublicPath = publicPaths.some(path => 
+    request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith(path + "/")
+  );
+
+  if (!user && !isPublicPath) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";

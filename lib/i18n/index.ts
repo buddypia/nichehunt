@@ -310,11 +310,6 @@ export interface TranslationKeys {
   };
 }
 
-// country_codeから言語を取得
-export function getLanguageFromCountryCode(countryCode: string): SupportedLanguage {
-  return countryCode === 'jp' ? 'ja' : 'en';
-}
-
 // URLパスから言語を取得
 export function getLanguageFromPath(pathname: string): SupportedLanguage {
   if (pathname.startsWith('/ja')) return 'ja';

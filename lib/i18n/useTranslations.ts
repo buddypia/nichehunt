@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { SupportedLanguage, TranslationKeys, getLanguageFromCountryCode, getLanguageFromPath, getLocalizedPath } from './index';
+import { SupportedLanguage, TranslationKeys, getLanguageFromPath, getLocalizedPath } from './index';
 import { en } from './translations/en';
 import { ja } from './translations/ja';
 
