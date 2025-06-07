@@ -303,3 +303,4 @@ erDiagram
   - `CLAUDE.md`の`データベースER図`を更新する
   - `./supabase/complete_schema_backup_yyyymmdd.md`の作成・更新する
 - データベースの参照する指示は必ずSupabase MCPを利用する
+- タスク完了後、必ずapple-notifications-mcpを利用して通知する

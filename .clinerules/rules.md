@@ -89,5 +89,9 @@ nichenext/
 └── supabase/         # マイグレーション
 ```
 
-### 重要
-データベースを参照して実装する必要のある場合は、Supabase MCPを利用してまずそのデータベースやスキーマを確認し、その後で実装すること。
+## 重要な技術的詳細
+- データベース更新・新規・削除作成は必ず以下の箇条書きを作成・更新する
+  - `CLAUDE.md`の`データベースER図`を更新する
+  - `./supabase/complete_schema_backup_yyyymmdd.md`の作成・更新する
+- データベースの参照する指示は必ずSupabase MCPを利用する
+- タスク完了後、必ずapple-notifications-mcpを利用して通知する
