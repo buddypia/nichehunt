@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { SupportedLanguage, TranslationKeys, getLanguageFromCountryCode } from './index';
+import { SupportedLanguage, TranslationKeys, getLanguageFromCountryCode, getLanguageFromPath, getLocalizedPath } from './index';
 import { en } from './translations/en';
 import { ja } from './translations/ja';
 
@@ -16,14 +16,13 @@ export function useTranslations() {
 
   useEffect(() => {
     setIsClient(true);
-    // クライアントサイドでcountry_codeを取得
-    const getCountryCodeFromClient = () => {
-      // ブラウザのロケーションから取得を試みる
-      const hostname = window.location.hostname;
-      return (hostname.startsWith('ja.') || hostname.startsWith('jp.')) ? 'jp' : 'en';
+    // クライアントサイドでパスから言語を取得
+    const getLanguageFromClient = () => {
+      const pathname = window.location.pathname;
+      return getLanguageFromPath(pathname);
     };
-    const countryCode = getCountryCodeFromClient();
-    setLanguage(getLanguageFromCountryCode(countryCode));
+    const language = getLanguageFromClient();
+    setLanguage(language);
   }, []);
 
   const t = (key: string): string => {
@@ -68,4 +67,15 @@ export function useTypedTranslations() {
     // レガシーサポート用
     translate: t,
   };
+}
+
+// ローカライズされたナビゲーション用ヘルパー
+export function useLocalizedNavigation() {
+  const { language } = useTypedTranslations();
+  
+  const getLocalizedHref = (path: string) => {
+    return getLocalizedPath(path, language);
+  };
+  
+  return { getLocalizedHref, language };
 }

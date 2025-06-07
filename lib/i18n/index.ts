@@ -315,12 +315,18 @@ export function getLanguageFromCountryCode(countryCode: string): SupportedLangua
   return countryCode === 'jp' ? 'ja' : 'en';
 }
 
+// URLパスから言語を取得
+export function getLanguageFromPath(pathname: string): SupportedLanguage {
+  if (pathname.startsWith('/ja')) return 'ja';
+  return 'en';
+}
+
 // デフォルト言語設定（レガシーサポート）
 export function getLanguageFromDomain(): SupportedLanguage {
   if (typeof window === 'undefined') return 'en';
   
-  const hostname = window.location.hostname;
-  return hostname.startsWith('ja.') ? 'ja' : 'en';
+  const pathname = window.location.pathname;
+  return getLanguageFromPath(pathname);
 }
 
 // ブラウザの言語設定から推測
@@ -329,4 +335,28 @@ export function getBrowserLanguage(): SupportedLanguage {
   
   const lang = navigator.language || navigator.languages?.[0] || 'en';
   return lang.startsWith('ja') ? 'ja' : 'en';
+}
+
+// 言語に応じたパスを生成
+export function getLocalizedPath(path: string, locale: SupportedLanguage): string {
+  // ルートパスの場合
+  if (path === '/') {
+    return locale === 'ja' ? '/ja' : '/';
+  }
+  
+  // 既に言語プレフィックスがある場合は置換
+  if (path.startsWith('/ja')) {
+    return locale === 'ja' ? path : path.replace('/ja', '') || '/';
+  }
+  
+  // 言語プレフィックスがない場合
+  return locale === 'ja' ? `/ja${path}` : path;
+}
+
+// 現在のパスから言語プレフィックスを削除
+export function removeLocaleFromPath(path: string): string {
+  if (path.startsWith('/ja')) {
+    return path.replace('/ja', '') || '/';
+  }
+  return path;
 }

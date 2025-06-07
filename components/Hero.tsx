@@ -4,7 +4,7 @@ import { motion } from "framer-motion"
 import { Sparkles, TrendingUp, Users, Rocket, Star, ArrowRight, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { useTypedTranslations } from '@/lib/i18n/useTranslations'
+import { useTypedTranslations, useLocalizedNavigation } from '@/lib/i18n/useTranslations'
 
 interface HeroProps {
   onSubmitClick?: () => void;
@@ -12,6 +12,7 @@ interface HeroProps {
 
 export function Hero({ onSubmitClick }: HeroProps) {
   const { t } = useTypedTranslations();
+  const { getLocalizedHref } = useLocalizedNavigation();
   
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
@@ -85,7 +86,7 @@ export function Hero({ onSubmitClick }: HeroProps) {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
           >
-            <Link href="/products" className="w-full sm:w-auto">
+            <Link href={getLocalizedHref("/products")} className="w-full sm:w-auto">
               <Button size="lg" className="group bg-white text-purple-900 hover:bg-gray-100 px-8 w-full">
                 <Rocket className="w-5 h-5 mr-2" />
                 {t.hero.exploreProducts}

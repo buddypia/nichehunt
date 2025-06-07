@@ -23,7 +23,7 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger, SheetDescription } from 
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
 import { Separator } from '@/components/ui/separator';
 import { useSearch } from '@/contexts/SearchContext';
-import { useTypedTranslations } from '@/lib/i18n/useTranslations';
+import { useTypedTranslations, useLocalizedNavigation } from '@/lib/i18n/useTranslations';
 
 interface HeaderProps {
   onSubmitClick: () => void;
@@ -40,6 +40,7 @@ export function Header({
   const pathname = usePathname();
   const { searchQuery } = useSearch();
   const { t } = useTypedTranslations();
+  const { getLocalizedHref } = useLocalizedNavigation();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -51,7 +52,7 @@ export function Header({
       // This logic might need to be aligned with ClientLayout's `showSearch`
       const isSearchActivePage = pathname === '/' || pathname === '/products'; // Or get this from a prop/context
       if (isSearchActivePage) { // Only navigate if search was initiated from an active search page
-         router.push('/products');
+         router.push(getLocalizedHref('/products'));
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -76,7 +77,7 @@ export function Header({
     try {
       await signOut();
       setCurrentUser(null);
-      router.push('/');
+      router.push(getLocalizedHref('/'));
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -84,14 +85,14 @@ export function Header({
 
   const handleProfileClick = () => {
     if (currentUser?.id) {
-      router.push(`/profile?id=${currentUser.id}`);
+      router.push(getLocalizedHref(`/profile?id=${currentUser.id}`));
     }
   };
 
   const navItems = [
-    { href: '/', label: t.nav.home },
-    { href: '/products', label: t.nav.products },
-    { href: '/about', label: t.nav.about },
+    { href: getLocalizedHref('/'), label: t.nav.home },
+    { href: getLocalizedHref('/products'), label: t.nav.products },
+    { href: getLocalizedHref('/about'), label: t.nav.about },
   ];
 
   return (
@@ -99,7 +100,7 @@ export function Header({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center space-x-8">
-            <Link href="/" className="flex items-center space-x-3 group">
+            <Link href={getLocalizedHref('/')} className="flex items-center space-x-3 group">
               <div className="w-10 h-10 flex items-center justify-center">
                 <Image 
                   src="/logo.png"
@@ -194,11 +195,11 @@ export function Header({
                     <User className="mr-2 h-4 w-4" />
                     <span>{t.nav.profile}</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push('/saved')} className="cursor-pointer">
+                  <DropdownMenuItem onClick={() => router.push(getLocalizedHref('/saved'))} className="cursor-pointer">
                     <Bookmark className="mr-2 h-4 w-4" />
                     <span>{t.nav.saved}</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push('/settings')} className="cursor-pointer">
+                  <DropdownMenuItem onClick={() => router.push(getLocalizedHref('/settings'))} className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
                     <span>{t.nav.settings}</span>
                   </DropdownMenuItem>
@@ -212,7 +213,7 @@ export function Header({
             ) : (
               <Button
                 variant="outline"
-                onClick={() => router.push('/auth/signin')}
+                onClick={() => router.push(getLocalizedHref('/auth/signin'))}
                 className="hidden md:block"
               >
                 {t.nav.signIn}
@@ -261,13 +262,13 @@ export function Header({
                     <>
                       <Separator />
                       <div className="px-4 space-y-2">
-                        <Link href="/saved" onClick={() => setIsMobileMenuOpen(false)}>
+                        <Link href={getLocalizedHref('/saved')} onClick={() => setIsMobileMenuOpen(false)}>
                           <Button variant="ghost" className="w-full justify-start">
                             <Bookmark className="mr-2 h-4 w-4" />
                             {t.nav.saved}
                           </Button>
                         </Link>
-                        <Link href="/settings" onClick={() => setIsMobileMenuOpen(false)}>
+                        <Link href={getLocalizedHref('/settings')} onClick={() => setIsMobileMenuOpen(false)}>
                           <Button variant="ghost" className="w-full justify-start">
                             <Settings className="mr-2 h-4 w-4" />
                             {t.nav.settings}
@@ -323,7 +324,7 @@ export function Header({
                         variant="outline"
                         className="w-full"
                         onClick={() => {
-                          router.push('/auth/signin');
+                          router.push(getLocalizedHref('/auth/signin'));
                           setIsMobileMenuOpen(false);
                         }}
                       >
