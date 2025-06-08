@@ -40,6 +40,10 @@ export interface TranslationKeys {
     password: string;
     passwordPlaceholder: string;
     confirmPassword: string;
+    // OAuth
+    googleSignIn: string;
+    googleSignUp: string;
+    orDivider: string;
     // エラーメッセージ
     passwordMismatch: string;
     passwordTooShort: string;

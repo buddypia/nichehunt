@@ -37,9 +37,19 @@ export async function updateSession(request: NextRequest) {
 
   const {
     data: { user },
+    error
   } = await supabase.auth.getUser();
 
+  // Debug logging for auth issues
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Middleware] Path:', request.nextUrl.pathname, 'User:', user ? 'authenticated' : 'not authenticated');
+    if (error) {
+      console.log('[Middleware] Auth error:', error);
+    }
+  }
+
   // パブリックパスの定義（認証不要）
+  // Note: saved and settings pages rely on client-side auth checks instead of middleware
   const publicPaths = [
     "/",
     "/login",
@@ -47,24 +57,49 @@ export async function updateSession(request: NextRequest) {
     "/products",
     "/about", 
     "/community",
+    "/profile",
+    "/profiles",
+    "/saved",      // Allow access, client-side auth check handles protection
+    "/settings",   // Allow access, client-side auth check handles protection
     "/ja",
     "/ja/products",
     "/ja/about",
-    "/ja/community",
+    "/ja/community", 
+    "/ja/profile",
+    "/ja/profiles",
+    "/ja/saved",    // Allow access, client-side auth check handles protection
+    "/ja/settings", // Allow access, client-side auth check handles protection
     "/en",
     "/en/products", 
     "/en/about",
-    "/en/community"
+    "/en/community",
+    "/en/profile",
+    "/en/profiles",
+    "/en/saved",    // Allow access, client-side auth check handles protection
+    "/en/settings"  // Allow access, client-side auth check handles protection
   ];
   
   const isPublicPath = publicPaths.some(path => 
     request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith(path + "/")
   );
 
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Middleware] Is public path:', isPublicPath, 'for path:', request.nextUrl.pathname);
+  }
+
   if (!user && !isPublicPath) {
+    // Check if this is an auth-related path that should be ignored
+    const isAuthPath = request.nextUrl.pathname.startsWith('/auth/');
+    if (isAuthPath) {
+      return supabaseResponse;
+    }
+    
     // no user, potentially respond by redirecting the user to the login page
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Middleware] Redirecting to signin - no user and not public path');
+    }
     const url = request.nextUrl.clone();
-    url.pathname = "/auth/login";
+    url.pathname = "/auth/signin";
     return NextResponse.redirect(url);
   }
 

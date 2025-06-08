@@ -121,6 +121,35 @@ export async function signIn(email: string, password: string) {
   }
 }
 
+export async function signInWithGoogle() {
+  try {
+    const supabase = createClient();
+    
+    // Direct OAuth URL construction to bypass PKCE issues
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}/auth/callback-client` : undefined;
+    
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectUrl,
+        queryParams: {
+          prompt: 'select_account'
+        }
+      }
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
+  } catch (error: any) {
+    console.error('Google sign in error:', error);
+    throw error;
+  }
+}
+
 export async function signOut() {
   try {
     const locale = getCurrentLocale();
@@ -152,6 +181,33 @@ export async function getCurrentUser() {
       .single();
 
     if (profileError) {
+      // If profile doesn't exist (PGRST116), create one
+      if (profileError.code === 'PGRST116') {
+        console.log('Profile not found, creating new profile for user:', user.id);
+        
+        const username = user.email?.split('@')[0] || `user_${user.id.slice(0, 8)}`;
+        const displayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+        
+        const { data: newProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            username: username,
+            display_name: displayName,
+            slug: username,
+            avatar_url: user.user_metadata?.avatar_url || null,
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error('Profile creation error:', insertError);
+          return null;
+        }
+
+        return newProfile;
+      }
+      
       console.error('Profile fetch error:', profileError);
       return null;
     }

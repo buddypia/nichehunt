@@ -55,6 +55,12 @@ export default function SavedModelsClient() {
   const loadCurrentUser = async () => {
     const user = await getCurrentUser();
     setCurrentUser(user);
+    
+    // If no user found, redirect to signin
+    if (!user) {
+      router.push('/auth/signin');
+      return;
+    }
   };
 
   const loadCollections = async () => {

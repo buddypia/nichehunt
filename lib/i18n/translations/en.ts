@@ -38,6 +38,10 @@ export const en: TranslationKeys = {
     password: 'Password',
     passwordPlaceholder: '••••••••',
     confirmPassword: 'Confirm Password',
+    // OAuth
+    googleSignIn: 'Sign in with Google',
+    googleSignUp: 'Sign up with Google',
+    orDivider: 'or',
     // エラーメッセージ
     passwordMismatch: 'Passwords do not match',
     passwordTooShort: 'Password must be at least 6 characters',

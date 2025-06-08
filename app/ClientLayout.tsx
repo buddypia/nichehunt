@@ -1,19 +1,40 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { SubmitModal } from '@/components/SubmitModal';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { SearchProvider, useSearch } from '@/contexts/SearchContext';
 
 function ClientLayoutContent({ children }: { children: React.ReactNode }) {
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
-  // const pathname = usePathname(); // No longer directly needed here for Header props
-  // const { searchQuery, setSearchQuery, selectedCategory, setSelectedCategory } = useSearch(); // No longer directly needed here for Header props
+  const router = useRouter();
 
   const handleSubmitClick = () => {
     setIsSubmitModalOpen(true);
   };
+
+  useEffect(() => {
+    // Check for authentication refresh cookie
+    const checkAuthRefresh = () => {
+      const cookies = document.cookie.split(';');
+      const refreshCookie = cookies.find(cookie => cookie.trim().startsWith('sb-refresh='));
+      
+      if (refreshCookie) {
+        // Remove the cookie
+        document.cookie = 'sb-refresh=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        // Refresh the page to update authentication state
+        router.refresh();
+      }
+    };
+
+    checkAuthRefresh();
+    
+    // Check periodically for auth refresh
+    const interval = setInterval(checkAuthRefresh, 1000);
+    
+    return () => clearInterval(interval);
+  }, [router]);
 
   // ホームページでのみ検索機能を有効にする
   // const showSearch = pathname === '/' || pathname === '/products'; // This logic is now handled within Header for rendering AdvancedSearchBar

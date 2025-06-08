@@ -38,6 +38,10 @@ export const ja: TranslationKeys = {
     password: 'パスワード',
     passwordPlaceholder: '••••••••',
     confirmPassword: 'パスワード（確認）',
+    // OAuth
+    googleSignIn: 'Googleでログイン',
+    googleSignUp: 'Googleで新規登録',
+    orDivider: 'または',
     // エラーメッセージ
     passwordMismatch: 'パスワードが一致しません',
     passwordTooShort: 'パスワードは6文字以上で入力してください',
