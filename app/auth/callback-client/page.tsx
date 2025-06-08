@@ -4,6 +4,33 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
+async function uploadGoogleAvatar(googleAvatarUrl: string, userId: string): Promise<string> {
+  try {
+    // Use server-side API to upload avatar
+    const response = await fetch('/api/upload-avatar', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        googleAvatarUrl,
+        userId
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to upload avatar');
+    }
+    
+    return result.avatarUrl;
+  } catch (error) {
+    console.error('Error uploading Google avatar:', error);
+    throw error;
+  }
+}
+
 async function createProfile(user: any, supabase: any) {
   try {
     // Check if profile exists, if not create one
@@ -32,6 +59,18 @@ async function createProfile(user: any, supabase: any) {
         uniqueUsername = `${username}_${user.id.slice(0, 4)}`;
       }
       
+      // Handle Google avatar URL by uploading to Supabase storage
+      let avatarUrl = null;
+      if (user.user_metadata?.avatar_url) {
+        try {
+          avatarUrl = await uploadGoogleAvatar(user.user_metadata.avatar_url, user.id);
+        } catch (error) {
+          console.error('Failed to upload Google avatar:', error);
+          // Keep the original Google URL as fallback
+          avatarUrl = user.user_metadata.avatar_url;
+        }
+      }
+
       const { data: newProfile, error: insertError } = await supabase
         .from('profiles')
         .insert({
@@ -39,7 +78,7 @@ async function createProfile(user: any, supabase: any) {
           username: uniqueUsername,
           display_name: displayName,
           slug: uniqueUsername,
-          avatar_url: user.user_metadata?.avatar_url || null,
+          avatar_url: avatarUrl,
         })
         .select()
         .single();
