@@ -16,8 +16,9 @@ jobs:
       (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude'))
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      issues: read
+      contents: write
+      pull-requests: write
+      issues: write
       id-token: write
     steps:
       - name: Checkout repository
@@ -32,4 +33,3 @@ jobs:
           timeout_minutes: "60"
           custom_instructions: "必ず日本語で回答してください。github.event_name == 'issues'の場合、必ずmcp__github__create_pull_requestツールを利用してPRを作成まで行ってください。"
           allowed_tools: "mcp__github__create_pull_request"
-
